@@ -3,9 +3,12 @@ import 'package:dotenv/dotenv.dart' show load, env;
 
 void main() {
   load();
-  final token = env['token'];
+  final telegramToken = env['token'];
+  final openweatherKey = env['openweather'];
+  final chatId = env['chatid'];
 
-  var bot = weather.Bot(token);
+  var bot = weather.Bot(telegramToken);
 
-  bot.startBot();
+  bot.startBot(openweatherKey);
+  bot.startNotificationPolling(int.parse(chatId));
 }

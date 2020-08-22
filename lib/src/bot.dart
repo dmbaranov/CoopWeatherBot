@@ -1,35 +1,82 @@
 import 'dart:io' as io;
+import 'dart:async';
 
 import 'package:teledart/teledart.dart';
 import 'package:teledart/telegram.dart';
 import 'package:teledart/model.dart';
 
+import 'openweather.dart';
+
+Future sleep(Duration duration) {
+  return Future.delayed(duration, () => null);
+}
+
 class Bot {
   final String token;
   io.File citiesFile;
   TeleDart bot;
+  Telegram telegram;
+  OpenWeather openWeather;
+  int notificationHour = 7;
 
   Bot(token) : token = token {
     citiesFile = io.File('assets/cities.txt');
   }
 
-  void startBot() async {
-    bot = TeleDart(Telegram(token), Event());
+  void startBot(String openweatherKey) async {
+    telegram = Telegram(token);
+    bot = TeleDart(telegram, Event());
+    openWeather = OpenWeather(openweatherKey);
 
     await bot.start();
 
-    setupListeners();
+    _setupListeners();
 
     print('Bot has been started!');
   }
 
-  void setupListeners() {
+  void startNotificationPolling(int chatId) async {
+    var skip = false;
+
+    Timer.periodic(Duration(seconds: 5), (_) async {
+      if (skip) return;
+
+      var hour = DateTime.now().hour;
+
+      if (hour == notificationHour) {
+        skip = true;
+
+        var cities = await citiesFile.readAsLines();
+
+        await Future.forEach(cities, (city) async {
+          try {
+            var data = await openWeather.getCurrentWeather(city);
+
+            await telegram.sendMessage(chatId,
+                'In city ${data.city} the temperature is ${data.temp}°C');
+          } catch (err) {
+            print('Error during the notification: $err');
+          }
+        });
+
+        await sleep(Duration(hours: 23));
+
+        skip = false;
+      }
+    });
+  }
+
+  void _setupListeners() {
     bot.onCommand('addcity').listen(_addCity);
     bot.onCommand('removecity').listen(_removeCity);
+    bot.onCommand('watchlist').listen(_getWatchlist);
+    bot.onCommand('getweather').listen(_getWeatherForCity);
+    bot.onCommand('setnotificationhour').listen(_setNotificationHour);
+    bot.onCommand('ping').listen(_ping);
   }
 
   void _addCity(TeleDartMessage message) async {
-    var cityToAdd = _getCityFromMessage(message);
+    var cityToAdd = _getOneParameterFromMessage(message);
 
     if (cityToAdd.isEmpty) {
       await message.reply('Provide one city to add!');
@@ -52,7 +99,7 @@ class Bot {
   }
 
   void _removeCity(TeleDartMessage message) async {
-    var cityToRemove = _getCityFromMessage(message);
+    var cityToRemove = _getOneParameterFromMessage(message);
 
     if (cityToRemove.isEmpty) {
       await message.reply('Provide one city to remove!');
@@ -77,10 +124,61 @@ class Bot {
         .reply('City $cityToRemove has been removed from the watchlist!');
   }
 
-  String _getCityFromMessage(TeleDartMessage message) {
-    var options = message.text.split(' ');
+  void _getWatchlist(TeleDartMessage message) async {
+    var cities = await citiesFile.readAsLines();
 
-    print('${options}, ${options.length}');
+    if (cities.isEmpty) {
+      await message.reply("I'm not watching any cities");
+      return;
+    }
+
+    var citiesString = cities.join('\n');
+
+    await message.reply("I'm watching these cities:\n$citiesString");
+  }
+
+  void _getWeatherForCity(TeleDartMessage message) async {
+    var city = _getOneParameterFromMessage(message);
+
+    if (city.isEmpty) {
+      await message.reply('Provide a city!');
+      return;
+    }
+
+    try {
+      var weatherData = await openWeather.getCurrentWeather(city);
+
+      await message
+          .reply('In city $city the temperature is ${weatherData.temp}°C');
+    } catch (err) {
+      print(err);
+
+      await message
+          .reply('There was an error processing your request! Try again');
+    }
+  }
+
+  void _ping(TeleDartMessage message) async {
+    // various things to test are here
+  }
+
+  void _setNotificationHour(TeleDartMessage message) async {
+    var currentHour = notificationHour;
+    var nextHour = int.parse(_getOneParameterFromMessage(message));
+
+    if (nextHour is int && nextHour >= 0 && nextHour <= 23) {
+      notificationHour = nextHour;
+      await message.reply(
+          'Notification hour has been updated from $currentHour to $nextHour');
+      return;
+    }
+
+    await message.reply(
+        'Incorrect value for notification hour. Please use single number from 0 to 23');
+  }
+
+  String _getOneParameterFromMessage(TeleDartMessage message) {
+    var options = message.text.split(' ');
 
     if (options.length != 2) return '';
 

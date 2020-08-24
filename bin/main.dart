@@ -7,7 +7,7 @@ void main() {
   final openweatherKey = env['openweather'];
   final chatId = env['chatid'];
 
-  var bot = weather.Bot(telegramToken);
+  var bot = weather.Bot(telegramToken, chatId);
 
   bot.startBot(openweatherKey);
   bot.startNotificationPolling(int.parse(chatId));

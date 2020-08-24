@@ -13,13 +13,16 @@ Future sleep(Duration duration) {
 
 class Bot {
   final String token;
+  final String chatId;
   io.File citiesFile;
   TeleDart bot;
   Telegram telegram;
   OpenWeather openWeather;
   int notificationHour = 7;
 
-  Bot(token) : token = token {
+  Bot(token, chatId)
+      : token = token,
+        chatId = chatId {
     citiesFile = io.File('assets/cities.txt');
   }
 
@@ -72,6 +75,7 @@ class Bot {
     bot.onCommand('watchlist').listen(_getWatchlist);
     bot.onCommand('getweather').listen(_getWeatherForCity);
     bot.onCommand('setnotificationhour').listen(_setNotificationHour);
+    bot.onCommand('write').listen(_writeToCoop);
     bot.onCommand('ping').listen(_ping);
 
     bot.onMessage(keyword: 'эй хуй').listen(_getForecastForCity);
@@ -208,6 +212,13 @@ class Bot {
 
       await message.reply('Ебобо, там ошибка!');
     }
+  }
+
+  void _writeToCoop(TeleDartMessage message) async {
+    var rawText = message.text.split(' ');
+    var text = rawText.sublist(1).join(' ');
+
+    await telegram.sendMessage(num.parse(chatId), text);
   }
 
   String _getOneParameterFromMessage(TeleDartMessage message) {

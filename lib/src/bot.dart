@@ -164,7 +164,15 @@ class Bot {
 
   void _setNotificationHour(TeleDartMessage message) async {
     var currentHour = notificationHour;
-    var nextHour = int.parse(_getOneParameterFromMessage(message));
+    var nextHourRaw = _getOneParameterFromMessage(message);
+
+    if (nextHourRaw.isEmpty) {
+      await message.reply(
+          'Incorrect value for notification hour. Please use single number from 0 to 23');
+      return;
+    }
+
+    var nextHour = num.parse(nextHourRaw);
 
     if (nextHour is int && nextHour >= 0 && nextHour <= 23) {
       notificationHour = nextHour;

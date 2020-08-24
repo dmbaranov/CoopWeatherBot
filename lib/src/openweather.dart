@@ -1,13 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
 
-class WeatherData {
+class OpenWeatherData {
   final String city;
   final num temp;
 
-  WeatherData(this.city, this.temp);
+  OpenWeatherData(this.city, this.temp);
 
-  WeatherData.fromJson(Map<String, dynamic> json)
+  OpenWeatherData.fromJson(Map<String, dynamic> json)
       : city = json['city'],
         temp = json['temp'];
 
@@ -20,7 +20,7 @@ class OpenWeather {
 
   OpenWeather(this.apiKey);
 
-  Future<WeatherData> getCurrentWeather(String city) async {
+  Future<OpenWeatherData> getCurrentWeather(String city) async {
     var url = '$apiBaseUrl/weather?q=$city&appid=$apiKey&units=metric';
 
     var request = await HttpClient().getUrl(Uri.parse(url));
@@ -37,6 +37,6 @@ class OpenWeather {
       'temp': responseJson['main']['temp']
     };
 
-    return WeatherData.fromJson(rawWeatherData);
+    return OpenWeatherData.fromJson(rawWeatherData);
   }
 }

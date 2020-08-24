@@ -73,6 +73,9 @@ class Bot {
     bot.onCommand('getweather').listen(_getWeatherForCity);
     bot.onCommand('setnotificationhour').listen(_setNotificationHour);
     bot.onCommand('ping').listen(_ping);
+
+    bot.onMessage(keyword: 'эй хуй').listen(_getForecastForCity);
+    bot.onMessage(keyword: 'Эй хуй').listen(_getForecastForCity);
   }
 
   void _addCity(TeleDartMessage message) async {
@@ -183,6 +186,28 @@ class Bot {
 
     await message.reply(
         'Incorrect value for notification hour. Please use single number from 0 to 23');
+  }
+
+  void _getForecastForCity(TeleDartMessage message) async {
+    var messageWords = message.text.split(' ');
+
+    if (messageWords.length != 3) {
+      await message.reply('Ты шо, дурак?!');
+      return;
+    }
+
+    var city = messageWords[2];
+
+    try {
+      var weatherData = await openWeather.getCurrentWeather(city);
+
+      await message
+          .reply('В дыре $city температура ${weatherData.temp}°C епта');
+    } catch (err) {
+      print(err);
+
+      await message.reply('Ебобо, там ошибка!');
+    }
   }
 
   String _getOneParameterFromMessage(TeleDartMessage message) {

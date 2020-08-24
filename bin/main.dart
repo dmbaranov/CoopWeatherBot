@@ -5,10 +5,10 @@ void main() {
   load();
   final telegramToken = env['token'];
   final openweatherKey = env['openweather'];
-  final chatId = env['chatid'];
+  final chatId = int.parse(env['chatid']);
 
   var bot = weather.Bot(telegramToken, chatId);
 
   bot.startBot(openweatherKey);
-  bot.startNotificationPolling(int.parse(chatId));
+  bot.startNotificationPolling();
 }

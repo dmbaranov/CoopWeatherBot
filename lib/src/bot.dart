@@ -13,7 +13,7 @@ Future sleep(Duration duration) {
 
 class Bot {
   final String token;
-  final String chatId;
+  final int chatId;
   io.File citiesFile;
   TeleDart bot;
   Telegram telegram;
@@ -38,7 +38,7 @@ class Bot {
     print('Bot has been started!');
   }
 
-  void startNotificationPolling(int chatId) async {
+  void startNotificationPolling() async {
     var skip = false;
 
     Timer.periodic(Duration(seconds: 5), (_) async {
@@ -78,8 +78,8 @@ class Bot {
     bot.onCommand('write').listen(_writeToCoop);
     bot.onCommand('ping').listen(_ping);
 
-    bot.onMessage(keyword: 'эй хуй').listen(_getForecastForCity);
-    bot.onMessage(keyword: 'Эй хуй').listen(_getForecastForCity);
+    bot.onMessage(keyword: 'эй хуй').listen(_getBullyWeatherForCity);
+    bot.onMessage(keyword: 'Эй хуй').listen(_getBullyWeatherForCity);
   }
 
   void _addCity(TeleDartMessage message) async {
@@ -192,7 +192,7 @@ class Bot {
         'Incorrect value for notification hour. Please use single number from 0 to 23');
   }
 
-  void _getForecastForCity(TeleDartMessage message) async {
+  void _getBullyWeatherForCity(TeleDartMessage message) async {
     var messageWords = message.text.split(' ');
 
     if (messageWords.length != 3) {
@@ -218,7 +218,7 @@ class Bot {
     var rawText = message.text.split(' ');
     var text = rawText.sublist(1).join(' ');
 
-    await telegram.sendMessage(num.parse(chatId), text);
+    await telegram.sendMessage(chatId, text);
   }
 
   String _getOneParameterFromMessage(TeleDartMessage message) {

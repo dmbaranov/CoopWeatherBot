@@ -6,6 +6,7 @@ import 'package:teledart/telegram.dart';
 import 'package:teledart/model.dart';
 
 import 'openweather.dart';
+import 'panorama.dart';
 
 Future sleep(Duration duration) {
   return Future.delayed(duration, () => null);
@@ -55,8 +56,8 @@ class Bot {
           try {
             var data = await openWeather.getCurrentWeather(city);
 
-            await telegram.sendMessage(chatId,
-                'In city ${data.city} the temperature is ${data.temp}°C');
+            await telegram.sendMessage(
+                chatId, 'In city ${data.city} the temperature is ${data.temp}°C');
           } catch (err) {
             print('Error during the notification: $err');
           }
@@ -66,6 +67,22 @@ class Bot {
 
         skip = false;
       }
+    });
+  }
+
+  void startNewsPolling() async {
+    Timer.periodic(Duration(hours: 6), (_) async {
+      var hour = DateTime.now().hour;
+
+      if (hour <= 9 && hour >= 23) return;
+
+      var news = await getNews();
+
+      if (news.title.isEmpty) return;
+
+      var message = '${news.title}\n${news.content}';
+
+      await telegram.sendMessage(chatId, message);
     });
   }
 
@@ -120,15 +137,12 @@ class Bot {
       return;
     }
 
-    var updatedCities = cities
-        .where((city) => city != cityToRemove.toLowerCase())
-        .join('\n')
-        .toString();
+    var updatedCities =
+        cities.where((city) => city != cityToRemove.toLowerCase()).join('\n').toString();
 
     await citiesFile.writeAsString(updatedCities);
 
-    await message
-        .reply('City $cityToRemove has been removed from the watchlist!');
+    await message.reply('City $cityToRemove has been removed from the watchlist!');
   }
 
   void _getWatchlist(TeleDartMessage message) async {
@@ -155,13 +169,11 @@ class Bot {
     try {
       var weatherData = await openWeather.getCurrentWeather(city);
 
-      await message
-          .reply('In city $city the temperature is ${weatherData.temp}°C');
+      await message.reply('In city $city the temperature is ${weatherData.temp}°C');
     } catch (err) {
       print(err);
 
-      await message
-          .reply('There was an error processing your request! Try again');
+      await message.reply('There was an error processing your request! Try again');
     }
   }
 
@@ -174,8 +186,8 @@ class Bot {
     var nextHourRaw = _getOneParameterFromMessage(message);
 
     if (nextHourRaw.isEmpty) {
-      await message.reply(
-          'Incorrect value for notification hour. Please use single number from 0 to 23');
+      await message
+          .reply('Incorrect value for notification hour. Please use single number from 0 to 23');
       return;
     }
 
@@ -183,13 +195,12 @@ class Bot {
 
     if (nextHour is int && nextHour >= 0 && nextHour <= 23) {
       notificationHour = nextHour;
-      await message.reply(
-          'Notification hour has been updated from $currentHour to $nextHour');
+      await message.reply('Notification hour has been updated from $currentHour to $nextHour');
       return;
     }
 
-    await message.reply(
-        'Incorrect value for notification hour. Please use single number from 0 to 23');
+    await message
+        .reply('Incorrect value for notification hour. Please use single number from 0 to 23');
   }
 
   void _getBullyWeatherForCity(TeleDartMessage message) async {
@@ -205,8 +216,7 @@ class Bot {
     try {
       var weatherData = await openWeather.getCurrentWeather(city);
 
-      await message
-          .reply('В дыре $city температура ${weatherData.temp}°C епта');
+      await message.reply('В дыре $city температура ${weatherData.temp}°C епта');
     } catch (err) {
       print(err);
 
@@ -217,6 +227,8 @@ class Bot {
   void _writeToCoop(TeleDartMessage message) async {
     var rawText = message.text.split(' ');
     var text = rawText.sublist(1).join(' ');
+
+    print('${message.from} is writing to Coop');
 
     await telegram.sendMessage(chatId, text);
   }

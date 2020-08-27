@@ -1,7 +1,8 @@
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as parser;
 
-Map<String, int> _cache = {};
+// TODO: remove initial news, it's a hotfix
+Map<String, int> _cache = {'Лукашенко реорганизует республику в Первую белорусскую империю': 1};
 var _cacheSize = 10; // This needs to be increased if news are repeating
 
 class NewsData {

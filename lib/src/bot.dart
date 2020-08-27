@@ -74,7 +74,7 @@ class Bot {
     Timer.periodic(Duration(hours: 6), (_) async {
       var hour = DateTime.now().hour;
 
-      if (hour >= 9 && hour <= 23) return;
+      if (hour <= 9 || hour >= 23) return;
 
       var news = await getNews();
 

@@ -230,7 +230,7 @@ class Bot {
     var rawText = message.text.split(' ');
     var text = rawText.sublist(1).join(' ');
 
-    print('${message.from} is writing to Coop');
+    print('${message.from.toJson()} is writing to Coop');
 
     await telegram.sendMessage(chatId, text);
   }

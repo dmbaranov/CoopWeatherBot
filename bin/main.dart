@@ -11,5 +11,5 @@ void main() {
 
   bot.startBot(openweatherKey);
   bot.startNotificationPolling();
-  bot.startNewsPolling();
+  bot.startPanoramaNewsPolling();
 }

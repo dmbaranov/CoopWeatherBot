@@ -1,9 +1,10 @@
+import 'dart:io' as io;
+
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as parser;
 
-// TODO: remove initial news, it's a hotfix
-Map<String, int> _cache = {'Лукашенко реорганизует республику в Первую белорусскую империю': 1};
-var _cacheSize = 10; // This needs to be increased if news are repeating
+Map<String, int> _cache = {};
+String _pathToCacheFile = 'assets/panorama_news_cache.txt';
 
 class NewsData {
   final String title;
@@ -18,14 +19,53 @@ class NewsData {
   Map<String, dynamic> toJson() => {'city': title, 'temp': content};
 }
 
-void clearCache() {
-  if (_cache.length > _cacheSize) {
-    _cache = {};
+void setupPanoramaNews() async {
+  var savedNewsFile = io.File(_pathToCacheFile);
+  var savedNews = await savedNewsFile.readAsLines();
+
+  savedNews.forEach((title) {
+    _cache[title] = 1;
+  });
+}
+
+void _clearCache() async {
+  var cacheSize = 100;
+  var saveNumberOfPreviousNews = 10;
+
+  if (_cache.length > cacheSize) {
+    // If there're too many news in the cache file, erase the content, but save
+    // x amount of latest news to avoid duplications
+    var cacheFile = io.File(_pathToCacheFile);
+    var news = await cacheFile.readAsLines();
+    var newsForUpdatedCache = news.sublist(news.length - saveNumberOfPreviousNews);
+
+    await _overwriteCacheFile(newsForUpdatedCache);
+  }
+}
+
+void _writeToCacheFile(String title) async {
+  var cacheFile = io.File(_pathToCacheFile);
+
+  await cacheFile.writeAsStringSync(title, mode: io.FileMode.append);
+}
+
+void _overwriteCacheFile(List<String> content) async {
+  var cacheFile = io.File(_pathToCacheFile);
+
+  for (var i = 0; i < content.length; i++) {
+    var value = content[i];
+
+    if (i == 0) {
+      // First iteration should erase previous content
+      await cacheFile.writeAsString('$value\n');
+    } else {
+      await cacheFile.writeAsString('$value\n', mode: io.FileMode.append);
+    }
   }
 }
 
 Future<NewsData> getNews() async {
-  clearCache();
+  await _clearCache();
 
   var response = await http.get('https://panorama.pub/');
   var document = parser.parse(response.body);
@@ -45,6 +85,7 @@ Future<NewsData> getNews() async {
     result = {'title': title, 'content': content};
 
     _cache[title] = 1;
+    await _writeToCacheFile(title);
     break;
   }
 

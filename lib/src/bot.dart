@@ -70,7 +70,9 @@ class Bot {
     });
   }
 
-  void startNewsPolling() async {
+  void startPanoramaNewsPolling() async {
+    await setupPanoramaNews();
+
     Timer.periodic(Duration(hours: 6), (_) async {
       var hour = DateTime.now().hour;
 

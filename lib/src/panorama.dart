@@ -46,7 +46,7 @@ void _clearCache() async {
 void _writeToCacheFile(String title) async {
   var cacheFile = io.File(_pathToCacheFile);
 
-  await cacheFile.writeAsStringSync(title, mode: io.FileMode.append);
+  await cacheFile.writeAsStringSync('$title\n', mode: io.FileMode.append);
 }
 
 void _overwriteCacheFile(List<String> content) async {

@@ -97,8 +97,8 @@ class Bot {
     bot.onCommand('write').listen(_writeToCoop);
     bot.onCommand('ping').listen(_ping);
 
-    bot.onMessage(keyword: 'эй хуй').listen(_getBullyWeatherForCity);
-    bot.onMessage(keyword: 'Эй хуй').listen(_getBullyWeatherForCity);
+    var bullyMessageRegexp = RegExp(r'эй\,? хуй', caseSensitive: false);
+    bot.onMessage(keyword: bullyMessageRegexp).listen(_getBullyWeatherForCity);
   }
 
   void _addCity(TeleDartMessage message) async {

@@ -97,7 +97,7 @@ class Bot {
     bot.onCommand('write').listen(_writeToCoop);
     bot.onCommand('ping').listen(_ping);
 
-    var bullyMessageRegexp = RegExp(r'эй\,? хуй', caseSensitive: false);
+    var bullyMessageRegexp = RegExp(r'эй\,?\s{1,}хуй\s', caseSensitive: false);
     bot.onMessage(keyword: bullyMessageRegexp).listen(_getBullyWeatherForCity);
   }
 

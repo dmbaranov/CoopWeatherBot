@@ -206,7 +206,7 @@ class Bot {
   }
 
   void _getBullyWeatherForCity(TeleDartMessage message) async {
-    var messageWords = message.text.split(' ');
+    var messageWords = message.text.split(' ').where((item) => item.isNotEmpty).toList();
 
     if (messageWords.length != 3) {
       await message.reply('Ты шо, дурак?!');

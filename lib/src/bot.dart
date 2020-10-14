@@ -51,18 +51,19 @@ class Bot {
         skip = true;
 
         var cities = await citiesFile.readAsLines();
+        var message = '';
 
         await Future.forEach(cities, (city) async {
           try {
             var data = await openWeather.getCurrentWeather(city);
 
-            await telegram.sendMessage(
-                chatId, 'In city ${data.city} the temperature is ${data.temp}°C');
+            message += 'In city ${data.city} the temperature is ${data.temp}°C\n\n';
           } catch (err) {
             print('Error during the notification: $err');
           }
         });
 
+        await telegram.sendMessage(chatId, message);
         await sleep(Duration(hours: 23));
 
         skip = false;
@@ -82,7 +83,7 @@ class Bot {
 
       if (news.title.isEmpty) return;
 
-      var message = '${news.title}\n${news.content}';
+      var message = '${news.title}\n${news.content}\n\nFull: ${news.url}';
 
       await telegram.sendMessage(chatId, message);
     });

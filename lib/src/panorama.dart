@@ -9,14 +9,14 @@ String _pathToCacheFile = 'assets/panorama_news_cache.txt';
 class NewsData {
   final String title;
   final String content;
+  final String url;
 
-  NewsData(this.title, this.content);
+  NewsData(this.title, this.content, this.url);
 
   NewsData.fromJson(Map<String, dynamic> json)
       : title = json['title'],
-        content = json['content'];
-
-  Map<String, dynamic> toJson() => {'city': title, 'temp': content};
+        content = json['content'],
+        url = json['url'];
 }
 
 void setupPanoramaNews() async {
@@ -81,8 +81,9 @@ Future<NewsData> getNews() async {
     if (_cache[title] != null) continue;
 
     var content = elem.querySelector('.np-post-excerpt').text;
+    var url = elem.querySelector('.np-post-title a').attributes['href'];
 
-    result = {'title': title, 'content': content};
+    result = {'title': title, 'content': content, 'url': url};
 
     _cache[title] = 1;
     await _writeToCacheFile(title);

@@ -83,7 +83,7 @@ class Bot {
 
       if (news.title.isEmpty) return;
 
-      var message = '${news.title}\n${news.content}\n\nFull: ${news.url}';
+      var message = '${news.title}\n${news.content}Full: ${news.url}';
 
       await telegram.sendMessage(chatId, message);
     });

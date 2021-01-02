@@ -16,7 +16,7 @@ class OpenWeatherData {
 
 class OpenWeather {
   final String apiKey;
-  final String apiBaseUrl = "https://api.openweathermap.org/data/2.5";
+  final String apiBaseUrl = 'https://api.openweathermap.org/data/2.5';
 
   OpenWeather(this.apiKey);
 
@@ -32,10 +32,7 @@ class OpenWeather {
     }
 
     var responseJson = json.decode(rawResponse);
-    var rawWeatherData = {
-      'city': responseJson['name'],
-      'temp': responseJson['main']['temp']
-    };
+    var rawWeatherData = {'city': responseJson['name'], 'temp': responseJson['main']['temp']};
 
     return OpenWeatherData.fromJson(rawWeatherData);
   }

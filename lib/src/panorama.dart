@@ -8,14 +8,12 @@ String _pathToCacheFile = 'assets/panorama_news_cache.txt';
 
 class NewsData {
   final String title;
-  final String content;
   final String url;
 
-  NewsData(this.title, this.content, this.url);
+  NewsData(this.title, this.url);
 
   NewsData.fromJson(Map<String, dynamic> json)
       : title = json['title'],
-        content = json['content'],
         url = json['url'];
 }
 
@@ -70,20 +68,19 @@ Future<NewsData> getNews() async {
   var response = await http.get('https://panorama.pub/');
   var document = parser.parse(response.body);
 
-  var posts = document.querySelectorAll('.np-primary-block-wrap .np-single-post');
+  var posts = document.querySelectorAll('.row .wrapper');
 
-  var result = {'title': '', 'content': ''};
+  var result = {'title': ''};
 
   for (var i = 0; i < posts.length; i++) {
-    var elem = posts[i];
-    var title = elem.querySelector('.np-post-title').text;
+    var elem = posts[i].parent;
+    var title = elem.querySelector('h3').text;
 
     if (_cache[title] != null) continue;
 
-    var content = elem.querySelector('.np-post-excerpt').text;
-    var url = elem.querySelector('.np-post-title a').attributes['href'];
+    var url = elem.attributes['href'];
 
-    result = {'title': title, 'content': content, 'url': url};
+    result = {'title': title, 'url': url};
 
     _cache[title] = 1;
     await _writeToCacheFile(title);

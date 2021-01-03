@@ -5,6 +5,7 @@ import 'package:html/parser.dart' as parser;
 
 Map<String, int> _cache = {};
 String _pathToCacheFile = 'assets/panorama_news_cache.txt';
+String panoramaBaseUrl = 'https://panorama.pub';
 
 class NewsData {
   final String title;
@@ -65,7 +66,7 @@ void _overwriteCacheFile(List<String> content) async {
 Future<NewsData> getNews() async {
   await _clearCache();
 
-  var response = await http.get('https://panorama.pub/');
+  var response = await http.get(panoramaBaseUrl);
   var document = parser.parse(response.body);
 
   var posts = document.querySelectorAll('.row .wrapper');
@@ -80,7 +81,7 @@ Future<NewsData> getNews() async {
 
     var url = elem.attributes['href'];
 
-    result = {'title': title, 'url': url};
+    result = {'title': title, 'url': panoramaBaseUrl + url};
 
     _cache[title] = 1;
     await _writeToCacheFile(title);

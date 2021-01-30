@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io' as io;
 import 'dart:async';
 
@@ -15,15 +16,17 @@ Future sleep(Duration duration) {
 class Bot {
   final String token;
   final int chatId;
+  final String repoUrl;
   io.File citiesFile;
   TeleDart bot;
   Telegram telegram;
   OpenWeather openWeather;
   int notificationHour = 7;
 
-  Bot(token, chatId)
+  Bot({token, chatId, repoUrl})
       : token = token,
-        chatId = chatId {
+        chatId = chatId,
+        repoUrl = repoUrl {
     citiesFile = io.File('assets/cities.txt');
   }
 
@@ -97,8 +100,9 @@ class Bot {
     bot.onCommand('setnotificationhour').listen(_setNotificationHour);
     bot.onCommand('write').listen(_writeToCoop);
     bot.onCommand('ping').listen(_ping);
+    bot.onCommand('updatemessage').listen(_postUpdateMessage);
 
-    var bullyMessageRegexp = RegExp(r'эй\,?\s{1,}хуй\s', caseSensitive: false);
+    var bullyMessageRegexp = RegExp(r'эй\,?\s{0,}хуй\,?', caseSensitive: false);
     bot.onMessage(keyword: bullyMessageRegexp).listen(_getBullyWeatherForCity);
   }
 
@@ -242,5 +246,24 @@ class Bot {
     if (options.length != 2) return '';
 
     return options[1];
+  }
+
+  void _postUpdateMessage(TeleDartMessage message) async {
+    var commitsApiUrl = 'https://api.github.com/repos' + repoUrl + '/commits';
+
+    var request = await io.HttpClient().getUrl(Uri.parse(commitsApiUrl));
+    var response = await request.close();
+    var rawResponse = '';
+
+    await for (var contents in response.transform(Utf8Decoder())) {
+      rawResponse += contents;
+    }
+
+    var responseJson = json.decode(rawResponse);
+    var commitMessage = responseJson[0]['commit']['message'];
+
+    var updateMessage = 'Я проапдейтился, ёпта!\n\nChangelog:\n$commitMessage';
+
+    await telegram.sendMessage(chatId, updateMessage);
   }
 }

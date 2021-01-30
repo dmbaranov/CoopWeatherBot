@@ -6,8 +6,9 @@ void main() {
   final telegramToken = env['token'];
   final openweatherKey = env['openweather'];
   final chatId = int.parse(env['chatid']);
+  final repoUrl = env['githubrepo'];
 
-  var bot = weather.Bot(telegramToken, chatId);
+  var bot = weather.Bot(token: telegramToken, chatId: chatId, repoUrl: repoUrl);
 
   bot.startBot(openweatherKey);
   bot.startNotificationPolling();

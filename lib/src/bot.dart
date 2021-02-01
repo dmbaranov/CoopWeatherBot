@@ -78,6 +78,7 @@ class Bot {
     await setupPanoramaNews();
 
     Timer.periodic(Duration(hours: 6), (_) async {
+      var instantViewUrl = 'a.devs.today/';
       var hour = DateTime.now().hour;
 
       if (hour <= 9 || hour >= 23) return;
@@ -86,9 +87,10 @@ class Bot {
 
       if (news.title.isEmpty) return;
 
-      var message = '${news.title}\n\nFull: ${news.url}';
+      var message =
+          '<a href="${instantViewUrl + news.url}">.</a>${news.title}\n\nFull: ${news.url}';
 
-      await telegram.sendMessage(chatId, message);
+      await telegram.sendMessage(chatId, message, parse_mode: 'HTML');
     });
   }
 

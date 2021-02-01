@@ -242,6 +242,8 @@ class Bot {
   }
 
   void _writeToCoop(TeleDartMessage message) async {
+    if (message.text.isEmpty) return;
+
     var rawText = message.text.split(' ');
     var text = rawText.sublist(1).join(' ');
 

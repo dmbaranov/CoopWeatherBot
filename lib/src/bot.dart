@@ -242,6 +242,11 @@ class Bot {
   }
 
   void _writeToCoop(TeleDartMessage message) async {
+    if (message.text == null) {
+      await message.reply('Нахуй пошол, мудило!!1');
+      return;
+    }
+
     var rawText = message.text.split(' ');
     var text = rawText.sublist(1).join(' ');
 

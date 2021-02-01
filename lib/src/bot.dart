@@ -78,19 +78,11 @@ class Bot {
     await setupPanoramaNews();
 
     Timer.periodic(Duration(hours: 6), (_) async {
-      var instantViewUrl = 'a.devs.today/';
       var hour = DateTime.now().hour;
 
       if (hour <= 9 || hour >= 23) return;
 
-      var news = await getNews();
-
-      if (news.title.isEmpty) return;
-
-      var message =
-          '<a href="${instantViewUrl + news.url}">.</a>${news.title}\n\nFull: ${news.url}';
-
-      await telegram.sendMessage(chatId, message, parse_mode: 'HTML');
+      await _sendNewsToChat();
     });
   }
 
@@ -103,6 +95,7 @@ class Bot {
     bot.onCommand('write').listen(_writeToCoop);
     bot.onCommand('ping').listen(_ping);
     bot.onCommand('updatemessage').listen(_postUpdateMessage);
+    bot.onCommand('sendnews').listen(_sendNewsToChat);
 
     var bullyMessageRegexp = RegExp(r'эй\,?\s{0,}хуй\,?', caseSensitive: false);
     bot.onMessage(keyword: bullyMessageRegexp).listen(_getBullyWeatherForCity);
@@ -268,5 +261,16 @@ class Bot {
     var updateMessage = 'Я проапдейтился, ёпта!\n\nChangelog:\n$commitMessage';
 
     await telegram.sendMessage(chatId, updateMessage);
+  }
+
+  void _sendNewsToChat([TeleDartMessage message]) async {
+    var instantViewUrl = 'a.devs.today/';
+    var news = await getNews();
+
+    if (news.title.isEmpty) return;
+
+    var message = '<a href="${instantViewUrl + news.url}">.</a>${news.title}\n\nFull: ${news.url}';
+
+    await telegram.sendMessage(chatId, message, parse_mode: 'HTML');
   }
 }

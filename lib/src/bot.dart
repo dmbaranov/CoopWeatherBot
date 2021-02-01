@@ -8,6 +8,7 @@ import 'package:teledart/model.dart';
 
 import 'openweather.dart';
 import 'panorama.dart';
+import 'dadjokes.dart';
 
 Future sleep(Duration duration) {
   return Future.delayed(duration, () => null);
@@ -21,6 +22,7 @@ class Bot {
   TeleDart bot;
   Telegram telegram;
   OpenWeather openWeather;
+  DadJokes dadJokes;
   int notificationHour = 7;
 
   Bot({token, chatId, repoUrl})
@@ -34,6 +36,7 @@ class Bot {
     telegram = Telegram(token);
     bot = TeleDart(telegram, Event());
     openWeather = OpenWeather(openweatherKey);
+    dadJokes = DadJokes();
 
     await bot.start();
 
@@ -86,6 +89,16 @@ class Bot {
     });
   }
 
+  void startJokesPolling() async {
+    Timer.periodic(Duration(hours: 1, minutes: 30), (_) async {
+      var hour = DateTime.now().hour;
+
+      if (hour <= 9 || hour >= 23) return;
+
+      await _sendJokeToChat();
+    });
+  }
+
   void _setupListeners() {
     bot.onCommand('addcity').listen(_addCity);
     bot.onCommand('removecity').listen(_removeCity);
@@ -96,6 +109,7 @@ class Bot {
     bot.onCommand('ping').listen(_ping);
     bot.onCommand('updatemessage').listen(_postUpdateMessage);
     bot.onCommand('sendnews').listen(_sendNewsToChat);
+    bot.onCommand('sendjoke').listen(_sendJokeToChat);
 
     var bullyMessageRegexp = RegExp(r'эй\,?\s{0,}хуй\,?', caseSensitive: false);
     bot.onMessage(keyword: bullyMessageRegexp).listen(_getBullyWeatherForCity);
@@ -272,5 +286,13 @@ class Bot {
     var message = '${news.title}\n\nFull<a href="${instantViewUrl + news.url}">:</a> ${news.url}';
 
     await telegram.sendMessage(chatId, message, parse_mode: 'HTML');
+  }
+
+  void _sendJokeToChat([TeleDartMessage message]) async {
+    var joke = await dadJokes.getJoke();
+
+    var message =
+        'Ебать, привнесем немного веселья в этот скучный чатик и подучим английский, huh?!\n\n ${joke.joke}';
+    await telegram.sendMessage(chatId, message);
   }
 }

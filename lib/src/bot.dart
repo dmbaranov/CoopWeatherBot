@@ -250,9 +250,13 @@ class Bot {
     var rawText = message.text.split(' ');
     var text = rawText.sublist(1).join(' ');
 
-    print('${message.from.toJson()} is writing to Coop');
+    print('${message.from.toJson()} is writing to Coop: ${message.toJson()}');
 
-    await telegram.sendMessage(chatId, text);
+    try {
+      await telegram.sendMessage(chatId, text);
+    } catch (e) {
+      await message.reply('Нахуй пошол, мудило!!1');
+    }
   }
 
   String _getOneParameterFromMessage(TeleDartMessage message) {

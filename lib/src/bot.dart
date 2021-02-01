@@ -269,7 +269,7 @@ class Bot {
 
     if (news.title.isEmpty) return;
 
-    var message = '<a href="${instantViewUrl + news.url}">.</a>${news.title}\n\nFull: ${news.url}';
+    var message = '${news.title}\n\nFull<a href="${instantViewUrl + news.url}">:</a> ${news.url}';
 
     await telegram.sendMessage(chatId, message, parse_mode: 'HTML');
   }

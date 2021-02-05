@@ -3,7 +3,7 @@ import 'dart:io' as io;
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as parser;
 
-const Map<String, int> _cache = {};
+Map<String, int> _cache = {};
 const String _pathToCacheFile = 'assets/panorama_news_cache.txt';
 const String panoramaBaseUrl = 'https://panorama.pub';
 

@@ -84,7 +84,7 @@ class Bot {
   void startPanoramaNewsPolling() async {
     await setupPanoramaNews();
 
-    Timer.periodic(Duration(hours: 6), (_) async {
+    Timer.periodic(Duration(hours: 5, minutes: 13), (_) async {
       var hour = DateTime.now().hour;
 
       if (hour <= 9 || hour >= 23) return;
@@ -94,7 +94,7 @@ class Bot {
   }
 
   void startJokesPolling() async {
-    Timer.periodic(Duration(hours: 1, minutes: 30), (_) async {
+    Timer.periodic(Duration(hours: 1, minutes: 18), (_) async {
       var hour = DateTime.now().hour;
 
       if (hour <= 9 || hour >= 23) return;

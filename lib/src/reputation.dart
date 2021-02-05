@@ -66,6 +66,7 @@ class Reputation {
 
   void _updateUsersList() async {
     var rawReputationData = await io.File(_pathToReputationData).readAsString();
+    print(rawReputationData); // temporarily for debugging
     List<dynamic> reputationData = await json.decode(rawReputationData);
 
     _users.clear();
@@ -135,6 +136,8 @@ class Reputation {
         await message
             .reply('Вечер в хату, ${userToUpdate.fullName}, твоя репутация была увеличена!');
         await _logReputationChange(changeAuthor.userId, userToUpdate.userId, 'increase');
+      } else {
+        await message.reply('Считать научись блять и жди завтра!');
       }
     } else if (type == 'decrease') {
       if (changeAuthor.canDecrease) {
@@ -143,6 +146,8 @@ class Reputation {
         await message.reply(
             'Пики точеные или хуи дроченые, ${userToUpdate.fullName}?! Твоя репутация была понижена');
         await _logReputationChange(changeAuthor.userId, userToUpdate.userId, 'decrease');
+      } else {
+        await message.reply('Считать научись блять и жди завтра!');
       }
     }
     _saveReputationData();

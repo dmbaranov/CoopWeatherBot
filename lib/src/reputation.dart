@@ -165,6 +165,8 @@ class Reputation {
   }
 
   void generateReputationUsers(TeleDartMessage message) async {
+    if (!_accessAllowed(message)) return;
+
     for (var user in _users) {
       var telegramUser = await telegram.getChatMember(chatId, user.userId);
       var userName = '';

@@ -164,7 +164,7 @@ class Reputation {
       var telegramUser = await telegram.getChatMember(chatId, user.userId);
       var userName = '';
       if (telegramUser.user.first_name != null) userName += telegramUser.user.first_name;
-      if (telegramUser.user.username != null) userName += ' <${telegramUser.user.first_name}> ';
+      if (telegramUser.user.username != null) userName += ' <${telegramUser.user.username}> ';
       if (telegramUser.user.last_name != null) userName += telegramUser.user.last_name;
 
       user.fullName = userName;

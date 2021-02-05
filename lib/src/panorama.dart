@@ -3,9 +3,9 @@ import 'dart:io' as io;
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as parser;
 
-Map<String, int> _cache = {};
-String _pathToCacheFile = 'assets/panorama_news_cache.txt';
-String panoramaBaseUrl = 'https://panorama.pub';
+const Map<String, int> _cache = {};
+const String _pathToCacheFile = 'assets/panorama_news_cache.txt';
+const String panoramaBaseUrl = 'https://panorama.pub';
 
 class NewsData {
   final String title;

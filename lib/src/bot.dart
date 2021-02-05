@@ -9,6 +9,7 @@ import 'package:teledart/model.dart';
 import 'openweather.dart';
 import 'panorama.dart';
 import 'dadjokes.dart';
+import 'reputation.dart';
 
 Future sleep(Duration duration) {
   return Future.delayed(duration, () => null);
@@ -18,17 +19,16 @@ class Bot {
   final String token;
   final int chatId;
   final String repoUrl;
+  final int adminId;
   io.File citiesFile;
   TeleDart bot;
   Telegram telegram;
   OpenWeather openWeather;
   DadJokes dadJokes;
+  Reputation reputation;
   int notificationHour = 7;
 
-  Bot({token, chatId, repoUrl})
-      : token = token,
-        chatId = chatId,
-        repoUrl = repoUrl {
+  Bot({this.token, this.chatId, this.repoUrl, this.adminId}) {
     citiesFile = io.File('assets/cities.txt');
   }
 
@@ -40,6 +40,9 @@ class Bot {
 
     await bot.start();
 
+    reputation = Reputation(adminId: adminId, telegram: telegram, chatId: chatId);
+    await reputation.initReputation();
+
     _setupListeners();
 
     print('Bot has been started!');
@@ -48,7 +51,7 @@ class Bot {
   void startNotificationPolling() async {
     var skip = false;
 
-    Timer.periodic(Duration(seconds: 5), (_) async {
+    Timer.periodic(Duration(seconds: 30), (_) async {
       if (skip) return;
 
       var hour = DateTime.now().hour;
@@ -70,6 +73,7 @@ class Bot {
         });
 
         await telegram.sendMessage(chatId, message);
+        await reputation.sendReputationList();
         await sleep(Duration(hours: 23));
 
         skip = false;
@@ -110,6 +114,14 @@ class Bot {
     bot.onCommand('updatemessage').listen(_postUpdateMessage);
     bot.onCommand('sendnews').listen(_sendNewsToChat);
     bot.onCommand('sendjoke').listen(_sendJokeToChat);
+    bot
+        .onCommand('increp')
+        .listen((TeleDartMessage message) => reputation.updateReputation(message, 'increase'));
+    bot
+        .onCommand('decrep')
+        .listen((TeleDartMessage message) => reputation.updateReputation(message, 'decrease'));
+    bot.onCommand('replist').listen(reputation.sendReputationList);
+    bot.onCommand('generaterepusers').listen(reputation.generateReputationUsers);
 
     var bullyMessageRegexp = RegExp(r'эй\,?\s{0,}хуй\,?', caseSensitive: false);
     bot.onMessage(keyword: bullyMessageRegexp).listen(_getBullyWeatherForCity);

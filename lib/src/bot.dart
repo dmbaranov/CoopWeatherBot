@@ -73,7 +73,6 @@ class Bot {
         });
 
         await telegram.sendMessage(chatId, message);
-        await reputation.sendReputationList();
         await sleep(Duration(hours: 23));
 
         skip = false;

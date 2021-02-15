@@ -311,8 +311,6 @@ class Bot {
   void _sendJokeToChat([TeleDartMessage message]) async {
     var joke = await dadJokes.getJoke();
 
-    var message =
-        'Ебать, привнесем немного веселья в этот скучный чатик и подучим английский, huh?!\n\n ${joke.joke}';
-    await telegram.sendMessage(chatId, message);
+    await telegram.sendMessage(chatId, joke.joke);
   }
 }

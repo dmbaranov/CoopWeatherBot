@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'package:teledart/model.dart';
 import 'package:teledart/telegram.dart';
 
-// 128723556 - me
 // 471006081 - Жан
 // 354903232 - Денисы
 // 225021811 - Вован

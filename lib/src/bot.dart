@@ -122,8 +122,11 @@ class Bot {
     bot.onCommand('replist').listen(reputation.sendReputationList);
     bot.onCommand('generaterepusers').listen(reputation.generateReputationUsers);
 
-    var bullyMessageRegexp = RegExp(r'эй\,?\s{0,}хуй\,?', caseSensitive: false);
-    bot.onMessage(keyword: bullyMessageRegexp).listen(_getBullyWeatherForCity);
+    var bullyTagUserRegexp = RegExp(r'эй\,?\s{0,}хуй$', caseSensitive: false);
+    bot.onMessage(keyword: bullyTagUserRegexp).listen(_bullyTagUser);
+
+    var bullyWeatherMessageRegexp = RegExp(r'эй\,?\s{0,}хуй\,?', caseSensitive: false);
+    bot.onMessage(keyword: bullyWeatherMessageRegexp).listen(_getBullyWeatherForCity);
   }
 
   void _addCity(TeleDartMessage message) async {
@@ -235,7 +238,6 @@ class Bot {
         message.text.split(RegExp(r'(,)|(\s{1,})')).where((item) => item.isNotEmpty).toList();
 
     if (messageWords.length != 3) {
-      await message.reply('Ты шо, дурак?!');
       return;
     }
 
@@ -249,6 +251,16 @@ class Bot {
       print(err);
 
       await message.reply('Ебобо, там ошибка!');
+    }
+  }
+
+  void _bullyTagUser(TeleDartMessage message) async {
+    var denisId = 354903232;
+
+    if (message.from.id == adminId) {
+      await message.reply('@daimonil');
+    } else if (message.from.id == denisId) {
+      await message.reply('@th1rt3nth');
     }
   }
 

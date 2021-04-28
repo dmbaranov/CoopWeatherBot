@@ -327,7 +327,7 @@ class Bot {
     await telegram.sendMessage(chatId, joke.joke);
   }
   void _sendRealMusic(TeleDartMessage message) async {
-    if (message.text == null) {
+    if (message.text == null || message.text.contains('music.youtube.com') == false) {
       await message.reply('Нахуй пошол, мудило!!1');
       return;
     }
@@ -335,8 +335,6 @@ class Bot {
     var rawText = message.text.split(' ');
     var text = rawText.sublist(1).join(' ');
     text = text.replaceAll ('music.', '');
-
-    print('${message.from.toJson()} is writing to Coop: ${message.toJson()}');
 
     try {
       await telegram.sendMessage(chatId, text);

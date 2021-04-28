@@ -113,6 +113,7 @@ class Bot {
     bot.onCommand('updatemessage').listen(_postUpdateMessage);
     bot.onCommand('sendnews').listen(_sendNewsToChat);
     bot.onCommand('sendjoke').listen(_sendJokeToChat);
+    bot.onCommand('sendrealmusic').listen(_sendRealMusic);
     bot
         .onCommand('increp')
         .listen((TeleDartMessage message) => reputation.updateReputation(message, 'increase'));
@@ -324,5 +325,23 @@ class Bot {
     var joke = await dadJokes.getJoke();
 
     await telegram.sendMessage(chatId, joke.joke);
+  }
+  void _sendRealMusic(TeleDartMessage message) async {
+    if (message.text == null) {
+      await message.reply('Нахуй пошол, мудило!!1');
+      return;
+    }
+
+    var rawText = message.text.split(' ');
+    var text = rawText.sublist(1).join(' ');
+    text = text.replaceAll ('music.', '');
+
+    print('${message.from.toJson()} is writing to Coop: ${message.toJson()}');
+
+    try {
+      await telegram.sendMessage(chatId, text);
+    } catch (e) {
+      await message.reply('Нахуй пошол, мудило!!1');
+    }
   }
 }

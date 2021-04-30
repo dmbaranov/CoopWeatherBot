@@ -10,6 +10,7 @@ import 'openweather.dart';
 import 'panorama.dart';
 import 'dadjokes.dart';
 import 'reputation.dart';
+import 'youtube.dart';
 
 Future sleep(Duration duration) {
   return Future.delayed(duration, () => null);
@@ -20,15 +21,17 @@ class Bot {
   final int chatId;
   final String repoUrl;
   final int adminId;
+  final String youtubeKey;
   io.File citiesFile;
   TeleDart bot;
   Telegram telegram;
   OpenWeather openWeather;
   DadJokes dadJokes;
   Reputation reputation;
+  Youtube youtube;
   int notificationHour = 7;
 
-  Bot({this.token, this.chatId, this.repoUrl, this.adminId}) {
+  Bot({this.token, this.chatId, this.repoUrl, this.adminId, this.youtubeKey}) {
     citiesFile = io.File('assets/cities.txt');
   }
 
@@ -37,6 +40,7 @@ class Bot {
     bot = TeleDart(telegram, Event());
     openWeather = OpenWeather(openweatherKey);
     dadJokes = DadJokes();
+    youtube = Youtube(youtubeKey);
 
     await bot.start();
 
@@ -122,6 +126,7 @@ class Bot {
         .listen((TeleDartMessage message) => reputation.updateReputation(message, 'decrease'));
     bot.onCommand('replist').listen(reputation.sendReputationList);
     bot.onCommand('generaterepusers').listen(reputation.generateReputationUsers);
+    bot.onCommand('searchsong').listen(_searchYoutubeTrack);
 
     var bullyTagUserRegexp = RegExp(r'эй\,?\s{0,}хуй$', caseSensitive: false);
     bot.onMessage(keyword: bullyTagUserRegexp).listen(_bullyTagUser);
@@ -326,6 +331,7 @@ class Bot {
 
     await telegram.sendMessage(chatId, joke.joke);
   }
+
   void _sendRealMusic(TeleDartMessage message) async {
     if (message.text == null || message.text.contains('music.youtube.com') == false) {
       await message.reply('Нахуй пошол, мудило!!1');
@@ -334,12 +340,29 @@ class Bot {
 
     var rawText = message.text.split(' ');
     var text = rawText.sublist(1).join(' ');
-    text = text.replaceAll ('music.', '');
+    text = text.replaceAll('music.', '');
 
     try {
       await telegram.sendMessage(chatId, text);
     } catch (e) {
       await message.reply('Нахуй пошол, мудило!!1');
+    }
+  }
+
+  void _searchYoutubeTrack(TeleDartMessage message) async {
+    var query = message.text.split(' ').sublist(1).join(' ');
+
+    if (query.isEmpty) {
+      await message.reply('Нахуй пошол, мудило!!1');
+      return;
+    }
+
+    var videoUrl = await youtube.getYoutubeVideoUrl(query);
+
+    if (videoUrl.isEmpty) {
+      await message.reply('А хуй там плавал ¯\_(ツ)_/¯ ');
+    } else {
+      await message.reply(videoUrl);
     }
   }
 }

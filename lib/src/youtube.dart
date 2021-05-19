@@ -7,8 +7,8 @@ class Youtube {
 
   Youtube(this.apiKey);
 
-  Future<String> getYoutubeVideoUrl(String query) async {
-    var url = '$apiBaseUrl?part=snippet&key=$apiKey&q=$query&maxResults=1';
+  Future<Map> _getYoutubeResponse(String query, [int maxResults = 1]) async {
+    var url = '$apiBaseUrl?part=snippet&key=$apiKey&q=$query&maxResults=$maxResults';
 
     var request = await HttpClient().getUrl(Uri.parse(url));
     var response = await request.close();
@@ -19,12 +19,23 @@ class Youtube {
     }
 
     var responseJson = json.decode(rawResponse);
+    return responseJson;
+  }
 
-    if (responseJson['items'].length == 0) {
+  Future<String> getYoutubeVideoUrl(String query) async {
+    var response = await _getYoutubeResponse(query);
+
+    if (response['items'].length == 0) {
       return '';
     }
 
-    var videoId = responseJson['items'][0]['id']['videoId'];
+    var videoId = response['items'][0]['id']['videoId'];
     return 'https://www.youtube.com/watch?v=$videoId';
+  }
+
+  Future<Map> getYoutubeSearchResults(String query) async {
+    var response = await _getYoutubeResponse(query, 10);
+
+    return response;
   }
 }

@@ -133,6 +133,8 @@ class Bot {
 
     var bullyWeatherMessageRegexp = RegExp(r'эй\,?\s{0,}хуй\,?', caseSensitive: false);
     bot.onMessage(keyword: bullyWeatherMessageRegexp).listen(_getBullyWeatherForCity);
+
+    bot.onInlineQuery().listen(_searchYoutubeTrackInline);
   }
 
   void _addCity(TeleDartMessage message) async {
@@ -364,5 +366,29 @@ class Bot {
     } else {
       await message.reply(videoUrl);
     }
+  }
+
+  void _searchYoutubeTrackInline(TeleDartInlineQuery query) async {
+    var searchResults = await youtube.getYoutubeSearchResults(query.query);
+    List items = searchResults['items'];
+    var inlineQueryResult = [];
+
+    items.forEach((searchResult) {
+      var videoId = searchResult['id']['videoId'];
+      var videoData = searchResult['snippet'];
+      var videoUrl = 'https://www.youtube.com/watch?v=$videoId';
+
+      inlineQueryResult.add(InlineQueryResultVideo(
+          id: videoId,
+          title: videoData['title'],
+          thumb_url: videoData['thumbnails']['high']['url'],
+          mime_type: 'video/mp4',
+          video_duration: 600,
+          video_url: videoUrl,
+          input_message_content: InputTextMessageContent(
+              message_text: videoUrl, parse_mode: 'markdown', disable_web_page_preview: false)));
+    });
+
+    await bot.answerInlineQuery(query, [...inlineQueryResult], cache_time: 10);
   }
 }

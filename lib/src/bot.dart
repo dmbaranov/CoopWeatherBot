@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:teledart/teledart.dart';
 import 'package:teledart/telegram.dart';
 import 'package:teledart/model.dart';
+import 'package:debounce_throttle/debounce_throttle.dart';
 
 import 'openweather.dart';
 import 'panorama.dart';
@@ -30,6 +31,7 @@ class Bot {
   Reputation reputation;
   Youtube youtube;
   int notificationHour = 7;
+  Debouncer<TeleDartInlineQuery> debouncer = Debouncer(Duration(seconds: 1), initialValue: null);
 
   Bot({this.token, this.chatId, this.repoUrl, this.adminId, this.youtubeKey}) {
     citiesFile = io.File('assets/cities.txt');
@@ -134,7 +136,10 @@ class Bot {
     var bullyWeatherMessageRegexp = RegExp(r'эй\,?\s{0,}хуй\,?', caseSensitive: false);
     bot.onMessage(keyword: bullyWeatherMessageRegexp).listen(_getBullyWeatherForCity);
 
-    bot.onInlineQuery().listen(_searchYoutubeTrackInline);
+    bot.onInlineQuery().listen((query) {
+      debouncer.value = query;
+    });
+    debouncer.values.listen(_searchYoutubeTrackInline);
   }
 
   void _addCity(TeleDartMessage message) async {
@@ -385,8 +390,8 @@ class Bot {
           mime_type: 'video/mp4',
           video_duration: 600,
           video_url: videoUrl,
-          input_message_content: InputTextMessageContent(
-              message_text: videoUrl, parse_mode: 'markdown', disable_web_page_preview: false)));
+          input_message_content:
+              InputTextMessageContent(message_text: videoUrl, disable_web_page_preview: false)));
     });
 
     await bot.answerInlineQuery(query, [...inlineQueryResult], cache_time: 10);

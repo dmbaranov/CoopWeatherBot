@@ -34,7 +34,7 @@ class Youtube {
   }
 
   Future<Map> getYoutubeSearchResults(String query) async {
-    var response = await _getYoutubeResponse(query, 3);
+    var response = await _getYoutubeResponse(query, 10);
 
     return response;
   }

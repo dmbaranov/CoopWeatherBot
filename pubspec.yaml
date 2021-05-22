@@ -8,6 +8,7 @@ dependencies:
   dotenv: ^2.0.0
   teledart: ^0.0.48
   html: ^0.15.0
+  debounce_throttle: ^2.0.0
 
 dev_dependencies:
   pedantic: ^1.8.0

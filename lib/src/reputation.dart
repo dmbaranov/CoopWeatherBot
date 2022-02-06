@@ -65,7 +65,6 @@ class Reputation {
 
   void _updateUsersList() async {
     var rawReputationData = await io.File(_pathToReputationData).readAsString();
-    print(rawReputationData); // temporarily for debugging
     List<dynamic> reputationData = await json.decode(rawReputationData);
 
     _users.clear();

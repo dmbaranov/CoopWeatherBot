@@ -250,7 +250,7 @@ class Bot {
     var messageWords =
         message.text.split(RegExp(r'(,)|(\s{1,})')).where((item) => item.isNotEmpty).toList();
 
-    if (messageWords.length != 3) {
+    if (messageWords.length != 3 || (messageWords[0] != 'эй' && messageWords[1] != 'хуй')) {
       return;
     }
 

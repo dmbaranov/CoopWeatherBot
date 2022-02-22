@@ -18,7 +18,7 @@ class NewsData {
         url = json['url'];
 }
 
-void setupPanoramaNews() async {
+Future<void> setupPanoramaNews() async {
   var savedNewsFile = io.File(_pathToCacheFile);
   var savedNews = await savedNewsFile.readAsLines();
 
@@ -27,7 +27,7 @@ void setupPanoramaNews() async {
   });
 }
 
-void _clearCache() async {
+Future<void> _clearCache() async {
   var cacheSize = 100;
   var saveNumberOfPreviousNews = 10;
 
@@ -42,13 +42,13 @@ void _clearCache() async {
   }
 }
 
-void _writeToCacheFile(String title) async {
+Future<void> _writeToCacheFile(String title) async {
   var cacheFile = io.File(_pathToCacheFile);
 
-  await cacheFile.writeAsStringSync('$title\n', mode: io.FileMode.append);
+  cacheFile.writeAsStringSync('$title\n', mode: io.FileMode.append);
 }
 
-void _overwriteCacheFile(List<String> content) async {
+Future<void> _overwriteCacheFile(List<String> content) async {
   var cacheFile = io.File(_pathToCacheFile);
 
   for (var i = 0; i < content.length; i++) {

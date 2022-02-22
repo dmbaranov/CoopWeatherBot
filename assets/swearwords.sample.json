@@ -1,0 +1,17 @@
+{
+  "weather_in_city": "В городе $city температура $temp°C епта",
+  "error_occurred": "Произошла ошибка",
+  "do_not_do_this": "Так делать нельзя",
+  "update_completed": "Обновление завершено!\\n\\nChangelog:\\n$update",
+  "not_found": "Не найдено",
+  "self_admire_attempt": "Нельзя повышать собственную репутацию",
+  "reputation_increased": "Уважаемый, $name, ваша репутация была увеличена",
+  "reputation_decreased": "Уважаемый, $name, ваша репутация была понижена",
+  "reputation_change_failed": "Не удалось изменить репутацию",
+  "reputation_message_start": "Текущая репутация:\\n\\n",
+  "user_reputation": "У $name репутация $reputation",
+  "yo": "эй",
+  "dude": "чувак",
+  "bully_weather_regexp": "эй\\,?\\s{0,}чувак\\,?",
+  "bully_tag_user_regexp": "эй\\,?\\s{0,}чувак$"
+}

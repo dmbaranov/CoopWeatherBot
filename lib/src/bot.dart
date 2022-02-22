@@ -7,6 +7,7 @@ import 'package:teledart/telegram.dart';
 import 'package:teledart/model.dart';
 import 'package:debounce_throttle/debounce_throttle.dart';
 
+import 'swearwords_manager.dart';
 import 'openweather.dart';
 import 'panorama.dart';
 import 'dadjokes.dart';
@@ -26,6 +27,7 @@ class Bot {
   io.File citiesFile;
   TeleDart bot;
   Telegram telegram;
+  SwearwordsManager sm;
   OpenWeather openWeather;
   DadJokes dadJokes;
   Reputation reputation;
@@ -40,14 +42,15 @@ class Bot {
   void startBot(String openweatherKey) async {
     telegram = Telegram(token);
     bot = TeleDart(telegram, Event());
+    sm = SwearwordsManager();
     openWeather = OpenWeather(openweatherKey);
     dadJokes = DadJokes();
     youtube = Youtube(youtubeKey);
 
     await bot.start();
 
-    reputation = Reputation(adminId: adminId, telegram: telegram, chatId: chatId);
-    await reputation.initReputation();
+    reputation = Reputation(adminId: adminId, telegram: telegram, sm: sm, chatId: chatId);
+    reputation.initReputation();
 
     _setupListeners();
 
@@ -130,10 +133,10 @@ class Bot {
     bot.onCommand('generaterepusers').listen(reputation.generateReputationUsers);
     bot.onCommand('searchsong').listen(_searchYoutubeTrack);
 
-    var bullyTagUserRegexp = RegExp(r'эй\,?\s{0,}хуй$', caseSensitive: false);
+    var bullyTagUserRegexp = RegExp(sm.get('bully_tag_user_regexp'), caseSensitive: false);
     bot.onMessage(keyword: bullyTagUserRegexp).listen(_bullyTagUser);
 
-    var bullyWeatherMessageRegexp = RegExp(r'эй\,?\s{0,}хуй\,?', caseSensitive: false);
+    var bullyWeatherMessageRegexp = RegExp(sm.get('bully_weather_regexp'), caseSensitive: false);
     bot.onMessage(keyword: bullyWeatherMessageRegexp).listen(_getBullyWeatherForCity);
 
     bot.onInlineQuery().listen((query) {
@@ -250,7 +253,8 @@ class Bot {
     var messageWords =
         message.text.split(RegExp(r'(,)|(\s{1,})')).where((item) => item.isNotEmpty).toList();
 
-    if (messageWords.length != 3 || (messageWords[0] != 'эй' && messageWords[1] != 'хуй')) {
+    if (messageWords.length != 3 ||
+        (messageWords[0] != sm.get('yo') && messageWords[1] != sm.get('dude'))) {
       return;
     }
 
@@ -259,11 +263,12 @@ class Bot {
     try {
       var weatherData = await openWeather.getCurrentWeather(city);
 
-      await message.reply('В дыре $city температура ${weatherData.temp}°C епта');
+      await message
+          .reply(sm.get('weather_in_city', {'city': city, 'temp': weatherData.temp.toString()}));
     } catch (err) {
       print(err);
 
-      await message.reply('Ебобо, там ошибка!');
+      await message.reply(sm.get('error_occurred'));
     }
   }
 
@@ -279,7 +284,7 @@ class Bot {
 
   void _writeToCoop(TeleDartMessage message) async {
     if (message.text == null) {
-      await message.reply('Нахуй пошол, мудило!!1');
+      await message.reply(sm.get('do_not_do_this'));
       return;
     }
 
@@ -291,7 +296,7 @@ class Bot {
     try {
       await telegram.sendMessage(chatId, text);
     } catch (e) {
-      await message.reply('Нахуй пошол, мудило!!1');
+      await message.reply(sm.get('do_not_do_this'));
     }
   }
 
@@ -317,12 +322,12 @@ class Bot {
     var responseJson = json.decode(rawResponse);
     var commitMessage = responseJson[0]['commit']['message'];
 
-    var updateMessage = 'Я проапдейтился, ёпта!\n\nChangelog:\n$commitMessage';
+    var updateMessage = sm.get('update_completed', {'update': commitMessage});
 
     await telegram.sendMessage(chatId, updateMessage);
   }
 
-  void _sendNewsToChat([TeleDartMessage message]) async {
+  Future<void> _sendNewsToChat([TeleDartMessage message]) async {
     var instantViewUrl = 'a.devs.today/';
     var news = await getNews();
 
@@ -333,15 +338,15 @@ class Bot {
     await telegram.sendMessage(chatId, message, parse_mode: 'HTML');
   }
 
-  void _sendJokeToChat([TeleDartMessage message]) async {
+  Future<void> _sendJokeToChat([TeleDartMessage message]) async {
     var joke = await dadJokes.getJoke();
 
     await telegram.sendMessage(chatId, joke.joke);
   }
 
-  void _sendRealMusic(TeleDartMessage message) async {
+  Future<void> _sendRealMusic(TeleDartMessage message) async {
     if (message.text == null || message.text.contains('music.youtube.com') == false) {
-      await message.reply('Нахуй пошол, мудило!!1');
+      await message.reply(sm.get('do_not_do_this'));
       return;
     }
 
@@ -352,28 +357,28 @@ class Bot {
     try {
       await telegram.sendMessage(chatId, text);
     } catch (e) {
-      await message.reply('Нахуй пошол, мудило!!1');
+      await message.reply(sm.get('do_not_do_this'));
     }
   }
 
-  void _searchYoutubeTrack(TeleDartMessage message) async {
+  Future<void> _searchYoutubeTrack(TeleDartMessage message) async {
     var query = message.text.split(' ').sublist(1).join(' ');
 
     if (query.isEmpty) {
-      await message.reply('Нахуй пошол, мудило!!1');
+      await message.reply(sm.get('do_not_do_this'));
       return;
     }
 
     var videoUrl = await youtube.getYoutubeVideoUrl(query);
 
     if (videoUrl.isEmpty) {
-      await message.reply('А хуй там плавал ¯\_(ツ)_/¯ ');
+      await message.reply(sm.get('not_found'));
     } else {
       await message.reply(videoUrl);
     }
   }
 
-  void _searchYoutubeTrackInline(TeleDartInlineQuery query) async {
+  Future<void> _searchYoutubeTrackInline(TeleDartInlineQuery query) async {
     var searchResults = await youtube.getYoutubeSearchResults(query.query);
     List items = searchResults['items'];
     var inlineQueryResult = [];

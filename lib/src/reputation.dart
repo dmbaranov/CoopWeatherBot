@@ -3,6 +3,7 @@ import 'dart:io' as io;
 import 'dart:convert';
 import 'package:teledart/model.dart';
 import 'package:teledart/telegram.dart';
+import 'swearwords_manager.dart';
 
 // 471006081 - Жан
 // 354903232 - Денисы
@@ -53,19 +54,20 @@ class ReputationUser {
 class Reputation {
   final int adminId;
   final Telegram telegram;
+  final SwearwordsManager sm;
   final int chatId;
   final List<ReputationUser> _users = [];
 
-  Reputation({this.adminId, this.telegram, this.chatId});
+  Reputation({this.adminId, this.telegram, this.sm, this.chatId});
 
-  void initReputation() async {
+  void initReputation() {
     _updateUsersList();
     _startResetPolling();
   }
 
   void _updateUsersList() async {
     var rawReputationData = await io.File(_pathToReputationData).readAsString();
-    List<dynamic> reputationData = await json.decode(rawReputationData);
+    List<dynamic> reputationData = json.decode(rawReputationData);
 
     _users.clear();
     reputationData.forEach((data) {
@@ -108,7 +110,7 @@ class Reputation {
 
   void updateReputation(TeleDartMessage message, String type) async {
     if (message.reply_to_message == null) {
-      await message.reply('Нахуй пошол, мудило!!1');
+      await message.reply(sm.get('error_occurred'));
       return;
     }
 
@@ -118,12 +120,12 @@ class Reputation {
         orElse: () => null);
 
     if (userToUpdate == null || changeAuthor == null) {
-      await message.reply('Нахуй пошол, мудило!!1');
+      await message.reply(sm.get('error_occurred'));
       return;
     }
 
     if (userToUpdate.userId == changeAuthor.userId) {
-      await message.reply('Ахахах, он самолайкает, ёпта!');
+      await message.reply(sm.get('self_admire_attempt'));
       return;
     }
 
@@ -131,32 +133,31 @@ class Reputation {
       if (changeAuthor.canIncrease) {
         userToUpdate.reputation += 1;
         changeAuthor.optionUsed('increase');
-        await message
-            .reply('Вечер в хату, ${userToUpdate.fullName}, твоя репутация была увеличена!');
-        await _logReputationChange(changeAuthor.userId, userToUpdate.userId, 'increase');
+        await message.reply(sm.get('reputation_increased', {'name': userToUpdate.fullName}));
+        _logReputationChange(changeAuthor.userId, userToUpdate.userId, 'increase');
       } else {
-        await message.reply('Считать научись блять и жди завтра!');
+        await message.reply(sm.get('reputation_change_failed'));
       }
     } else if (type == 'decrease') {
       if (changeAuthor.canDecrease) {
         userToUpdate.reputation -= 1;
         changeAuthor.optionUsed('decrease');
-        await message.reply(
-            'Пики точеные или хуи дроченые, ${userToUpdate.fullName}?! Твоя репутация была понижена');
-        await _logReputationChange(changeAuthor.userId, userToUpdate.userId, 'decrease');
+        await message.reply(sm.get('reputation_decreased', {'name': userToUpdate.fullName}));
+        _logReputationChange(changeAuthor.userId, userToUpdate.userId, 'decrease');
       } else {
-        await message.reply('Считать научись блять и жди завтра!');
+        await message.reply(sm.get('reputation_change_failed'));
       }
     }
     _saveReputationData();
   }
 
   void sendReputationList([TeleDartMessage message]) async {
-    var reputationMessage = 'Такие дела посоны:\n\n';
+    var reputationMessage = sm.get('reputation_message_start');
 
     _users.sort((userA, userB) => userB.reputation - userA.reputation);
     _users.forEach((user) {
-      reputationMessage += 'У ${user.fullName} репутация ${user.reputation}\n';
+      reputationMessage += sm.get(
+          'user_reputation', {'name': user.fullName, 'reputation': user.reputation.toString()});
     });
 
     await telegram.sendMessage(chatId, reputationMessage);
@@ -180,10 +181,10 @@ class Reputation {
     _updateUsersList();
   }
 
-  void _logReputationChange(int authorId, int receiverId, String type) async {
+  void _logReputationChange(int authorId, int receiverId, String type) {
     var cacheFile = io.File(_pathToReputationLogFile);
 
-    await cacheFile.writeAsStringSync('${authorId} ${type} to ${receiverId} on ${DateTime.now()}\n',
+    cacheFile.writeAsStringSync('$authorId $type to $receiverId on ${DateTime.now()}\n',
         mode: io.FileMode.append);
   }
 

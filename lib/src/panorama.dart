@@ -69,19 +69,21 @@ Future<NewsData> getNews() async {
   var response = await http.get(panoramaBaseUrl);
   var document = parser.parse(response.body);
 
-  var posts = document.querySelectorAll('.row .wrapper');
+  var posts = document.querySelectorAll('a');
 
   var result = {'title': ''};
 
   for (var i = 0; i < posts.length; i++) {
-    var elem = posts[i].parent;
-    var title = elem.querySelector('h3').text;
+    var post = posts[i];
+    var postHref = post.attributes['href'];
+
+    if (postHref == null || !postHref.startsWith('/news')) continue;
+
+    var title = post.text.trim();
 
     if (_cache[title] != null) continue;
 
-    var url = elem.attributes['href'];
-
-    result = {'title': title, 'url': panoramaBaseUrl + url};
+    result = {'title': title, 'url': panoramaBaseUrl + postHref};
 
     _cache[title] = 1;
     await _writeToCacheFile(title);

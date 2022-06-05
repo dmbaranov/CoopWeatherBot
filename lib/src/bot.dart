@@ -278,7 +278,7 @@ class Bot {
     if (message.from.id == adminId) {
       await message.reply('@daimonil');
     } else if (message.from.id == denisId) {
-      await message.reply('@th1rt3nth');
+      await message.reply('@dmbaranov_io');
     }
   }
 

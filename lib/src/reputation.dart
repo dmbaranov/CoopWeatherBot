@@ -158,6 +158,7 @@ class Reputation {
     _users.forEach((user) {
       reputationMessage += sm.get(
           'user_reputation', {'name': user.fullName, 'reputation': user.reputation.toString()});
+      reputationMessage += '\n';
     });
 
     await telegram.sendMessage(chatId, reputationMessage);

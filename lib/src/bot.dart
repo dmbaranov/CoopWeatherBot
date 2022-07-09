@@ -130,7 +130,6 @@ class Bot {
         .onCommand('decrep')
         .listen((TeleDartMessage message) => reputation.updateReputation(message, 'decrease'));
     bot.onCommand('replist').listen(reputation.sendReputationList);
-    bot.onCommand('generaterepusers').listen(reputation.generateReputationUsers);
     bot.onCommand('searchsong').listen(_searchYoutubeTrack);
 
     var bullyTagUserRegexp = RegExp(sm.get('bully_tag_user_regexp'), caseSensitive: false);

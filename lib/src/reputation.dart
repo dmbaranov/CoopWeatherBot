@@ -1,9 +1,8 @@
 import 'dart:async';
-import 'dart:io' as io;
-import 'dart:convert';
 import 'package:teledart/model.dart';
 import 'package:teledart/telegram.dart';
 import 'swearwords_manager.dart';
+import 'stonecave.dart';
 
 // 471006081 - Жан
 // 354903232 - Денисы
@@ -11,8 +10,7 @@ import 'swearwords_manager.dart';
 // 1439235581 - Димон
 // 816477374 - Паша
 
-const String _pathToReputationData = 'assets/reputation.json';
-const String _pathToReputationLogFile = 'assets/reputationlog.txt';
+const String _pathToReputationCave = 'assets/reputation.cave.json';
 
 Future sleep(Duration duration) {
   return Future.delayed(duration, () => null);
@@ -27,6 +25,11 @@ class ReputationUser {
   int _decreaseOptionsLeft = 3;
 
   ReputationUser({this.userId, this.reputation, this.fullName = ''});
+
+  ReputationUser.fromJson(Map<String, dynamic> json)
+      : userId = json['userId'],
+        reputation = json['reputation'],
+        fullName = json['fullName'];
 
   bool get canIncrease => _increaseOptionsLeft > 0;
 
@@ -57,22 +60,26 @@ class Reputation {
   final SwearwordsManager sm;
   final int chatId;
   final List<ReputationUser> _users = [];
+  StoneCave stoneCave;
 
-  Reputation({this.adminId, this.telegram, this.sm, this.chatId});
+  Reputation({this.adminId, this.telegram, this.stoneCave, this.sm, this.chatId});
 
-  void initReputation() {
+  void initReputation() async {
+    stoneCave = StoneCave(cavepath: _pathToReputationCave);
+    await stoneCave.initialize();
+
     _updateUsersList();
     _startResetPolling();
   }
 
   void _updateUsersList() async {
-    var rawReputationData = await io.File(_pathToReputationData).readAsString();
-    List<dynamic> reputationData = json.decode(rawReputationData);
+    List lastStoneUsers = stoneCave.getLastStone().data['reputation'];
 
     _users.clear();
-    reputationData.forEach((data) {
-      var user = ReputationUser(
-          userId: data['userId'], reputation: data['reputation'], fullName: data['fullName']);
+
+    lastStoneUsers.forEach((rawUser) {
+      var user = ReputationUser.fromJson(rawUser);
+
       _users.add(user);
     });
   }
@@ -101,13 +108,6 @@ class Reputation {
     return message.from.id == adminId;
   }
 
-  void _saveReputationData() async {
-    var reputationFile = io.File(_pathToReputationData);
-    var result = _users.map((user) => user.toJson()).toList();
-
-    await reputationFile.writeAsString(json.encode(result));
-  }
-
   void updateReputation(TeleDartMessage message, String type) async {
     if (message.reply_to_message == null) {
       await message.reply(sm.get('error_occurred'));
@@ -134,7 +134,6 @@ class Reputation {
         userToUpdate.reputation += 1;
         changeAuthor.optionUsed('increase');
         await message.reply(sm.get('reputation_increased', {'name': userToUpdate.fullName}));
-        _logReputationChange(changeAuthor.userId, userToUpdate.userId, 'increase');
       } else {
         await message.reply(sm.get('reputation_change_failed'));
       }
@@ -143,12 +142,18 @@ class Reputation {
         userToUpdate.reputation -= 1;
         changeAuthor.optionUsed('decrease');
         await message.reply(sm.get('reputation_decreased', {'name': userToUpdate.fullName}));
-        _logReputationChange(changeAuthor.userId, userToUpdate.userId, 'decrease');
       } else {
         await message.reply(sm.get('reputation_change_failed'));
       }
     }
-    _saveReputationData();
+
+    var updatedReputation = _users.map((user) => user.toJson()).toList();
+    await stoneCave.addStone(Stone(data: {
+      'from': changeAuthor.userId,
+      'to': userToUpdate,
+      'type': type,
+      'reputation': updatedReputation
+    }));
   }
 
   void sendReputationList([TeleDartMessage message]) async {
@@ -162,31 +167,6 @@ class Reputation {
     });
 
     await telegram.sendMessage(chatId, reputationMessage);
-  }
-
-  void generateReputationUsers(TeleDartMessage message) async {
-    if (!_accessAllowed(message)) return;
-
-    for (var user in _users) {
-      var telegramUser = await telegram.getChatMember(chatId, user.userId);
-      var userName = '';
-      if (telegramUser.user.first_name != null) userName += telegramUser.user.first_name;
-      if (telegramUser.user.username != null) userName += ' <${telegramUser.user.username}> ';
-      if (telegramUser.user.last_name != null) userName += telegramUser.user.last_name;
-
-      user.fullName = userName;
-      await sleep(Duration(milliseconds: 200));
-    }
-
-    _saveReputationData();
-    _updateUsersList();
-  }
-
-  void _logReputationChange(int authorId, int receiverId, String type) {
-    var cacheFile = io.File(_pathToReputationLogFile);
-
-    cacheFile.writeAsStringSync('$authorId $type to $receiverId on ${DateTime.now()}\n',
-        mode: io.FileMode.append);
   }
 
   bool setReputation(TeleDartMessage message) {

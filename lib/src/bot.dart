@@ -123,12 +123,8 @@ class Bot {
     bot.onCommand('sendnews').listen(_sendNewsToChat);
     bot.onCommand('sendjoke').listen(_sendJokeToChat);
     bot.onCommand('sendrealmusic').listen(_sendRealMusic);
-    bot
-        .onCommand('increp')
-        .listen((TeleDartMessage message) => reputation.updateReputation(message, 'increase'));
-    bot
-        .onCommand('decrep')
-        .listen((TeleDartMessage message) => reputation.updateReputation(message, 'decrease'));
+    bot.onCommand('increp').listen((TeleDartMessage message) => reputation.updateReputation(message, 'increase'));
+    bot.onCommand('decrep').listen((TeleDartMessage message) => reputation.updateReputation(message, 'decrease'));
     bot.onCommand('replist').listen(reputation.sendReputationList);
     bot.onCommand('searchsong').listen(_searchYoutubeTrack);
 
@@ -182,8 +178,7 @@ class Bot {
       return;
     }
 
-    var updatedCities =
-        cities.where((city) => city != cityToRemove.toLowerCase()).join('\n').toString();
+    var updatedCities = cities.where((city) => city != cityToRemove.toLowerCase()).join('\n').toString();
 
     await citiesFile.writeAsString(updatedCities);
 
@@ -231,8 +226,7 @@ class Bot {
     var nextHourRaw = _getOneParameterFromMessage(message);
 
     if (nextHourRaw.isEmpty) {
-      await message
-          .reply('Incorrect value for notification hour. Please use single number from 0 to 23');
+      await message.reply('Incorrect value for notification hour. Please use single number from 0 to 23');
       return;
     }
 
@@ -244,16 +238,13 @@ class Bot {
       return;
     }
 
-    await message
-        .reply('Incorrect value for notification hour. Please use single number from 0 to 23');
+    await message.reply('Incorrect value for notification hour. Please use single number from 0 to 23');
   }
 
   void _getBullyWeatherForCity(TeleDartMessage message) async {
-    var messageWords =
-        message.text.split(RegExp(r'(,)|(\s{1,})')).where((item) => item.isNotEmpty).toList();
+    var messageWords = message.text.split(RegExp(r'(,)|(\s{1,})')).where((item) => item.isNotEmpty).toList();
 
-    if (messageWords.length != 3 ||
-        (messageWords[0] != sm.get('yo') && messageWords[1] != sm.get('dude'))) {
+    if (messageWords.length != 3 || (messageWords[0] != sm.get('yo') && messageWords[1] != sm.get('dude'))) {
       return;
     }
 
@@ -262,8 +253,7 @@ class Bot {
     try {
       var weatherData = await openWeather.getCurrentWeather(city);
 
-      await message
-          .reply(sm.get('weather_in_city', {'city': city, 'temp': weatherData.temp.toString()}));
+      await message.reply(sm.get('weather_in_city', {'city': city, 'temp': weatherData.temp.toString()}));
     } catch (err) {
       print(err);
 
@@ -394,8 +384,7 @@ class Bot {
           mime_type: 'video/mp4',
           video_duration: 600,
           video_url: videoUrl,
-          input_message_content:
-              InputTextMessageContent(message_text: videoUrl, disable_web_page_preview: false)));
+          input_message_content: InputTextMessageContent(message_text: videoUrl, disable_web_page_preview: false)));
     });
 
     await bot.answerInlineQuery(query, [...inlineQueryResult], cache_time: 10);

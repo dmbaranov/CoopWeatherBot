@@ -50,8 +50,7 @@ class ReputationUser {
     if (option == 'decrease' && canDecrease) _decreaseOptionsLeft--;
   }
 
-  Map<String, dynamic> toJson() =>
-      {'userId': userId, 'reputation': reputation, 'fullName': fullName};
+  Map<String, dynamic> toJson() => {'userId': userId, 'reputation': reputation, 'fullName': fullName};
 }
 
 class Reputation {
@@ -73,11 +72,12 @@ class Reputation {
   }
 
   void _updateUsersList() async {
-    List lastStoneUsers = stoneCave.getLastStone().data['reputation'];
+    var lastStone = await stoneCave.getLastStone();
+    List stoneUsers = lastStone.data['reputation'];
 
     _users.clear();
 
-    lastStoneUsers.forEach((rawUser) {
+    stoneUsers.forEach((rawUser) {
       var user = ReputationUser.fromJson(rawUser);
 
       _users.add(user);
@@ -114,10 +114,14 @@ class Reputation {
       return;
     }
 
-    var changeAuthor =
-        _users.firstWhere((user) => user.userId == message.from.id, orElse: () => null);
-    var userToUpdate = _users.firstWhere((user) => user.userId == message.reply_to_message.from.id,
-        orElse: () => null);
+    var isCaveValid = await stoneCave.checkCaveIntegrity();
+    if (!isCaveValid) {
+      await message.reply(sm.get('reputation_cave_integrity_failed'));
+      return;
+    }
+
+    var changeAuthor = _users.firstWhere((user) => user.userId == message.from.id, orElse: () => null);
+    var userToUpdate = _users.firstWhere((user) => user.userId == message.reply_to_message.from.id, orElse: () => null);
 
     if (userToUpdate == null || changeAuthor == null) {
       await message.reply(sm.get('error_occurred'));
@@ -148,12 +152,7 @@ class Reputation {
     }
 
     var updatedReputation = _users.map((user) => user.toJson()).toList();
-    await stoneCave.addStone(Stone(data: {
-      'from': changeAuthor.userId,
-      'to': userToUpdate,
-      'type': type,
-      'reputation': updatedReputation
-    }));
+    await stoneCave.addStone(Stone(data: {'from': changeAuthor.userId, 'to': userToUpdate, 'type': type, 'reputation': updatedReputation}));
   }
 
   void sendReputationList([TeleDartMessage message]) async {
@@ -161,8 +160,7 @@ class Reputation {
 
     _users.sort((userA, userB) => userB.reputation - userA.reputation);
     _users.forEach((user) {
-      reputationMessage += sm.get(
-          'user_reputation', {'name': user.fullName, 'reputation': user.reputation.toString()});
+      reputationMessage += sm.get('user_reputation', {'name': user.fullName, 'reputation': user.reputation.toString()});
       reputationMessage += '\n';
     });
 

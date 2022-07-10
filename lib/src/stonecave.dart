@@ -9,9 +9,7 @@ class Stone {
   String prevStoneHash = '';
 
   Stone({this.data}) {
-    timestamp = DateTime
-        .now()
-        .millisecondsSinceEpoch;
+    timestamp = DateTime.now().millisecondsSinceEpoch;
   }
 
   Stone.fromJson(Map<String, dynamic> json)
@@ -20,13 +18,7 @@ class Stone {
         stoneHash = json['stoneHash'],
         prevStoneHash = json['prevStoneHash'];
 
-  Map<String, dynamic> toJson() =>
-      {
-        'timestamp': timestamp,
-        'stoneHash': stoneHash,
-        'prevStoneHash': prevStoneHash,
-        'data': data
-      };
+  Map<String, dynamic> toJson() => {'timestamp': timestamp, 'stoneHash': stoneHash, 'prevStoneHash': prevStoneHash, 'data': data};
 
   String generateOwnHash() {
     var bytes = utf8.encode(prevStoneHash + timestamp.toString() + jsonEncode(data));
@@ -43,33 +35,35 @@ class Stone {
 
 class StoneCave {
   final String cavepath;
-  List<Stone> cave;
-  bool caveValid; // TODO: disable any operations if cave is invalid
 
   StoneCave({this.cavepath});
 
   Future<bool> initialize() async {
-    var rawStoredData = await io.File(cavepath).readAsString();
-    var storedStones = json.decode(rawStoredData);
-
-    cave = [];
-
-    await Future.forEach(storedStones, (stone) async {
-      await addStone(Stone.fromJson(stone));
-    });
-
-    caveValid = checkCaveIntegrity();
+    var caveValid = await checkCaveIntegrity();
 
     return caveValid;
   }
 
+  Future<List<Stone>> getCave() async {
+    var rawCaveData = await io.File(cavepath).readAsString();
+    var stones = json.decode(rawCaveData);
+    List<Stone> cave = [];
+
+    await Future.forEach(stones, (stone) async {
+      cave.add(Stone.fromJson(stone));
+    });
+
+    return cave;
+  }
+
   Future<bool> addStone(Stone stone) async {
+    var cave = await getCave();
     var previousStoneHash = cave.isEmpty ? '0' : cave.last.stoneHash;
     stone.setPrevStoneHash(previousStoneHash);
     stone.generateOwnHash();
     cave.add(stone);
 
-    var caveValid = checkCaveIntegrity();
+    var caveValid = await checkCaveIntegrity();
 
     if (caveValid) {
       var caveFile = io.File(cavepath);
@@ -86,8 +80,10 @@ class StoneCave {
     }
   }
 
-  bool checkCaveIntegrity() {
-    if (cave.length != 2) return true;
+  Future<bool> checkCaveIntegrity() async {
+    var cave = await getCave();
+
+    if (cave.length == 1) return true;
 
     for (var i = 1; i < cave.length; i++) {
       var currentStone = cave[i];
@@ -100,7 +96,8 @@ class StoneCave {
     return true;
   }
 
-  Stone getLastStone() {
+  Future<Stone> getLastStone() async {
+    var cave = await getCave();
     return cave.last;
   }
 }

@@ -10,6 +10,7 @@
   "reputation_change_failed": "Не удалось изменить репутацию",
   "reputation_message_start": "Текущая репутация:\\n\\n",
   "user_reputation": "У $name репутация $reputation",
+  "reputation_cave_integrity_failed": "Целостность StoneCave репутации повреждена, изменение репутации отменено",
   "yo": "эй",
   "dude": "чувак",
   "bully_weather_regexp": "эй\\,?\\s{0,}чувак\\,?",

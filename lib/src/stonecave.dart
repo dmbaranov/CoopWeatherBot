@@ -4,11 +4,11 @@ import 'package:crypto/crypto.dart';
 
 class Stone {
   final Map<String, dynamic> data;
-  int timestamp;
+  late int timestamp;
   String stoneHash = '';
   String prevStoneHash = '';
 
-  Stone({this.data}) {
+  Stone({required this.data}) {
     timestamp = DateTime.now().millisecondsSinceEpoch;
   }
 
@@ -36,7 +36,7 @@ class Stone {
 class StoneCave {
   final String cavepath;
 
-  StoneCave({this.cavepath});
+  StoneCave({required this.cavepath});
 
   Future<bool> initialize() async {
     var caveValid = await checkCaveIntegrity();
@@ -50,7 +50,7 @@ class StoneCave {
     List<Stone> cave = [];
 
     await Future.forEach(stones, (stone) async {
-      cave.add(Stone.fromJson(stone));
+      cave.add(Stone.fromJson(stone as Map<String, dynamic>));
     });
 
     return cave;

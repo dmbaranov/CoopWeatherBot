@@ -1,26 +1,22 @@
 import 'dart:async';
 
 import 'package:weather/weather.dart' as weather;
-import 'package:dotenv/dotenv.dart' show load, env;
+import 'package:dotenv/dotenv.dart';
 
 void main() {
-  load();
-  final telegramToken = env['token'];
-  final openweatherKey = env['openweather'];
-  final chatId = int.parse(env['chatid']);
-  final repoUrl = env['githubrepo'];
-  final adminId = int.parse(env['adminid']);
-  final youtubeKey = env['youtube'];
+  var env = DotEnv(includePlatformEnvironment: true)..load();
+  final telegramToken = env['token']!;
+  final openweatherKey = env['openweather']!;
+  final chatId = int.parse(env['chatid']!);
+  final repoUrl = env['githubrepo']!;
+  final adminId = int.parse(env['adminid']!);
+  final youtubeKey = env['youtube']!;
 
   runZonedGuarded(() {
     var bot = weather.Bot(
-        token: telegramToken,
-        chatId: chatId,
-        repoUrl: repoUrl,
-        adminId: adminId,
-        youtubeKey: youtubeKey);
+        token: telegramToken, chatId: chatId, repoUrl: repoUrl, adminId: adminId, youtubeKey: youtubeKey, openweatherKey: openweatherKey);
 
-    bot.startBot(openweatherKey);
+    bot.startBot();
     bot.startNotificationPolling();
     bot.startPanoramaNewsPolling();
   }, (err, stack) {

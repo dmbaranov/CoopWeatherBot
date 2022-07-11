@@ -24,33 +24,44 @@ class Bot {
   final String repoUrl;
   final int adminId;
   final String youtubeKey;
-  io.File citiesFile;
-  TeleDart bot;
-  Telegram telegram;
-  SwearwordsManager sm;
-  OpenWeather openWeather;
-  DadJokes dadJokes;
-  Reputation reputation;
-  Youtube youtube;
-  int notificationHour = 7;
-  Debouncer<TeleDartInlineQuery> debouncer = Debouncer(Duration(seconds: 1), initialValue: null);
+  final String openweatherKey;
+  late io.File citiesFile;
+  late TeleDart bot;
+  late Telegram telegram;
+  late SwearwordsManager sm;
+  late OpenWeather openWeather;
+  late DadJokes dadJokes;
+  late Reputation reputation;
+  late Youtube youtube;
+  late int notificationHour = 7;
+  late Debouncer<TeleDartInlineQuery?> debouncer = Debouncer(Duration(seconds: 1), initialValue: null);
 
-  Bot({this.token, this.chatId, this.repoUrl, this.adminId, this.youtubeKey}) {
-    citiesFile = io.File('assets/cities.txt');
-  }
+  Bot(
+      {required this.token,
+      required this.chatId,
+      required this.repoUrl,
+      required this.adminId,
+      required this.youtubeKey,
+      required this.openweatherKey});
 
-  void startBot(String openweatherKey) async {
+  void startBot() async {
+    final botName = (await Telegram(token).getMe()).username;
+
     telegram = Telegram(token);
-    bot = TeleDart(telegram, Event());
-    sm = SwearwordsManager();
+    bot = TeleDart(token, Event(botName!));
     openWeather = OpenWeather(openweatherKey);
     dadJokes = DadJokes();
     youtube = Youtube(youtubeKey);
 
-    await bot.start();
+    citiesFile = io.File('assets/cities.txt');
+
+    bot.start();
+
+    sm = SwearwordsManager();
+    await sm.initSwearwords();
 
     reputation = Reputation(adminId: adminId, telegram: telegram, sm: sm, chatId: chatId);
-    reputation.initReputation();
+    await reputation.initReputation();
 
     _setupListeners();
 
@@ -73,7 +84,7 @@ class Bot {
 
         await Future.forEach(cities, (city) async {
           try {
-            var data = await openWeather.getCurrentWeather(city);
+            var data = await openWeather.getCurrentWeather(city.toString());
 
             message += 'In city ${data.city} the temperature is ${data.temp}°C\n\n';
           } catch (err) {
@@ -97,7 +108,7 @@ class Bot {
 
       if (hour <= 9 || hour >= 23) return;
 
-      await _sendNewsToChat();
+      await _sendNewsToChat(null);
     });
   }
 
@@ -107,7 +118,7 @@ class Bot {
 
       if (hour <= 9 || hour >= 23) return;
 
-      await _sendJokeToChat();
+      await _sendJokeToChat(null);
     });
   }
 
@@ -137,7 +148,9 @@ class Bot {
     bot.onInlineQuery().listen((query) {
       debouncer.value = query;
     });
-    debouncer.values.listen(_searchYoutubeTrackInline);
+    debouncer.values.listen((query) {
+      _searchYoutubeTrackInline(query as TeleDartInlineQuery);
+    });
   }
 
   void _addCity(TeleDartMessage message) async {
@@ -242,9 +255,9 @@ class Bot {
   }
 
   void _getBullyWeatherForCity(TeleDartMessage message) async {
-    var messageWords = message.text.split(RegExp(r'(,)|(\s{1,})')).where((item) => item.isNotEmpty).toList();
+    var messageWords = message.text?.split(RegExp(r'(,)|(\s{1,})')).where((item) => item.isNotEmpty).toList();
 
-    if (messageWords.length != 3 || (messageWords[0] != sm.get('yo') && messageWords[1] != sm.get('dude'))) {
+    if (messageWords == null || messageWords.length != 3 || (messageWords[0] != sm.get('yo') && messageWords[1] != sm.get('dude'))) {
       return;
     }
 
@@ -264,9 +277,9 @@ class Bot {
   void _bullyTagUser(TeleDartMessage message) async {
     var denisId = 354903232;
 
-    if (message.from.id == adminId) {
+    if (message.from?.id == adminId) {
       await message.reply('@daimonil');
-    } else if (message.from.id == denisId) {
+    } else if (message.from?.id == denisId) {
       await message.reply('@dmbaranov_io');
     }
   }
@@ -277,10 +290,10 @@ class Bot {
       return;
     }
 
-    var rawText = message.text.split(' ');
-    var text = rawText.sublist(1).join(' ');
+    var rawText = message.text?.split(' ');
+    var text = rawText?.sublist(1).join(' ') ?? '';
 
-    print('${message.from.toJson()} is writing to Coop: ${message.toJson()}');
+    print('${message.from?.toJson()} is writing to Coop: ${message.toJson()}');
 
     try {
       await telegram.sendMessage(chatId, text);
@@ -290,9 +303,9 @@ class Bot {
   }
 
   String _getOneParameterFromMessage(TeleDartMessage message) {
-    var options = message.text.split(' ');
+    var options = message.text?.split(' ');
 
-    if (options.length != 2) return '';
+    if (options == null || options.length != 2) return '';
 
     return options[1];
   }
@@ -316,7 +329,7 @@ class Bot {
     await telegram.sendMessage(chatId, updateMessage);
   }
 
-  Future<void> _sendNewsToChat([TeleDartMessage message]) async {
+  Future<void> _sendNewsToChat(TeleDartMessage? message) async {
     var instantViewUrl = 'a.devs.today/';
     var news = await getNews();
 
@@ -327,19 +340,24 @@ class Bot {
     await telegram.sendMessage(chatId, message, parse_mode: 'HTML');
   }
 
-  Future<void> _sendJokeToChat([TeleDartMessage message]) async {
+  Future<void> _sendJokeToChat(TeleDartMessage? message) async {
     var joke = await dadJokes.getJoke();
 
     await telegram.sendMessage(chatId, joke.joke);
   }
 
   Future<void> _sendRealMusic(TeleDartMessage message) async {
-    if (message.text == null || message.text.contains('music.youtube.com') == false) {
+    if (message.text == null || message.text?.contains('music.youtube.com') == false) {
       await message.reply(sm.get('do_not_do_this'));
       return;
     }
 
-    var rawText = message.text.split(' ');
+    var rawText = message.text?.split(' ');
+
+    if (rawText == null) {
+      return;
+    }
+
     var text = rawText.sublist(1).join(' ');
     text = text.replaceAll('music.', '');
 
@@ -351,9 +369,9 @@ class Bot {
   }
 
   Future<void> _searchYoutubeTrack(TeleDartMessage message) async {
-    var query = message.text.split(' ').sublist(1).join(' ');
+    var query = message.text?.split(' ').sublist(1).join(' ');
 
-    if (query.isEmpty) {
+    if (query == null || query.isEmpty) {
       await message.reply(sm.get('do_not_do_this'));
       return;
     }
@@ -387,6 +405,6 @@ class Bot {
           input_message_content: InputTextMessageContent(message_text: videoUrl, disable_web_page_preview: false)));
     });
 
-    await bot.answerInlineQuery(query, [...inlineQueryResult], cache_time: 10);
+    await bot.answerInlineQuery(query.id, [...inlineQueryResult], cache_time: 10);
   }
 }

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:collection/collection.dart';
 import 'package:teledart/model.dart';
 import 'package:teledart/telegram.dart';
 import 'swearwords_manager.dart';
@@ -24,7 +25,7 @@ class ReputationUser {
   int _increaseOptionsLeft = 3;
   int _decreaseOptionsLeft = 3;
 
-  ReputationUser({this.userId, this.reputation, this.fullName = ''});
+  ReputationUser({required this.userId, required this.reputation, this.fullName = ''});
 
   ReputationUser.fromJson(Map<String, dynamic> json)
       : userId = json['userId'],
@@ -59,11 +60,11 @@ class Reputation {
   final SwearwordsManager sm;
   final int chatId;
   final List<ReputationUser> _users = [];
-  StoneCave stoneCave;
+  late StoneCave stoneCave;
 
-  Reputation({this.adminId, this.telegram, this.stoneCave, this.sm, this.chatId});
+  Reputation({required this.adminId, required this.telegram, required this.sm, required this.chatId});
 
-  void initReputation() async {
+  Future<void> initReputation() async {
     stoneCave = StoneCave(cavepath: _pathToReputationCave);
     await stoneCave.initialize();
 
@@ -105,7 +106,7 @@ class Reputation {
   }
 
   bool _accessAllowed(TeleDartMessage message) {
-    return message.from.id == adminId;
+    return message.from?.id == adminId;
   }
 
   void updateReputation(TeleDartMessage message, String type) async {
@@ -120,8 +121,8 @@ class Reputation {
       return;
     }
 
-    var changeAuthor = _users.firstWhere((user) => user.userId == message.from.id, orElse: () => null);
-    var userToUpdate = _users.firstWhere((user) => user.userId == message.reply_to_message.from.id, orElse: () => null);
+    var changeAuthor = _users.firstWhereOrNull((user) => user.userId == message.from?.id);
+    var userToUpdate = _users.firstWhereOrNull((user) => user.userId == message.reply_to_message?.from?.id);
 
     if (userToUpdate == null || changeAuthor == null) {
       await message.reply(sm.get('error_occurred'));
@@ -155,7 +156,7 @@ class Reputation {
     await stoneCave.addStone(Stone(data: {'from': changeAuthor.userId, 'to': userToUpdate, 'type': type, 'reputation': updatedReputation}));
   }
 
-  void sendReputationList([TeleDartMessage message]) async {
+  void sendReputationList(TeleDartMessage message) async {
     var reputationMessage = sm.get('reputation_message_start');
 
     _users.sort((userA, userB) => userB.reputation - userA.reputation);

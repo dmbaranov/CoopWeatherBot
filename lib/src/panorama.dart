@@ -66,10 +66,14 @@ Future<void> _overwriteCacheFile(List<String> content) async {
 Future<NewsData> getNews() async {
   await _clearCache();
 
-  var response = await http.get(panoramaBaseUrl);
+  var response = await http.get(Uri.parse(panoramaBaseUrl));
   var document = parser.parse(response.body);
 
-  var posts = document.querySelector('.container ul.mt-4').querySelectorAll('a');
+  var posts = document.querySelector('.container ul.mt-4')?.querySelectorAll('a');
+
+  if (posts == null) {
+    return NewsData('', '');
+  }
 
   var result = {'title': ''};
 
@@ -79,9 +83,9 @@ Future<NewsData> getNews() async {
 
     if (postHref == null || !postHref.startsWith('/news')) continue;
 
-    var title = post.querySelector('.text-sm > div').text;
+    var title = post.querySelector('.text-sm > div')?.text;
 
-    if (_cache[title] != null) continue;
+    if (title == null || _cache[title] != null) continue;
 
     result = {'title': title, 'url': panoramaBaseUrl + postHref};
 

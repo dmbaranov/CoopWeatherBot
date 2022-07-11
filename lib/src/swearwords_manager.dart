@@ -2,11 +2,7 @@ import 'dart:io';
 import 'dart:convert';
 
 class SwearwordsManager {
-  Map<String, String> swearwords;
-
-  SwearwordsManager() {
-    initSwearwords();
-  }
+  late Map<String, String> swearwords;
 
   Future<void> initSwearwords() async {
     var rawSwearwords = await File('assets/swearwords.json').readAsString();
@@ -14,13 +10,13 @@ class SwearwordsManager {
     swearwords = Map<String, String>.from(json.decode(rawSwearwords));
   }
 
-  String get(String key, [Map<String, String> replacements]) {
-    var rawString = swearwords[key];
+  String get(String key, [Map<String, String>? replacements]) {
+    var rawString = swearwords[key] as String;
 
     if (replacements == null) return rawString;
 
     replacements.keys.forEach((replacementKey) {
-      rawString = rawString.replaceAll('\$$replacementKey', replacements[replacementKey]);
+      rawString = rawString.replaceAll('\$$replacementKey', replacements[replacementKey] as String);
     });
 
     return rawString;

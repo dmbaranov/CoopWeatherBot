@@ -48,7 +48,7 @@ class Bot {
     final botName = (await Telegram(token).getMe()).username;
 
     telegram = Telegram(token);
-    bot = TeleDart(token, Event(botName!));
+    bot = TeleDart(token, Event(botName!), fetcher: LongPolling(Telegram(token), limit: 100, timeout: 50));
     openWeather = OpenWeather(openweatherKey);
     dadJokes = DadJokes();
     youtube = Youtube(youtubeKey);

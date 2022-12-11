@@ -1,5 +1,4 @@
 import 'dart:io' as io;
-
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as parser;
 
@@ -32,7 +31,7 @@ Future<void> _clearCache() async {
   var saveNumberOfPreviousNews = 10;
 
   if (_cache.length > cacheSize) {
-    // If there're too many news in the cache file, erase the content, but save
+    // If there are too many news in the cache file, erase the content, but save
     // x amount of latest news to avoid duplications
     var cacheFile = io.File(_pathToCacheFile);
     var news = await cacheFile.readAsLines();

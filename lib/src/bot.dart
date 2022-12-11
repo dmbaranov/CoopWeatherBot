@@ -60,7 +60,7 @@ class Bot {
     sm = SwearwordsManager();
     await sm.initSwearwords();
 
-    reputation = Reputation(adminId: adminId, telegram: telegram, sm: sm, chatId: chatId);
+    reputation = Reputation(adminId: adminId, sm: sm, chatId: chatId);
     await reputation.initReputation();
 
     _setupListeners();
@@ -134,9 +134,9 @@ class Bot {
     bot.onCommand('sendnews').listen(_sendNewsToChat);
     bot.onCommand('sendjoke').listen(_sendJokeToChat);
     bot.onCommand('sendrealmusic').listen(_sendRealMusic);
-    bot.onCommand('increp').listen((TeleDartMessage message) => reputation.updateReputation(message, 'increase'));
-    bot.onCommand('decrep').listen((TeleDartMessage message) => reputation.updateReputation(message, 'decrease'));
-    bot.onCommand('replist').listen(reputation.sendReputationList);
+    bot.onCommand('increp').listen((TeleDartMessage message) => _updateReputation(message, 'increase'));
+    bot.onCommand('decrep').listen((TeleDartMessage message) => _updateReputation(message, 'decrease'));
+    bot.onCommand('replist').listen(_sendReputationList);
     bot.onCommand('searchsong').listen(_searchYoutubeTrack);
 
     var bullyTagUserRegexp = RegExp(sm.get('bully_tag_user_regexp'), caseSensitive: false);
@@ -406,5 +406,25 @@ class Bot {
     });
 
     await bot.answerInlineQuery(query.id, [...inlineQueryResult], cache_time: 10);
+  }
+
+  Future<void> _updateReputation(TeleDartMessage message, String change) async {
+    if (message.reply_to_message == null) {
+      await message.reply(sm.get('error_occurred'));
+      return;
+    }
+
+    var fromId = message.from?.id;
+    var toId = message.reply_to_message?.from?.id;
+
+    var changeResult = await reputation.updateReputation(fromId, toId, change);
+
+    await message.reply(changeResult);
+  }
+
+  Future<void> _sendReputationList(TeleDartMessage message) async {
+    var reputationMessage = reputation.getReputationMessage();
+
+    await message.reply(reputationMessage);
   }
 }

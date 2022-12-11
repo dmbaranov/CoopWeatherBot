@@ -1,7 +1,5 @@
 import 'dart:async';
 import 'package:collection/collection.dart';
-import 'package:teledart/model.dart';
-import 'package:teledart/telegram.dart';
 import 'swearwords_manager.dart';
 import 'stonecave.dart';
 
@@ -56,13 +54,12 @@ class ReputationUser {
 
 class Reputation {
   final int adminId;
-  final Telegram telegram;
   final SwearwordsManager sm;
   final int chatId;
   final List<ReputationUser> _users = [];
   late StoneCave stoneCave;
 
-  Reputation({required this.adminId, required this.telegram, required this.sm, required this.chatId});
+  Reputation({required this.adminId, required this.sm, required this.chatId});
 
   Future<void> initReputation() async {
     stoneCave = StoneCave(cavepath: _pathToReputationCave);
@@ -105,58 +102,54 @@ class Reputation {
     });
   }
 
-  bool _accessAllowed(TeleDartMessage message) {
-    return message.from?.id == adminId;
-  }
+  Future<String> updateReputation(int? from, int? to, String type) async {
+    var changeResult = '';
 
-  void updateReputation(TeleDartMessage message, String type) async {
-    if (message.reply_to_message == null) {
-      await message.reply(sm.get('error_occurred'));
-      return;
+    if (from == null || to == null) {
+      return sm.get('error_occurred');
     }
 
     var isCaveValid = await stoneCave.checkCaveIntegrity();
     if (!isCaveValid) {
-      await message.reply(sm.get('reputation_cave_integrity_failed'));
-      return;
+      return sm.get('reputation_cave_integrity_failed');
     }
 
-    var changeAuthor = _users.firstWhereOrNull((user) => user.userId == message.from?.id);
-    var userToUpdate = _users.firstWhereOrNull((user) => user.userId == message.reply_to_message?.from?.id);
+    var changeAuthor = _users.firstWhereOrNull((user) => user.userId == from);
+    var userToUpdate = _users.firstWhereOrNull((user) => user.userId == to);
 
     if (userToUpdate == null || changeAuthor == null) {
-      await message.reply(sm.get('error_occurred'));
-      return;
+      return sm.get('error_occurred');
     }
 
     if (userToUpdate.userId == changeAuthor.userId) {
-      await message.reply(sm.get('self_admire_attempt'));
-      return;
+      return sm.get('self_admire_attempt');
     }
 
     if (type == 'increase') {
       if (changeAuthor.canIncrease) {
         userToUpdate.reputation += 1;
         changeAuthor.optionUsed('increase');
-        await message.reply(sm.get('reputation_increased', {'name': userToUpdate.fullName}));
+        changeResult = sm.get('reputation_increased', {'name': userToUpdate.fullName});
       } else {
-        await message.reply(sm.get('reputation_change_failed'));
+        changeResult = sm.get('reputation_change_failed');
       }
     } else if (type == 'decrease') {
       if (changeAuthor.canDecrease) {
         userToUpdate.reputation -= 1;
         changeAuthor.optionUsed('decrease');
-        await message.reply(sm.get('reputation_decreased', {'name': userToUpdate.fullName}));
+        changeResult = sm.get('reputation_decreased', {'name': userToUpdate.fullName});
       } else {
-        await message.reply(sm.get('reputation_change_failed'));
+        changeResult = sm.get('reputation_change_failed');
       }
     }
 
     var updatedReputation = _users.map((user) => user.toJson()).toList();
     await stoneCave.addStone(Stone(data: {'from': changeAuthor.userId, 'to': userToUpdate, 'type': type, 'reputation': updatedReputation}));
+
+    return changeResult;
   }
 
-  void sendReputationList(TeleDartMessage message) async {
+  String getReputationMessage() {
     var reputationMessage = sm.get('reputation_message_start');
 
     _users.sort((userA, userB) => userA.reputation - userB.reputation);
@@ -165,13 +158,6 @@ class Reputation {
       reputationMessage += '\n';
     });
 
-    await telegram.sendMessage(chatId, reputationMessage);
-  }
-
-  bool setReputation(TeleDartMessage message) {
-    // TODO: add admin right to change reputation in whatever way you want
-    if (!_accessAllowed(message)) return false;
-
-    return true;
+    return reputationMessage;
   }
 }

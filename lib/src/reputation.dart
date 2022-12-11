@@ -159,7 +159,7 @@ class Reputation {
   void sendReputationList(TeleDartMessage message) async {
     var reputationMessage = sm.get('reputation_message_start');
 
-    _users.sort((userA, userB) => userB.reputation - userA.reputation);
+    _users.sort((userA, userB) => userA.reputation - userB.reputation);
     _users.forEach((user) {
       reputationMessage += sm.get('user_reputation', {'name': user.fullName, 'reputation': user.reputation.toString()});
       reputationMessage += '\n';

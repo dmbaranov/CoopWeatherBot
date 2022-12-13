@@ -10,6 +10,8 @@ dependencies:
   html: ^0.15.0
   debounce_throttle: ^2.0.0
   crypto: ^3.0.2
+  nyxx: ^4.4.0
+  nyxx_commands: ^4.3.0
 
 dev_dependencies:
   pedantic: ^1.8.0

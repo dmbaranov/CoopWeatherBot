@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:collection/collection.dart';
+import 'package:weather/src/utils.dart';
 import 'swearwords_manager.dart';
 import 'stonecave.dart';
 
@@ -10,10 +11,6 @@ import 'stonecave.dart';
 // 816477374 - Паша
 
 const String _pathToReputationCave = 'assets/reputation.cave.json';
-
-Future sleep(Duration duration) {
-  return Future.delayed(duration, () => null);
-}
 
 class ReputationUser {
   final int _defaultOptionsSize = 3;

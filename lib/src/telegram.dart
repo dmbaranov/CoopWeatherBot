@@ -7,18 +7,16 @@ import 'package:teledart/telegram.dart';
 import 'package:teledart/model.dart';
 import 'package:debounce_throttle/debounce_throttle.dart';
 
-import 'swearwords_manager.dart';
-import 'openweather.dart';
-import 'panorama.dart';
-import 'dadjokes.dart';
-import 'reputation.dart';
-import 'youtube.dart';
+import 'modules/swearwords_manager.dart';
+import 'modules/openweather.dart';
+import 'modules/panorama.dart';
+import 'modules/dadjokes.dart';
+import 'modules/reputation.dart';
+import 'modules/youtube.dart';
 
-Future sleep(Duration duration) {
-  return Future.delayed(duration, () => null);
-}
+import 'utils.dart';
 
-class Bot {
+class TelegramBot {
   final String token;
   final int chatId;
   final String repoUrl;
@@ -36,7 +34,7 @@ class Bot {
   late int notificationHour = 7;
   late Debouncer<TeleDartInlineQuery?> debouncer = Debouncer(Duration(seconds: 1), initialValue: null);
 
-  Bot(
+  TelegramBot(
       {required this.token,
       required this.chatId,
       required this.repoUrl,

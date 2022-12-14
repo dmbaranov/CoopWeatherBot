@@ -4,17 +4,11 @@ import 'package:weather/src/utils.dart';
 import 'swearwords_manager.dart';
 import 'stonecave.dart';
 
-// 471006081 - Жан
-// 354903232 - Денисы
-// 225021811 - Вован
-// 1439235581 - Димон
-// 816477374 - Паша
-
 const String _pathToReputationCave = 'assets/reputation.cave.json';
 
 class ReputationUser {
   final int _defaultOptionsSize = 3;
-  final int userId;
+  final String userId;
   String fullName;
   int reputation;
   int _increaseOptionsLeft = 3;
@@ -50,13 +44,11 @@ class ReputationUser {
 }
 
 class Reputation {
-  final int adminId;
   final SwearwordsManager sm;
-  final int chatId;
   final List<ReputationUser> _users = [];
   late StoneCave stoneCave;
 
-  Reputation({required this.adminId, required this.sm, required this.chatId});
+  Reputation({required this.sm});
 
   Future<void> initReputation() async {
     stoneCave = StoneCave(cavepath: _pathToReputationCave);
@@ -68,6 +60,9 @@ class Reputation {
 
   void _updateUsersList() async {
     var lastStone = await stoneCave.getLastStone();
+
+    if (lastStone == null) return;
+
     List stoneUsers = lastStone.data['reputation'];
 
     _users.clear();
@@ -99,7 +94,7 @@ class Reputation {
     });
   }
 
-  Future<String> updateReputation(int? from, int? to, String type) async {
+  Future<String> updateReputation(String? from, String? to, String type) async {
     var changeResult = '';
 
     if (from == null || to == null) {
@@ -149,12 +144,36 @@ class Reputation {
   String getReputationMessage() {
     var reputationMessage = sm.get('reputation_message_start');
 
-    _users.sort((userA, userB) => userA.reputation - userB.reputation);
+    _users.sort((userA, userB) => userB.reputation - userA.reputation);
     _users.forEach((user) {
       reputationMessage += sm.get('user_reputation', {'name': user.fullName, 'reputation': user.reputation.toString()});
       reputationMessage += '\n';
     });
 
     return reputationMessage;
+  }
+
+  Future setUsers(List<ReputationUser> users) async {
+    var lastStone = await stoneCave.getLastStone();
+    Map<String, ReputationUser> existingUsers = {};
+
+    if (lastStone != null) {
+      List stoneUsers = lastStone.data['reputation'];
+      stoneUsers.forEach((user) {
+        existingUsers[user['userId']] = ReputationUser.fromJson(user);
+      });
+    }
+
+    _users.clear();
+
+    users.forEach((user) {
+      var existingUser = existingUsers[user.userId];
+
+      if (existingUser != null) {
+        user.reputation = existingUser.reputation;
+      }
+
+      _users.add(user);
+    });
   }
 }

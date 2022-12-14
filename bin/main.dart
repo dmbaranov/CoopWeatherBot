@@ -30,18 +30,24 @@ void main(List<String> args) {
   final chatId = int.parse(env['telegramchatid']!);
   final guildId = env['discordguildid']!;
   final repoUrl = env['githubrepo']!;
-  final adminId = int.parse(env['telegramadminid']!);
+  final telegramAdminId = int.parse(env['telegramadminid']!);
+  final discordAdminId = env['discordadminid']!;
   final youtubeKey = env['youtube']!;
 
   runZonedGuarded(() {
     if (arguments['platform'] == 'discord') {
-      weather.DiscordBot(token: discordToken, guildId: guildId)
+      weather.DiscordBot(token: discordToken, adminId: discordAdminId, guildId: guildId)
         ..startBot()
         ..startAwakeUsersPolling();
     }
     if (arguments['platform'] == 'telegram') {
       weather.TelegramBot(
-          token: telegramToken, chatId: chatId, repoUrl: repoUrl, adminId: adminId, youtubeKey: youtubeKey, openweatherKey: openweatherKey)
+          token: telegramToken,
+          chatId: chatId,
+          repoUrl: repoUrl,
+          adminId: telegramAdminId,
+          youtubeKey: youtubeKey,
+          openweatherKey: openweatherKey)
         ..startBot()
         ..startNotificationPolling()
         ..startPanoramaNewsPolling();

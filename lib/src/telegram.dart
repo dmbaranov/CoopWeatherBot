@@ -58,7 +58,7 @@ class TelegramBot {
     sm = SwearwordsManager();
     await sm.initSwearwords();
 
-    reputation = Reputation(adminId: adminId, sm: sm, chatId: chatId);
+    reputation = Reputation(sm: sm);
     await reputation.initReputation();
 
     _setupListeners();
@@ -412,8 +412,8 @@ class TelegramBot {
       return;
     }
 
-    var fromId = message.from?.id;
-    var toId = message.reply_to_message?.from?.id;
+    var fromId = message.from?.id.toString();
+    var toId = message.reply_to_message?.from?.id.toString();
 
     var changeResult = await reputation.updateReputation(fromId, toId, change);
 

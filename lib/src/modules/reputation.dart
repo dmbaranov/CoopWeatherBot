@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:collection/collection.dart';
-import 'package:weather/src/utils.dart';
 import 'swearwords_manager.dart';
 import 'stonecave.dart';
+import '../utils.dart';
 
 const String _pathToReputationCave = 'assets/reputation.cave.json';
 

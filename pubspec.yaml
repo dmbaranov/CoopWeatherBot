@@ -12,6 +12,7 @@ dependencies:
   crypto: ^3.0.2
   nyxx: ^4.4.0
   nyxx_commands: ^4.3.0
+  cron: ^0.5.1
 
 dev_dependencies:
   pedantic: ^1.8.0

@@ -8,13 +8,11 @@ import 'package:teledart/model.dart';
 import 'package:debounce_throttle/debounce_throttle.dart';
 
 import 'modules/swearwords_manager.dart';
-import 'modules/openweather.dart';
+import 'modules/weather.dart';
 import 'modules/panorama.dart';
 import 'modules/dadjokes.dart';
 import 'modules/reputation.dart';
 import 'modules/youtube.dart';
-
-import 'utils.dart';
 
 class TelegramBot {
   final String token;
@@ -27,7 +25,8 @@ class TelegramBot {
   late TeleDart bot;
   late Telegram telegram;
   late SwearwordsManager sm;
-  late OpenWeather openWeather;
+  late Weather weather;
+
   late DadJokes dadJokes;
   late Reputation reputation;
   late Youtube youtube;
@@ -47,7 +46,7 @@ class TelegramBot {
 
     telegram = Telegram(token);
     bot = TeleDart(token, Event(botName!), fetcher: LongPolling(Telegram(token), limit: 100, timeout: 50));
-    openWeather = OpenWeather(openweatherKey);
+    weather = Weather(openweatherKey: openweatherKey);
     dadJokes = DadJokes();
     youtube = Youtube(youtubeKey);
 
@@ -66,35 +65,11 @@ class TelegramBot {
     print('Bot has been started!');
   }
 
-  void startNotificationPolling() async {
-    var skip = false;
+  void startWeatherPolling() async {
+    var weatherStream = weather.weatherStream;
 
-    Timer.periodic(Duration(seconds: 30), (_) async {
-      if (skip) return;
-
-      var hour = DateTime.now().hour;
-
-      if (hour == notificationHour) {
-        skip = true;
-
-        var cities = await citiesFile.readAsLines();
-        var message = '';
-
-        await Future.forEach(cities, (city) async {
-          try {
-            var data = await openWeather.getCurrentWeather(city.toString());
-
-            message += 'In city ${data.city} the temperature is ${data.temp}°C\n\n';
-          } catch (err) {
-            print('Error during the notification: $err');
-          }
-        });
-
-        await telegram.sendMessage(chatId, message);
-        await sleep(Duration(hours: 23));
-
-        skip = false;
-      }
+    weatherStream.listen((weatherMessage) async {
+      await telegram.sendMessage(chatId, weatherMessage);
     });
   }
 
@@ -159,19 +134,13 @@ class TelegramBot {
       return;
     }
 
-    var cities = await citiesFile.readAsLines();
+    var result = await weather.addCity(cityToAdd);
 
-    if (cities.contains(cityToAdd.toLowerCase())) {
-      await message.reply('City $cityToAdd is in the watchlist already!');
-      return;
+    if (result) {
+      await message.reply('City $cityToAdd has been added to the watchlist!');
+    } else {
+      await message.reply('Error');
     }
-
-    var updatedCities = cities.map((city) => city.toLowerCase()).toList();
-    updatedCities.add(cityToAdd.toLowerCase());
-
-    await citiesFile.writeAsString(updatedCities.join('\n'));
-
-    await message.reply('City $cityToAdd has been added to the watchlist!');
   }
 
   void _removeCity(TeleDartMessage message) async {
@@ -182,29 +151,17 @@ class TelegramBot {
       return;
     }
 
-    var cities = await citiesFile.readAsLines();
+    var result = await weather.removeCity(cityToRemove);
 
-    if (!cities.contains(cityToRemove.toLowerCase())) {
-      await message.reply('City $cityToRemove is not in the watchlist!');
-      return;
+    if (result) {
+      await message.reply('City $cityToRemove has been removed from the watchlist!');
+    } else {
+      await message.reply('Error');
     }
-
-    var updatedCities = cities.where((city) => city != cityToRemove.toLowerCase()).join('\n').toString();
-
-    await citiesFile.writeAsString(updatedCities);
-
-    await message.reply('City $cityToRemove has been removed from the watchlist!');
   }
 
   void _getWatchlist(TeleDartMessage message) async {
-    var cities = await citiesFile.readAsLines();
-
-    if (cities.isEmpty) {
-      await message.reply("I'm not watching any cities");
-      return;
-    }
-
-    var citiesString = cities.join('\n');
+    var citiesString = await weather.getWatchList();
 
     await message.reply("I'm watching these cities:\n$citiesString");
   }
@@ -217,13 +174,11 @@ class TelegramBot {
       return;
     }
 
-    try {
-      var weatherData = await openWeather.getCurrentWeather(city);
+    var temperature = await weather.getWeatherForCity(city);
 
-      await message.reply('In city $city the temperature is ${weatherData.temp}°C');
-    } catch (err) {
-      print(err);
-
+    if (temperature != null) {
+      await message.reply('In city $city the temperature is $temperature°C');
+    } else {
       await message.reply('There was an error processing your request! Try again');
     }
   }
@@ -233,23 +188,20 @@ class TelegramBot {
   }
 
   void _setNotificationHour(TeleDartMessage message) async {
-    var currentHour = notificationHour;
-    var nextHourRaw = _getOneParameterFromMessage(message);
+    var nextHour = _getOneParameterFromMessage(message);
 
-    if (nextHourRaw.isEmpty) {
+    if (nextHour.isEmpty) {
       await message.reply('Incorrect value for notification hour. Please use single number from 0 to 23');
       return;
     }
 
-    var nextHour = num.parse(nextHourRaw);
+    var result = weather.setNotificationsHour(int.parse(nextHour));
 
-    if (nextHour is int && nextHour >= 0 && nextHour <= 23) {
-      notificationHour = nextHour;
-      await message.reply('Notification hour has been updated from $currentHour to $nextHour');
-      return;
+    if (result) {
+      await message.reply('Notification hour has been set to $nextHour');
+    } else {
+      await message.reply('Error');
     }
-
-    await message.reply('Incorrect value for notification hour. Please use single number from 0 to 23');
   }
 
   void _getBullyWeatherForCity(TeleDartMessage message) async {
@@ -262,9 +214,13 @@ class TelegramBot {
     var city = messageWords[2];
 
     try {
-      var weatherData = await openWeather.getCurrentWeather(city);
+      var temperature = await weather.getWeatherForCity(city);
 
-      await message.reply(sm.get('weather_in_city', {'city': city, 'temp': weatherData.temp.toString()}));
+      if (temperature == null) {
+        throw 'No temperature';
+      }
+
+      await message.reply(sm.get('weather_in_city', {'city': city, 'temp': temperature.toString()}));
     } catch (err) {
       print(err);
 

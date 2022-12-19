@@ -49,7 +49,7 @@ void main(List<String> args) {
           youtubeKey: youtubeKey,
           openweatherKey: openweatherKey)
         ..startBot()
-        ..startNotificationPolling()
+        ..startWeatherPolling()
         ..startPanoramaNewsPolling();
     }
   }, (error, stack) {

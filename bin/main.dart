@@ -29,6 +29,7 @@ void main(List<String> args) {
   final openweatherKey = env['openweather']!;
   final chatId = int.parse(env['telegramchatid']!);
   final guildId = env['discordguildid']!;
+  final channelId = env['discordchannelid']!;
   final repoUrl = env['githubrepo']!;
   final telegramAdminId = int.parse(env['telegramadminid']!);
   final discordAdminId = env['discordadminid']!;
@@ -36,9 +37,9 @@ void main(List<String> args) {
 
   runZonedGuarded(() {
     if (arguments['platform'] == 'discord') {
-      weather.DiscordBot(token: discordToken, adminId: discordAdminId, guildId: guildId)
-        ..startBot()
-        ..startAwakeUsersPolling();
+      weather.DiscordBot(
+              token: discordToken, adminId: discordAdminId, guildId: guildId, channelId: channelId, openweatherKey: openweatherKey)
+          .startBot();
     }
     if (arguments['platform'] == 'telegram') {
       weather.TelegramBot(

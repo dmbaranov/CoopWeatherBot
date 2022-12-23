@@ -1,7 +1,8 @@
 {
-  "weather_in_city": "В городе $city температура $temp°C епта",
+  "weather_in_city": "В городе $city температура $temp°C",
   "error_occurred": "Произошла ошибка",
   "do_not_do_this": "Так делать нельзя",
+  "you_are_not_an_admin": "В доступе отказано",
   "update_completed": "Обновление завершено!\\n\\nChangelog:\\n$update",
   "not_found": "Не найдено",
   "self_admire_attempt": "Нельзя повышать собственную репутацию",
@@ -14,5 +15,19 @@
   "yo": "эй",
   "dude": "чувак",
   "bully_weather_regexp": "эй\\,?\\s{0,}чувак\\,?",
-  "bully_tag_user_regexp": "эй\\,?\\s{0,}чувак$"
+  "bully_tag_user_regexp": "эй\\,?\\s{0,}чувак$",
+  "starting_reputation_change": "Начинаю изменение репутации",
+  "starting_reputation_list_generation": "Начинаю генерацию репутации",
+  "starting_reputation_users_update": "Начинаю обновление списка юзеров",
+  "finished_reputation_users_update": "Список юзеров обновлен",
+  "starting_cities_list_update": "Начинаю обновление списка городов",
+  "finished_cities_list_update": "Список городов обновлен",
+  "failed_cities_list_update": "Обновление списка городов не удалось",
+  "starting_get_weather_cities": "Начинаю составление списка городов",
+  "failed_get_weather_cities": "Получение списка городов не удалось",
+  "starting_get_weather_for_city": "Начинаю получение погоды в городе",
+  "failed_get_weather_for_city": "Получение погоды в городе не удалось",
+  "starting_set_weather_notification_hour": "Начинаю установку времени для погоды",
+  "finished_set_weather_notification_hour": "Время для погоды успешно обновлено",
+  "failed_set_weather_notification_hour": "Обновление времени для погоды не удалось"
 }

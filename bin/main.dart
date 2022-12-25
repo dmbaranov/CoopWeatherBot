@@ -40,6 +40,7 @@ void main(List<String> args) {
       weather.DiscordBot(
               token: discordToken, adminId: discordAdminId, guildId: guildId, channelId: channelId, openweatherKey: openweatherKey)
           .startBot();
+      // ..startWeatherPolling(); //     // It was decided to disable weather notifications for now
     }
     if (arguments['platform'] == 'telegram') {
       weather.TelegramBot(

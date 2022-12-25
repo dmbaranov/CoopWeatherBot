@@ -64,7 +64,7 @@ class Weather {
   Future<bool> addCity(String cityToAdd) async {
     var cities = await _citiesFile.readAsLines();
 
-    if (cities.contains(cityToAdd.toLowerCase())) {
+    if (cities.contains(cityToAdd.toLowerCase()) || cityToAdd.isEmpty) {
       return false;
     }
 
@@ -79,7 +79,7 @@ class Weather {
   Future<bool> removeCity(String cityToRemove) async {
     var cities = await _citiesFile.readAsLines();
 
-    if (!cities.contains(cityToRemove.toLowerCase())) {
+    if (!cities.contains(cityToRemove.toLowerCase()) || cityToRemove.isEmpty) {
       return false;
     }
 

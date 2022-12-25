@@ -21,7 +21,6 @@ class TelegramBot {
   final int adminId;
   final String youtubeKey;
   final String openweatherKey;
-  late io.File citiesFile;
   late TeleDart bot;
   late Telegram telegram;
   late SwearwordsManager sm;
@@ -50,8 +49,6 @@ class TelegramBot {
     dadJokes = DadJokes();
     youtube = Youtube(youtubeKey);
 
-    citiesFile = io.File('assets/cities.txt');
-
     bot.start();
 
     sm = SwearwordsManager();
@@ -65,7 +62,7 @@ class TelegramBot {
     print('Bot has been started!');
   }
 
-  void startWeatherPolling() async {
+  void startWeatherPolling() {
     var weatherStream = weather.weatherStream;
 
     weatherStream.listen((weatherMessage) async {
@@ -129,11 +126,6 @@ class TelegramBot {
   void _addCity(TeleDartMessage message) async {
     var cityToAdd = _getOneParameterFromMessage(message);
 
-    if (cityToAdd.isEmpty) {
-      await message.reply('Provide one city to add!');
-      return;
-    }
-
     var result = await weather.addCity(cityToAdd);
 
     if (result) {
@@ -145,11 +137,6 @@ class TelegramBot {
 
   void _removeCity(TeleDartMessage message) async {
     var cityToRemove = _getOneParameterFromMessage(message);
-
-    if (cityToRemove.isEmpty) {
-      await message.reply('Provide one city to remove!');
-      return;
-    }
 
     var result = await weather.removeCity(cityToRemove);
 
@@ -189,11 +176,6 @@ class TelegramBot {
 
   void _setNotificationHour(TeleDartMessage message) async {
     var nextHour = _getOneParameterFromMessage(message);
-
-    if (nextHour.isEmpty) {
-      await message.reply('Incorrect value for notification hour. Please use single number from 0 to 23');
-      return;
-    }
 
     var result = weather.setNotificationsHour(int.parse(nextHour));
 

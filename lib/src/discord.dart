@@ -41,11 +41,12 @@ class DiscordBot {
 
     weather = Weather(openweatherKey: openweatherKey);
     weather.initWeather();
+  }
 
-    // It was decided to disable weather notifications for now
-    // weather.weatherStream.listen((weatherString) {
-    //   bot.httpEndpoints.sendMessage(Snowflake(channelId), MessageBuilder.content(weatherString));
-    // });
+  void startWeatherPolling() {
+    weather.weatherStream.listen((weatherString) {
+      bot.httpEndpoints.sendMessage(Snowflake(channelId), MessageBuilder.content(weatherString));
+    });
   }
 
   // TODO: add command to move all from one channel to another

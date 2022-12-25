@@ -61,14 +61,14 @@ class TelegramBot {
 
     _setupListeners();
 
-    _startWeatherPolling();
-    _startPanoramaNewsPolling();
-    // _startJokesPolling();
+    _subscribeToWeather();
+    _startPanoramaNewsJob();
+    // _startJokesJob();
 
     print('Bot has been started!');
   }
 
-  void _startWeatherPolling() {
+  void _subscribeToWeather() {
     var weatherStream = weather.weatherStream;
 
     weatherStream.listen((weatherMessage) async {
@@ -76,7 +76,7 @@ class TelegramBot {
     });
   }
 
-  void _startPanoramaNewsPolling() async {
+  void _startPanoramaNewsJob() async {
     await setupPanoramaNews();
 
     Cron().schedule(Schedule.parse('0 10,15,20 * * *'), () async {
@@ -84,7 +84,7 @@ class TelegramBot {
     });
   }
 
-  void _startJokesPolling() async {
+  void _startJokesJob() async {
     Cron().schedule(Schedule.parse('0 */3 * * *'), () async {
       await _sendJokeToChat(null);
     });

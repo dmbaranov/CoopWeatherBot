@@ -43,10 +43,10 @@ class DiscordBot {
     weather.initWeather();
 
     // It was decided to disable weather notifications for now
-    // startWeatherPolling();
+    // _subscribeToWeather();
   }
 
-  void startWeatherPolling() {
+  void _subscribeToWeather() {
     weather.weatherStream.listen((weatherString) {
       bot.httpEndpoints.sendMessage(Snowflake(channelId), MessageBuilder.content(weatherString));
     });

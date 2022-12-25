@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:collection/collection.dart';
+import 'package:cron/cron.dart';
 import 'swearwords_manager.dart';
 import 'stonecave.dart';
-import '../utils.dart';
 
 const String _pathToReputationCave = 'assets/reputation.cave.json';
 
@@ -55,7 +55,7 @@ class Reputation {
     await stoneCave.initialize();
 
     _updateUsersList();
-    _startResetPolling();
+    _startResetVotesJob();
   }
 
   void _updateUsersList() async {
@@ -74,23 +74,9 @@ class Reputation {
     });
   }
 
-  void _startResetPolling() {
-    var skip = false;
-
-    Timer.periodic(Duration(seconds: 30), (_) async {
-      if (skip) return;
-
-      var hour = DateTime.now().hour;
-
-      if (hour == 0) {
-        skip = true;
-
-        _users.forEach((user) => user.resetOptions());
-
-        await sleep(Duration(hours: 23));
-
-        skip = false;
-      }
+  void _startResetVotesJob() {
+    Cron().schedule(Schedule.parse('0 0 * * *'), () {
+      _users.forEach((user) => user.resetOptions());
     });
   }
 

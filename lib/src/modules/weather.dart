@@ -47,6 +47,7 @@ class Weather {
   late OpenWeather _openWeather;
   late StreamController<String> _weatherStreamController;
   late io.File _citiesFile;
+  ScheduledTask? _weatherCronTask;
 
   Weather({required this.openweatherKey});
 
@@ -121,9 +122,9 @@ class Weather {
   }
 
   void _updateWeatherStream() {
-    var cron = Cron();
+    _weatherCronTask?.cancel();
 
-    cron.schedule(Schedule.parse('0 $_notificationHour * * *'), () async {
+    _weatherCronTask = Cron().schedule(Schedule.parse('0 $_notificationHour * * *'), () async {
       var cities = await _citiesFile.readAsLines();
       var message = '';
 

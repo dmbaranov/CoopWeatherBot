@@ -14,3 +14,6 @@ doc/api/
 .idea
 
 assets/swearwords.json
+assets/cities.txt
+assets/panorama_news_cache.txt
+assets/reputation.cave.json

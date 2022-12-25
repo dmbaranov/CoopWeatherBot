@@ -42,9 +42,10 @@ class DiscordBot {
     weather = Weather(openweatherKey: openweatherKey);
     weather.initWeather();
 
-    weather.weatherStream.listen((weatherString) {
-      bot.httpEndpoints.sendMessage(Snowflake(channelId), MessageBuilder.content(weatherString));
-    });
+    // It was decided to disable weather notifications for now
+    // weather.weatherStream.listen((weatherString) {
+    //   bot.httpEndpoints.sendMessage(Snowflake(channelId), MessageBuilder.content(weatherString));
+    // });
   }
 
   // TODO: add command to move all from one channel to another
@@ -60,7 +61,8 @@ class DiscordBot {
       ..addCommand(_removeWeatherCity())
       ..addCommand(_getWeatherWatchlist())
       ..addCommand(_getWeatherForCity())
-      ..addCommand(_setWeatherNotificationHour());
+      ..addCommand(_setWeatherNotificationHour())
+      ..addCommand(_write());
 
     return commands;
   }
@@ -197,6 +199,18 @@ class DiscordBot {
       } else {
         await context.respond(MessageBuilder.content(sm.get('failed_set_weather_notification_hour')));
       }
+    });
+  }
+
+  ChatCommand _write() {
+    return ChatCommand('write', 'Write something to the channel', (IChatContext context, String message) async {
+      await context.respond(MessageBuilder.content(sm.get('executing')));
+
+      if (context.user.id.toString() != adminId) {
+        return context.respond(MessageBuilder.content(sm.get('you_are_not_an_admin')));
+      }
+
+      await bot.httpEndpoints.sendMessage(Snowflake(channelId), MessageBuilder.content(message));
     });
   }
 }

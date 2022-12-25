@@ -3,6 +3,7 @@
   "error_occurred": "Произошла ошибка",
   "do_not_do_this": "Так делать нельзя",
   "you_are_not_an_admin": "В доступе отказано",
+  "executing": "Выполняю",
   "update_completed": "Обновление завершено!\\n\\nChangelog:\\n$update",
   "not_found": "Не найдено",
   "self_admire_attempt": "Нельзя повышать собственную репутацию",

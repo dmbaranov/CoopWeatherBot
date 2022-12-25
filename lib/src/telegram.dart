@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'dart:io' as io;
-import 'dart:async';
 
 import 'package:teledart/teledart.dart';
 import 'package:teledart/telegram.dart';
 import 'package:teledart/model.dart';
 import 'package:debounce_throttle/debounce_throttle.dart';
+import 'package:cron/cron.dart';
 
 import 'modules/swearwords_manager.dart';
 import 'modules/weather.dart';
@@ -32,12 +32,13 @@ class TelegramBot {
   late int notificationHour = 7;
   late Debouncer<TeleDartInlineQuery?> debouncer = Debouncer(Duration(seconds: 1), initialValue: null);
 
-  TelegramBot({required this.token,
-    required this.chatId,
-    required this.repoUrl,
-    required this.adminId,
-    required this.youtubeKey,
-    required this.openweatherKey});
+  TelegramBot(
+      {required this.token,
+      required this.chatId,
+      required this.repoUrl,
+      required this.adminId,
+      required this.youtubeKey,
+      required this.openweatherKey});
 
   void startBot() async {
     final botName = (await Telegram(token).getMe()).username;
@@ -78,25 +79,13 @@ class TelegramBot {
   void _startPanoramaNewsPolling() async {
     await setupPanoramaNews();
 
-    Timer.periodic(Duration(hours: 5, minutes: 41), (_) async {
-      var hour = DateTime
-          .now()
-          .hour;
-
-      if (hour <= 9 || hour >= 23) return;
-
+    Cron().schedule(Schedule.parse('0 10,15,20 * * *'), () async {
       await _sendNewsToChat(null);
     });
   }
 
   void _startJokesPolling() async {
-    Timer.periodic(Duration(hours: 2, minutes: 13), (_) async {
-      var hour = DateTime
-          .now()
-          .hour;
-
-      if (hour <= 9 || hour >= 23) return;
-
+    Cron().schedule(Schedule.parse('0 */3 * * *'), () async {
       await _sendJokeToChat(null);
     });
   }

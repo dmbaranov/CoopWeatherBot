@@ -1,3 +1,4 @@
 library weather;
 
-export 'src/bot.dart';
+export 'src/telegram.dart';
+export 'src/discord.dart';

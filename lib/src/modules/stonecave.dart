@@ -83,7 +83,7 @@ class StoneCave {
   Future<bool> checkCaveIntegrity() async {
     var cave = await getCave();
 
-    if (cave.length == 1) return true;
+    if (cave.isEmpty) return true;
 
     for (var i = 1; i < cave.length; i++) {
       var currentStone = cave[i];
@@ -96,8 +96,8 @@ class StoneCave {
     return true;
   }
 
-  Future<Stone> getLastStone() async {
+  Future<Stone?> getLastStone() async {
     var cave = await getCave();
-    return cave.last;
+    return cave.isEmpty ? null : cave.last;
   }
 }

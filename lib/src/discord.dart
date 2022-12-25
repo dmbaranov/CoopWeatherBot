@@ -80,7 +80,7 @@ class DiscordBot {
 
   ChatCommand _getIncreaseReputationCommand() {
     return ChatCommand('increp', 'Increase reputation for the user', (IChatContext context, String who) async {
-      await context.respond(MessageBuilder.content(sm.get('starting_reputation_change')));
+      await context.respond(MessageBuilder.empty());
       var from = context.user.id.toString();
       var to = who.substring(2, who.length - 1);
 
@@ -92,7 +92,7 @@ class DiscordBot {
 
   ChatCommand _getDecreaseReputationCommand() {
     return ChatCommand('decrep', 'Increase reputation for the user', (IChatContext context, String who) async {
-      await context.respond(MessageBuilder.content(sm.get('starting_reputation_change')));
+      await context.respond(MessageBuilder.empty());
       var from = context.user.id.toString();
       var to = who.substring(2, who.length - 1);
 
@@ -104,7 +104,7 @@ class DiscordBot {
 
   ChatCommand _getReputationListCommand() {
     return ChatCommand('replist', 'Get current reputation', (IChatContext context) async {
-      await context.respond(MessageBuilder.content(sm.get('starting_reputation_list_generation')));
+      await context.respond(MessageBuilder.empty());
 
       var reputationMessage = reputation.getReputationMessage();
 
@@ -114,7 +114,7 @@ class DiscordBot {
 
   ChatCommand _getGenerateReputationUsersCommand() {
     return ChatCommand('setrepusers', 'Update reputation users', (IChatContext context) async {
-      await context.respond(MessageBuilder.content(sm.get('starting_reputation_users_update')));
+      await context.respond(MessageBuilder.empty());
 
       // TODO: make a helper function
       if (context.user.id.toString() != adminId) {
@@ -126,20 +126,20 @@ class DiscordBot {
           .toList();
 
       await reputation.setUsers(reputationUsers);
-      await context.respond(MessageBuilder.content(sm.get('finished_reputation_users_update')));
+      await context.respond(MessageBuilder.content(sm.get('reputation_users_updated')));
     });
   }
 
   ChatCommand _addWeatherCity() {
     return ChatCommand('addcity', 'Add city to receive periodic updates about the weather', (IChatContext context, String city) async {
-      await context.respond(MessageBuilder.content(sm.get('starting_cities_list_update')));
+      await context.respond(MessageBuilder.empty());
 
       var addedSuccessfully = await weather.addCity(city);
 
       if (addedSuccessfully) {
-        await context.respond(MessageBuilder.content(sm.get('finished_cities_list_update')));
+        await context.respond(MessageBuilder.content(sm.get('cities_list_updated')));
       } else {
-        await context.respond(MessageBuilder.content(sm.get('failed_cities_list_update')));
+        await context.respond(MessageBuilder.content(sm.get('cities_list_update_failed')));
       }
     });
   }
@@ -147,40 +147,40 @@ class DiscordBot {
   ChatCommand _removeWeatherCity() {
     return ChatCommand('removecity', 'Remove city to stop receiving periodic updates about the weather',
         (IChatContext context, String city) async {
-      await context.respond(MessageBuilder.content(sm.get('starting_cities_list_update')));
+      await context.respond(MessageBuilder.empty());
 
       var removedSuccessfully = await weather.removeCity(city);
 
       if (removedSuccessfully) {
-        await context.respond(MessageBuilder.content(sm.get('finished_cities_list_update')));
+        await context.respond(MessageBuilder.content(sm.get('cities_list_updated')));
       } else {
-        await context.respond(MessageBuilder.content(sm.get('failed_cities_list_update')));
+        await context.respond(MessageBuilder.content(sm.get('cities_list_update_failed')));
       }
     });
   }
 
   ChatCommand _getWeatherWatchlist() {
     return ChatCommand('getcities', 'Get the list of cities for which weather is being tracked', (IChatContext context) async {
-      await context.respond(MessageBuilder.content(sm.get('starting_get_weather_cities')));
+      await context.respond(MessageBuilder.empty());
 
       var citiesList = await weather.getWatchList();
 
       if (citiesList.isNotEmpty) {
         await context.respond(MessageBuilder.content(citiesList));
       } else {
-        await context.respond(MessageBuilder.content(sm.get('failed_get_weather_cities')));
+        await context.respond(MessageBuilder.content(sm.get('get_weather_cities_failed')));
       }
     });
   }
 
   ChatCommand _getWeatherForCity() {
     return ChatCommand('getweather', 'Get weather for the provided city', (IChatContext context, String city) async {
-      await context.respond(MessageBuilder.content(sm.get('starting_get_weather_for_city')));
+      await context.respond(MessageBuilder.empty());
 
       var temperature = await weather.getWeatherForCity(city);
 
       if (temperature == null) {
-        await context.respond(MessageBuilder.content(sm.get('failed_get_weather_for_city')));
+        await context.respond(MessageBuilder.content(sm.get('get_weather_for_city_failed')));
         return;
       }
 
@@ -190,21 +190,21 @@ class DiscordBot {
 
   ChatCommand _setWeatherNotificationHour() {
     return ChatCommand('setweatherhour', 'Set notification hour for weather', (IChatContext context, String hour) async {
-      await context.respond(MessageBuilder.content(sm.get('starting_set_weather_notification_hour')));
+      await context.respond(MessageBuilder.empty());
 
       var setSuccessfully = weather.setNotificationsHour(int.parse(hour));
 
       if (setSuccessfully) {
-        await context.respond(MessageBuilder.content(sm.get('finished_set_weather_notification_hour')));
+        await context.respond(MessageBuilder.content(sm.get('weather_notification_hour_updated')));
       } else {
-        await context.respond(MessageBuilder.content(sm.get('failed_set_weather_notification_hour')));
+        await context.respond(MessageBuilder.content(sm.get('weather_notification_update_failed')));
       }
     });
   }
 
   ChatCommand _write() {
     return ChatCommand('write', 'Write something to the channel', (IChatContext context, String message) async {
-      await context.respond(MessageBuilder.content(sm.get('executing')));
+      await context.respond(MessageBuilder.empty());
 
       if (context.user.id.toString() != adminId) {
         return context.respond(MessageBuilder.content(sm.get('you_are_not_an_admin')));

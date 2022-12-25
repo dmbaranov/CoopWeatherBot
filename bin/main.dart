@@ -40,19 +40,16 @@ void main(List<String> args) {
       weather.DiscordBot(
               token: discordToken, adminId: discordAdminId, guildId: guildId, channelId: channelId, openweatherKey: openweatherKey)
           .startBot();
-      // ..startWeatherPolling(); //     // It was decided to disable weather notifications for now
     }
     if (arguments['platform'] == 'telegram') {
       weather.TelegramBot(
-          token: telegramToken,
-          chatId: chatId,
-          repoUrl: repoUrl,
-          adminId: telegramAdminId,
-          youtubeKey: youtubeKey,
-          openweatherKey: openweatherKey)
-        ..startBot()
-        ..startWeatherPolling()
-        ..startPanoramaNewsPolling();
+              token: telegramToken,
+              chatId: chatId,
+              repoUrl: repoUrl,
+              adminId: telegramAdminId,
+              youtubeKey: youtubeKey,
+              openweatherKey: openweatherKey)
+          .startBot();
     }
   }, (error, stack) {
     print('Error caught');

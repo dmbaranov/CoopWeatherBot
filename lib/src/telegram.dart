@@ -32,20 +32,18 @@ class TelegramBot {
   late int notificationHour = 7;
   late Debouncer<TeleDartInlineQuery?> debouncer = Debouncer(Duration(seconds: 1), initialValue: null);
 
-  TelegramBot(
-      {required this.token,
-      required this.chatId,
-      required this.repoUrl,
-      required this.adminId,
-      required this.youtubeKey,
-      required this.openweatherKey});
+  TelegramBot({required this.token,
+    required this.chatId,
+    required this.repoUrl,
+    required this.adminId,
+    required this.youtubeKey,
+    required this.openweatherKey});
 
   void startBot() async {
     final botName = (await Telegram(token).getMe()).username;
 
     telegram = Telegram(token);
     bot = TeleDart(token, Event(botName!), fetcher: LongPolling(Telegram(token), limit: 100, timeout: 50));
-    weather = Weather(openweatherKey: openweatherKey);
     dadJokes = DadJokes();
     youtube = Youtube(youtubeKey);
 
@@ -57,12 +55,19 @@ class TelegramBot {
     reputation = Reputation(sm: sm);
     await reputation.initReputation();
 
+    weather = Weather(openweatherKey: openweatherKey);
+    weather.initWeather();
+
     _setupListeners();
+
+    _startWeatherPolling();
+    _startPanoramaNewsPolling();
+    // _startJokesPolling();
 
     print('Bot has been started!');
   }
 
-  void startWeatherPolling() {
+  void _startWeatherPolling() {
     var weatherStream = weather.weatherStream;
 
     weatherStream.listen((weatherMessage) async {
@@ -70,11 +75,13 @@ class TelegramBot {
     });
   }
 
-  void startPanoramaNewsPolling() async {
+  void _startPanoramaNewsPolling() async {
     await setupPanoramaNews();
 
     Timer.periodic(Duration(hours: 5, minutes: 41), (_) async {
-      var hour = DateTime.now().hour;
+      var hour = DateTime
+          .now()
+          .hour;
 
       if (hour <= 9 || hour >= 23) return;
 
@@ -82,9 +89,11 @@ class TelegramBot {
     });
   }
 
-  void startJokesPolling() async {
+  void _startJokesPolling() async {
     Timer.periodic(Duration(hours: 2, minutes: 13), (_) async {
-      var hour = DateTime.now().hour;
+      var hour = DateTime
+          .now()
+          .hour;
 
       if (hour <= 9 || hour >= 23) return;
 

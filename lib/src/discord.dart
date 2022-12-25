@@ -41,6 +41,9 @@ class DiscordBot {
 
     weather = Weather(openweatherKey: openweatherKey);
     weather.initWeather();
+
+    // It was decided to disable weather notifications for now
+    // startWeatherPolling();
   }
 
   void startWeatherPolling() {

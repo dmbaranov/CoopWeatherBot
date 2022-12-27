@@ -68,9 +68,20 @@ class DiscordBot {
       ..addCommand(_setWeatherNotificationHour())
       ..addCommand(_write());
 
+    commands.onCommandError.listen((error) {
+      if (error is CheckFailedException) {
+        error.context.respond(MessageBuilder.content(sm.get('you_are_not_an_admin')));
+      }
+    });
+
     return commands;
   }
 
+  Check getAdminCheck() {
+    return Check((context) => context.user.id == adminId.toSnowflake());
+  }
+
+  // TODO: extract get users to a separate method and check 5AM online right from here instead of a separate module
   Future<void> _updateUsersList() async {
     var guild = await bot.fetchGuild(Snowflake(guildId));
     var userIds = [];
@@ -83,10 +94,10 @@ class DiscordBot {
   }
 
   ChatCommand _getIncreaseReputationCommand() {
-    return ChatCommand('increp', 'Increase reputation for the user', (IChatContext context, String who) async {
+    return ChatCommand('increp', 'Increase reputation for the user', (IChatContext context, IMember who) async {
       await context.respond(MessageBuilder.empty());
       var from = context.user.id.toString();
-      var to = who.substring(2, who.length - 1);
+      var to = who.user.id.toString();
 
       var result = await reputation.updateReputation(from, to, 'increase');
 
@@ -95,10 +106,10 @@ class DiscordBot {
   }
 
   ChatCommand _getDecreaseReputationCommand() {
-    return ChatCommand('decrep', 'Increase reputation for the user', (IChatContext context, String who) async {
+    return ChatCommand('decrep', 'Increase reputation for the user', (IChatContext context, IMember who) async {
       await context.respond(MessageBuilder.empty());
       var from = context.user.id.toString();
-      var to = who.substring(2, who.length - 1);
+      var to = who.user.id.toString();
 
       var result = await reputation.updateReputation(from, to, 'decrease');
 
@@ -120,18 +131,13 @@ class DiscordBot {
     return ChatCommand('setrepusers', 'Update reputation users', (IChatContext context) async {
       await context.respond(MessageBuilder.empty());
 
-      // TODO: make a helper function
-      if (context.user.id.toString() != adminId) {
-        return context.respond(MessageBuilder.content(sm.get('you_are_not_an_admin')));
-      }
-
       var reputationUsers = users
           .map((rawUser) => ReputationUser.fromJson({'userId': rawUser.id.toString(), 'reputation': 0, 'fullName': rawUser.username}))
           .toList();
 
       await reputation.setUsers(reputationUsers);
       await context.respond(MessageBuilder.content(sm.get('reputation_users_updated')));
-    });
+    }, checks: [getAdminCheck()]);
   }
 
   ChatCommand _addWeatherCity() {
@@ -210,11 +216,7 @@ class DiscordBot {
     return ChatCommand('write', 'Write something to the channel', (IChatContext context, String message) async {
       await context.respond(MessageBuilder.empty());
 
-      if (context.user.id.toString() != adminId) {
-        return context.respond(MessageBuilder.content(sm.get('you_are_not_an_admin')));
-      }
-
       await bot.httpEndpoints.sendMessage(Snowflake(channelId), MessageBuilder.content(message));
-    });
+    }, checks: [getAdminCheck()]);
   }
 }

@@ -3,13 +3,13 @@
   "error_occurred": "Произошла ошибка",
   "do_not_do_this": "Так делать нельзя",
   "you_are_not_an_admin": "В доступе отказано",
-  "update_completed": "Обновление завершено!\\n\\nChangelog:\\n$update",
+  "update_completed": "Обновление завершено!\n\nChangelog:\n$update",
   "not_found": "Не найдено",
   "self_admire_attempt": "Нельзя повышать собственную репутацию",
   "reputation_increased": "Уважаемый, $name, ваша репутация была увеличена",
   "reputation_decreased": "Уважаемый, $name, ваша репутация была понижена",
   "reputation_change_failed": "Не удалось изменить репутацию",
-  "reputation_message_start": "Текущая репутация:\\n\\n",
+  "reputation_message_start": "Текущая репутация:\n\n",
   "user_reputation": "У $name репутация $reputation",
   "reputation_cave_integrity_failed": "Целостность StoneCave репутации повреждена, изменение репутации отменено",
   "yo": "эй",
@@ -22,5 +22,7 @@
   "get_weather_cities_failed": "Получение списка городов не удалось",
   "get_weather_for_city_failed": "Получение погоды в городе не удалось",
   "weather_notification_hour_updated": "Время для погоды успешно обновлено",
-  "weather_notification_update_failed": "Обновление времени для погоды не удалось"
+  "weather_notification_update_failed": "Обновление времени для погоды не удалось",
+  "users_online_at_five": "Сегодня в 5 часов онлайн:\n\n",
+  "no_users_online_at_five": "Сегодня в 5 часов в онлайне никого нет"
 }

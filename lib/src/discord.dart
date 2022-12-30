@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:nyxx/nyxx.dart';
 import 'package:nyxx_commands/nyxx_commands.dart';
+import 'package:cron/cron.dart';
 
 import 'modules/swearwords_manager.dart';
 import 'modules/reputation.dart';
@@ -42,6 +44,8 @@ class DiscordBot {
     weather = Weather(openweatherKey: openweatherKey);
     weather.initWeather();
 
+    _startHeroCheckJob();
+
     // It was decided to disable weather notifications for now
     // _subscribeToWeather();
   }
@@ -49,6 +53,35 @@ class DiscordBot {
   void _subscribeToWeather() {
     weather.weatherStream.listen((weatherString) {
       bot.httpEndpoints.sendMessage(Snowflake(channelId), MessageBuilder.content(weatherString));
+    });
+  }
+
+  void _startHeroCheckJob() async {
+    Cron().schedule(Schedule.parse('0 5 * * 6,0'), () async {
+      var dir = Directory.current;
+
+      await Process.run('${dir.path}/generate-online', []);
+
+      var onlineFile = File('assets/online');
+      var onlineUsers = await onlineFile.readAsLines();
+
+      if (onlineUsers.isEmpty) {
+        var message = sm.get('no_users_online_at_five');
+        return bot.httpEndpoints.sendMessage(Snowflake(channelId), MessageBuilder.content(message));
+      }
+
+      var heroesMessage = sm.get('users_online_at_five');
+
+      onlineUsers.forEach((userId) {
+        var onlineUser = users.firstWhere((user) => user.id == userId.toSnowflake());
+
+        heroesMessage += onlineUser.username;
+        heroesMessage += '\n';
+      });
+
+      await bot.httpEndpoints.sendMessage(Snowflake(channelId), MessageBuilder.content(heroesMessage));
+
+      await onlineFile.delete();
     });
   }
 
@@ -77,7 +110,7 @@ class DiscordBot {
     return commands;
   }
 
-  Check getAdminCheck() {
+  Check _getAdminCheck() {
     return Check((context) => context.user.id == adminId.toSnowflake());
   }
 
@@ -137,7 +170,7 @@ class DiscordBot {
 
       await reputation.setUsers(reputationUsers);
       await context.respond(MessageBuilder.content(sm.get('reputation_users_updated')));
-    }, checks: [getAdminCheck()]);
+    }, checks: [_getAdminCheck()]);
   }
 
   ChatCommand _addWeatherCity() {
@@ -217,6 +250,6 @@ class DiscordBot {
       await context.respond(MessageBuilder.empty());
 
       await bot.httpEndpoints.sendMessage(Snowflake(channelId), MessageBuilder.content(message));
-    }, checks: [getAdminCheck()]);
+    }, checks: [_getAdminCheck()]);
   }
 }

@@ -57,10 +57,8 @@ class DiscordBot {
   }
 
   void _startHeroCheckJob() async {
-    Cron().schedule(Schedule.parse('0 5 * * 6,0'), () async {
-      var dir = Directory.current;
-
-      await Process.run('${dir.path}/generate-online', []);
+    Cron().schedule(Schedule.parse('0 4 * * 6,0'), () async {
+      await Process.run('${Directory.current}/generate-online', []);
 
       var onlineFile = File('assets/online');
       var onlineUsers = await onlineFile.readAsLines();
@@ -114,7 +112,6 @@ class DiscordBot {
     return Check((context) => context.user.id == adminId.toSnowflake());
   }
 
-  // TODO: extract get users to a separate method and check 5AM online right from here instead of a separate module
   Future<void> _updateUsersList() async {
     var guild = await bot.fetchGuild(Snowflake(guildId));
     var userIds = [];

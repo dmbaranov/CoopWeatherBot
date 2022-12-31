@@ -60,7 +60,7 @@ class DiscordBot {
 
   void _startHeroCheckJob() async {
     Cron().schedule(Schedule.parse('0 4 * * 6,0'), () async {
-      await Process.run('${Directory.current}/generate-online', []);
+      await Process.run('${Directory.current.path}/generate-online', []);
 
       var onlineFile = File('assets/online');
       var onlineUsers = await onlineFile.readAsLines();

@@ -106,6 +106,7 @@ class TelegramBot {
     bot.onCommand('decrep').listen((TeleDartMessage message) => _updateReputation(message, 'decrease'));
     bot.onCommand('replist').listen(_sendReputationList);
     bot.onCommand('searchsong').listen(_searchYoutubeTrack);
+    bot.onCommand('na').listen(_checkIfAlive);
 
     var bullyTagUserRegexp = RegExp(sm.get('bully_tag_user_regexp'), caseSensitive: false);
     bot.onMessage(keyword: bullyTagUserRegexp).listen(_bullyTagUser);
@@ -360,5 +361,9 @@ class TelegramBot {
     var reputationMessage = reputation.getReputationMessage();
 
     await message.reply(reputationMessage);
+  }
+
+  Future<void> _checkIfAlive(TeleDartMessage message) async {
+    await message.reply(sm.get('bot_is_alive'));
   }
 }

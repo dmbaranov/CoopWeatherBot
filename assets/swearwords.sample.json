@@ -24,5 +24,6 @@
   "weather_notification_hour_updated": "Время для погоды успешно обновлено",
   "weather_notification_update_failed": "Обновление времени для погоды не удалось",
   "users_online_at_five": "Сегодня в 5 часов онлайн:\n\n",
-  "no_users_online_at_five": "Сегодня в 5 часов в онлайне никого нет"
+  "no_users_online_at_five": "Сегодня в 5 часов в онлайне никого нет",
+  "bot_is_alive": "Все системы функционируют исправно"
 }

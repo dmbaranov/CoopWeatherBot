@@ -233,7 +233,7 @@ Future<void> updateReputation(TelegramBot self, TeleDartMessage message, String 
 
   var changeResult = await self.reputation.updateReputation(from: fromId, to: toId, type: change, isPremium: message.from?.isPremium);
 
-  await message.reply(changeResult);
+  await self.telegram.sendMessage(self.chatId, changeResult);
 }
 
 Future<void> sendReputationList(TelegramBot self, TeleDartMessage message) async {

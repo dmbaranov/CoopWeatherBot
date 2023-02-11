@@ -6,7 +6,7 @@ environment:
 
 dependencies:
   dotenv: ^4.0.1
-  teledart: ^0.3.4
+  teledart: ^0.5.4
   html: ^0.15.0
   debounce_throttle: ^2.0.0
   crypto: ^3.0.2

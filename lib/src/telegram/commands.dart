@@ -151,7 +151,7 @@ Future<void> sendNewsToChat(TelegramBot self) async {
 
   var message = '${news.title}\n\nFull<a href="${instantViewUrl + news.url}">:</a> ${news.url}';
 
-  await self.telegram.sendMessage(self.chatId, message, parse_mode: 'HTML');
+  await self.telegram.sendMessage(self.chatId, message, parseMode: 'HTML');
 }
 
 Future<void> sendJokeToChat(TelegramBot self) async {
@@ -212,26 +212,26 @@ Future<void> searchYoutubeTrackInline(TelegramBot self, TeleDartInlineQuery quer
     inlineQueryResult.add(InlineQueryResultVideo(
         id: videoId,
         title: videoData['title'],
-        thumb_url: videoData['thumbnails']['high']['url'],
-        mime_type: 'video/mp4',
-        video_duration: 600,
-        video_url: videoUrl,
-        input_message_content: InputTextMessageContent(message_text: videoUrl, disable_web_page_preview: false)));
+        thumbUrl: videoData['thumbnails']['high']['url'],
+        mimeType: 'video/mp4',
+        videoDuration: 600,
+        videoUrl: videoUrl,
+        inputMessageContent: InputTextMessageContent(messageText: videoUrl, disableWebPagePreview: false)));
   });
 
-  await self.bot.answerInlineQuery(query.id, [...inlineQueryResult], cache_time: 10);
+  await self.bot.answerInlineQuery(query.id, [...inlineQueryResult], cacheTime: 10);
 }
 
 Future<void> updateReputation(TelegramBot self, TeleDartMessage message, String change) async {
-  if (message.reply_to_message == null) {
+  if (message.replyToMessage == null) {
     await message.reply(self.sm.get('error_occurred'));
     return;
   }
 
   var fromId = message.from?.id.toString();
-  var toId = message.reply_to_message?.from?.id.toString();
+  var toId = message.replyToMessage?.from?.id.toString();
 
-  var changeResult = await self.reputation.updateReputation(fromId, toId, change);
+  var changeResult = await self.reputation.updateReputation(from: fromId, to: toId, type: change, isPremium: message.from?.isPremium);
 
   await message.reply(changeResult);
 }

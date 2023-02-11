@@ -5,29 +5,32 @@ import 'swearwords_manager.dart';
 import 'stonecave.dart';
 
 const String _pathToReputationCave = 'assets/reputation.cave.json';
+const int _defaultOptionsSize = 3;
+const int _premiumOptionsSize = 6;
 
 class ReputationUser {
-  final int _defaultOptionsSize = 3;
   final String userId;
   String fullName;
   int reputation;
-  int _increaseOptionsLeft = 3;
-  int _decreaseOptionsLeft = 3;
-
-  ReputationUser({required this.userId, required this.reputation, this.fullName = ''});
+  bool isPremium;
+  int _increaseOptionsLeft = _defaultOptionsSize;
+  int _decreaseOptionsLeft = _defaultOptionsSize;
 
   ReputationUser.fromJson(Map<String, dynamic> json)
       : userId = json['userId'],
-        reputation = json['reputation'],
-        fullName = json['fullName'];
+        fullName = json['fullName'] ?? '',
+        reputation = json['reputation'] ?? 0,
+        isPremium = json['isPremium'] ?? false {
+    resetOptions();
+  }
 
   bool get canIncrease => _increaseOptionsLeft > 0;
 
   bool get canDecrease => _decreaseOptionsLeft > 0;
 
   void resetOptions() {
-    _increaseOptionsLeft = _defaultOptionsSize;
-    _decreaseOptionsLeft = _defaultOptionsSize;
+    _increaseOptionsLeft = isPremium ? _premiumOptionsSize : _defaultOptionsSize;
+    _decreaseOptionsLeft = isPremium ? _premiumOptionsSize : _defaultOptionsSize;
   }
 
   void optionUsed(String option) {
@@ -40,7 +43,7 @@ class ReputationUser {
     if (option == 'decrease' && canDecrease) _decreaseOptionsLeft--;
   }
 
-  Map<String, dynamic> toJson() => {'userId': userId, 'reputation': reputation, 'fullName': fullName};
+  Map<String, dynamic> toJson() => {'userId': userId, 'reputation': reputation, 'fullName': fullName, 'isPremium': isPremium};
 }
 
 class Reputation {
@@ -80,7 +83,7 @@ class Reputation {
     });
   }
 
-  Future<String> updateReputation(String? from, String? to, String type) async {
+  Future<String> updateReputation({required String type, String? from, String? to, bool? isPremium}) async {
     var changeResult = '';
 
     if (from == null || to == null) {
@@ -97,6 +100,10 @@ class Reputation {
 
     if (userToUpdate == null || changeAuthor == null) {
       return sm.get('error_occurred');
+    }
+
+    if (isPremium != null) {
+      changeAuthor.isPremium = isPremium;
     }
 
     if (userToUpdate.userId == changeAuthor.userId) {

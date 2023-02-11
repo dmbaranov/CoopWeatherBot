@@ -11,7 +11,7 @@ ChatCommand getIncreaseReputationCommand(DiscordBot self) {
     var from = context.user.id.toString();
     var to = who.user.id.toString();
 
-    var result = await self.reputation.updateReputation(from, to, 'increase');
+    var result = await self.reputation.updateReputation(from: from, to: to, type: 'increase');
 
     await context.respond(MessageBuilder.content(result));
   });
@@ -23,7 +23,7 @@ ChatCommand getDecreaseReputationCommand(DiscordBot self) {
     var from = context.user.id.toString();
     var to = who.user.id.toString();
 
-    var result = await self.reputation.updateReputation(from, to, 'decrease');
+    var result = await self.reputation.updateReputation(from: from, to: to, type: 'decrease');
 
     await context.respond(MessageBuilder.content(result));
   });

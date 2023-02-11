@@ -22,6 +22,12 @@ class ReputationUser {
         reputation = json['reputation'] ?? 0,
         isPremium = json['isPremium'] ?? false {
     resetOptions();
+
+    if (isPremium && !fullName.contains('⭐')) {
+      fullName += ' ⭐';
+    } else if (!isPremium && fullName.contains('⭐')) {
+      fullName = fullName.replaceAll(' ⭐', '');
+    }
   }
 
   bool get canIncrease => _increaseOptionsLeft > 0;

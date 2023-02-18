@@ -15,7 +15,7 @@
   "yo": "эй",
   "dude": "чувак",
   "bully_weather_regexp": "эй\\,?\\s{0,}чувак\\,?",
-  "bully_tag_user_regexp": "эй\\,?\\s{0,}чувак$",
+  "bully_tag_user_regexp": "эй\\,?\\s{0,}чувак",
   "reputation_users_updated": "Список юзеров обновлен",
   "cities_list_updated": "Список городов обновлен",
   "cities_list_update_failed": "Обновление списка городов не удалось",

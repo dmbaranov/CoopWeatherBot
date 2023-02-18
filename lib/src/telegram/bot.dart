@@ -85,7 +85,7 @@ class TelegramBot {
   }
 
   void _startJokesJob() async {
-    Cron().schedule(Schedule.parse('0 8-20/4 * * *'), () async {
+    Cron().schedule(Schedule.parse('30 11,17,21 * * *'), () async {
       await sendJokeToChat(this);
     });
   }
@@ -110,9 +110,6 @@ class TelegramBot {
 
     var bullyTagUserRegexp = RegExp(sm.get('bully_tag_user_regexp'), caseSensitive: false);
     bot.onMessage(keyword: bullyTagUserRegexp).listen((event) => bullyTagUser(this, event));
-
-    var bullyWeatherMessageRegexp = RegExp(sm.get('bully_weather_regexp'), caseSensitive: false);
-    bot.onMessage(keyword: bullyWeatherMessageRegexp).listen((event) => getBullyWeatherForCity(this, event));
 
     bot.onInlineQuery().listen((query) {
       debouncer.value = query;

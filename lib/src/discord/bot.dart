@@ -90,16 +90,17 @@ class DiscordBot {
     var commands = CommandsPlugin(prefix: (message) => '!', guild: Snowflake(guildId));
 
     commands
-      ..addCommand(getIncreaseReputationCommand(this))
-      ..addCommand(getDecreaseReputationCommand(this))
-      ..addCommand(getReputationListCommand(this))
-      ..addCommand(getGenerateReputationUsersCommand(this))
+      ..addCommand(increaseReputation(this))
+      ..addCommand(decreaseReputation(this))
+      ..addCommand(getReputationList(this))
+      ..addCommand(generateReputationUsers(this))
       ..addCommand(addWeatherCity(this))
       ..addCommand(removeWeatherCity(this))
       ..addCommand(getWeatherWatchlist(this))
       ..addCommand(getWeatherForCity(this))
       ..addCommand(setWeatherNotificationHour(this))
-      ..addCommand(write(this));
+      ..addCommand(write(this))
+      ..addCommand(moveAllToDifferentChannel(this));
 
     commands.onCommandError.listen((error) {
       if (error is CheckFailedException) {

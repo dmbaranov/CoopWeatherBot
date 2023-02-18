@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:nyxx/nyxx.dart';
 import 'package:nyxx_commands/nyxx_commands.dart';
 
@@ -5,7 +8,7 @@ import 'package:weather/src/modules/reputation.dart';
 
 import './bot.dart';
 
-ChatCommand getIncreaseReputationCommand(DiscordBot self) {
+ChatCommand increaseReputation(DiscordBot self) {
   return ChatCommand('increp', 'Increase reputation for the user', (IChatContext context, IMember who) async {
     await context.respond(MessageBuilder.empty());
     var from = context.user.id.toString();
@@ -17,7 +20,7 @@ ChatCommand getIncreaseReputationCommand(DiscordBot self) {
   });
 }
 
-ChatCommand getDecreaseReputationCommand(DiscordBot self) {
+ChatCommand decreaseReputation(DiscordBot self) {
   return ChatCommand('decrep', 'Increase reputation for the user', (IChatContext context, IMember who) async {
     await context.respond(MessageBuilder.empty());
     var from = context.user.id.toString();
@@ -29,7 +32,7 @@ ChatCommand getDecreaseReputationCommand(DiscordBot self) {
   });
 }
 
-ChatCommand getReputationListCommand(DiscordBot self) {
+ChatCommand getReputationList(DiscordBot self) {
   return ChatCommand('replist', 'Get current reputation', (IChatContext context) async {
     await context.respond(MessageBuilder.empty());
 
@@ -39,7 +42,7 @@ ChatCommand getReputationListCommand(DiscordBot self) {
   });
 }
 
-ChatCommand getGenerateReputationUsersCommand(DiscordBot self) {
+ChatCommand generateReputationUsers(DiscordBot self) {
   return ChatCommand('setrepusers', 'Update reputation users', (IChatContext context) async {
     await context.respond(MessageBuilder.empty());
 
@@ -129,5 +132,28 @@ ChatCommand write(DiscordBot self) {
     await context.respond(MessageBuilder.empty());
 
     await self.bot.httpEndpoints.sendMessage(Snowflake(self.channelId), MessageBuilder.content(message));
+  }, checks: [self.isAdminCheck()]);
+}
+
+ChatCommand moveAllToDifferentChannel(DiscordBot self) {
+  return ChatCommand('moveall', 'Move all users from one voice channel to another',
+      (IChatContext context, IChannel fromChannel, IChannel toChannel) async {
+    await context.respond(MessageBuilder.empty());
+
+    await Process.run('${Directory.current.path}/generate-channel-users', []);
+
+    var channelUsersFile = File('assets/channels-users');
+    var channelsWithUsersRaw = await channelUsersFile.readAsLines();
+
+    Map<String, dynamic> channelsWithUsers = jsonDecode(channelsWithUsersRaw[0]);
+    List usersToMove = channelsWithUsers[fromChannel.toString()];
+
+    usersToMove.forEach((user) {
+      var builder = MemberBuilder()..channel = Snowflake(toChannel);
+
+      self.bot.httpEndpoints.editGuildMember(Snowflake(self.guildId), Snowflake(user), builder: builder);
+    });
+
+    await channelUsersFile.delete();
   }, checks: [self.isAdminCheck()]);
 }

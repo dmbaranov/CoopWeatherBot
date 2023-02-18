@@ -25,6 +25,7 @@ class TelegramBot {
   late SwearwordsManager sm;
   late Weather weather;
   late DadJokes dadJokes;
+  late PanoramaNews panoramaNews;
   late Reputation reputation;
   late Youtube youtube;
   late int notificationHour = 7;
@@ -44,24 +45,27 @@ class TelegramBot {
     telegram = Telegram(token);
     bot = TeleDart(token, Event(botName!), fetcher: LongPolling(Telegram(token), limit: 100, timeout: 50));
     dadJokes = DadJokes();
+    panoramaNews = PanoramaNews();
     youtube = Youtube(youtubeKey);
 
     bot.start();
 
     sm = SwearwordsManager();
-    await sm.initSwearwords();
+    await sm.initialize();
 
     reputation = Reputation(sm: sm);
     await reputation.initReputation();
 
     weather = Weather(openweatherKey: openweatherKey);
-    weather.initWeather();
+    weather.initialize();
+
+    await panoramaNews.initialize();
 
     _setupListeners();
 
     _subscribeToWeather();
     _startPanoramaNewsJob();
-    // _startJokesJob();
+    _startJokesJob();
 
     print('Bot has been started!');
   }
@@ -75,15 +79,13 @@ class TelegramBot {
   }
 
   void _startPanoramaNewsJob() async {
-    await setupPanoramaNews();
-
     Cron().schedule(Schedule.parse('0 10,15,20 * * *'), () async {
       await sendNewsToChat(this);
     });
   }
 
   void _startJokesJob() async {
-    Cron().schedule(Schedule.parse('0 */3 * * *'), () async {
+    Cron().schedule(Schedule.parse('0 */4 * * *'), () async {
       await sendJokeToChat(this);
     });
   }

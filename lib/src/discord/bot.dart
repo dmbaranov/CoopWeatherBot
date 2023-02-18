@@ -38,13 +38,13 @@ class DiscordBot {
     await _updateUsersList();
 
     sm = SwearwordsManager();
-    await sm.initSwearwords();
+    await sm.initialize();
 
     reputation = Reputation(sm: sm);
     await reputation.initReputation();
 
     weather = Weather(openweatherKey: openweatherKey);
-    weather.initWeather();
+    weather.initialize();
 
     // It was decided to disable weather notifications for now
     // _subscribeToWeather();

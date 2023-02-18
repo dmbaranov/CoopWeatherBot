@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+const _dadJokesUrl = 'https://icanhazdadjoke.com/';
+
 class DadJokesJoke {
   final String joke;
 
@@ -12,10 +14,10 @@ class DadJokesJoke {
 }
 
 class DadJokes {
-  final String apiBaseUrl = 'https://icanhazdadjoke.com/';
+  final String _apiBaseUrl = _dadJokesUrl;
 
   Future<DadJokesJoke> getJoke() async {
-    var request = await HttpClient().getUrl(Uri.parse(apiBaseUrl));
+    var request = await HttpClient().getUrl(Uri.parse(_apiBaseUrl));
     request.headers.add('Accept', 'application/json');
 
     var response = await request.close();

@@ -51,7 +51,7 @@ class Weather {
 
   Weather({required this.openweatherKey});
 
-  void initWeather() {
+  void initialize() {
     _openWeather = OpenWeather(openweatherKey);
     _citiesFile = io.File('assets/cities.txt');
     _weatherStreamController = StreamController<String>.broadcast();

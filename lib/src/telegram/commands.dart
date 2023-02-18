@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io' as io;
 import 'package:teledart/model.dart';
-import 'package:weather/src/modules/panorama.dart';
 
 import './bot.dart';
 import './utils.dart';
@@ -143,9 +142,8 @@ void postUpdateMessage(TelegramBot self, TeleDartMessage message) async {
 }
 
 Future<void> sendNewsToChat(TelegramBot self) async {
-  // TODO: create a class for the news and use it through self instead of importing module directly
   var instantViewUrl = 'a.devs.today/';
-  var news = await getNews();
+  var news = await self.panoramaNews.getNews();
 
   if (news.title.isEmpty) return;
 

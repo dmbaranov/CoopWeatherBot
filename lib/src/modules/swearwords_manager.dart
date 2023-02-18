@@ -4,7 +4,7 @@ import 'dart:convert';
 class SwearwordsManager {
   late Map<String, String> swearwords;
 
-  Future<void> initSwearwords() async {
+  Future<void> initialize() async {
     var rawSwearwords = await File('assets/swearwords.json').readAsString();
 
     swearwords = Map<String, String>.from(json.decode(rawSwearwords));

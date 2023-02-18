@@ -85,7 +85,7 @@ class TelegramBot {
   }
 
   void _startJokesJob() async {
-    Cron().schedule(Schedule.parse('0 */4 * * *'), () async {
+    Cron().schedule(Schedule.parse('0 8-20/4 * * *'), () async {
       await sendJokeToChat(this);
     });
   }

@@ -265,7 +265,7 @@ Future<void> startAccordionPoll(TelegramBot self, TeleDartMessage message) async
     return;
   }
 
-  const pollTime = 5;
+  const pollTime = 180;
   var pollOptions = [self.sm.get('accordion_option_yes'), self.sm.get('accordion_option_no'), self.sm.get('accordion_option_maybe')];
 
   self.accordionPoll.startPoll(votedMessageAuthor.id.toString());

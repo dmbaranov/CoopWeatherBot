@@ -25,5 +25,17 @@
   "weather_notification_update_failed": "Обновление времени для погоды не удалось",
   "users_online_at_five": "Сегодня в 5 часов онлайн:\n\n",
   "no_users_online_at_five": "Сегодня в 5 часов в онлайне никого нет",
-  "bot_is_alive": "Все системы функционируют исправно"
+  "bot_is_alive": "Все системы функционируют исправно",
+  "accordion_vote_title": "Баян?",
+  "accordion_option_yes": "Да",
+  "accordion_option_no": "Нет",
+  "accordion_option_maybe": "Не знаю",
+  "accordion_explanation": "Как ты думаешь, это баян или нет?",
+  "accordion_no_results": "Никто не принял участие в голосовании",
+  "accordion_vote_in_progress": "Голосование уже запущено",
+  "accordion_message_not_chosen": "Выбери сообщение, за которое ты хочешь проголосовать",
+  "accordion_bot_message": "Бот никогда не постит баяны",
+  "accordion_yes_voted": "Решение принято. Это баян",
+  "accordion_no_voted": "Решение принятно. Это не баян",
+  "accordion_maybe_voted": "Решение принято. Голосущие не пришли к соглашению"
 }

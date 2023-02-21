@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:math';
 import 'dart:io' as io;
 import 'package:teledart/model.dart';
+import 'package:weather/src/modules/accordion_poll.dart';
 
 import './bot.dart';
 import './utils.dart';
@@ -242,4 +244,61 @@ Future<void> sendReputationList(TelegramBot self, TeleDartMessage message) async
 
 Future<void> checkIfAlive(TelegramBot self, TeleDartMessage message) async {
   await message.reply(self.sm.get('bot_is_alive'));
+}
+
+Future<void> startAccordionPoll(TelegramBot self, TeleDartMessage message) async {
+  if (self.accordionPoll.isVoteActive) {
+    await message.reply(self.sm.get('accordion_vote_in_progress'));
+
+    return;
+  }
+
+  var votedMessageAuthor = message.replyToMessage?.from;
+
+  if (votedMessageAuthor == null) {
+    await message.reply(self.sm.get('accordion_message_not_chosen'));
+
+    return;
+  } else if (votedMessageAuthor.isBot) {
+    await message.reply(self.sm.get('accordion_bot_message'));
+
+    return;
+  }
+
+  const pollTime = 5;
+  var pollOptions = [self.sm.get('accordion_option_yes'), self.sm.get('accordion_option_no'), self.sm.get('accordion_option_maybe')];
+
+  self.accordionPoll.startPoll(votedMessageAuthor.id.toString());
+
+  var createdPoll = await self.telegram.sendPoll(
+    self.chatId,
+    self.sm.get('accordion_vote_title'),
+    pollOptions,
+    explanation: self.sm.get('accordion_explanation'),
+    type: 'quiz',
+    correctOptionId: Random().nextInt(pollOptions.length),
+    openPeriod: pollTime,
+  );
+
+  var pollSubscription = self.bot.onPoll().listen((poll) {
+    if (createdPoll.poll?.id != poll.id) {
+      print('Wrong poll');
+      return;
+    }
+
+    var currentPollResults = {
+      VoteOption.yes: poll.options[0].voterCount,
+      VoteOption.no: poll.options[1].voterCount,
+      VoteOption.maybe: poll.options[2].voterCount
+    };
+
+    self.accordionPoll.voteResult = currentPollResults;
+  });
+
+  await Future.delayed(Duration(seconds: pollTime));
+
+  var voteResult = self.accordionPoll.endVoteAndGetResults();
+
+  await self.telegram.sendMessage(self.chatId, voteResult);
+  await pollSubscription.cancel();
 }

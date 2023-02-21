@@ -10,6 +10,7 @@ import 'package:weather/src/modules/panorama.dart';
 import 'package:weather/src/modules/dadjokes.dart';
 import 'package:weather/src/modules/reputation.dart';
 import 'package:weather/src/modules/youtube.dart';
+import 'package:weather/src/modules/accordion_poll.dart';
 
 import './commands.dart';
 
@@ -28,6 +29,7 @@ class TelegramBot {
   late PanoramaNews panoramaNews;
   late Reputation reputation;
   late Youtube youtube;
+  late AccordionPoll accordionPoll;
   late int notificationHour = 7;
   late Debouncer<TeleDartInlineQuery?> debouncer = Debouncer(Duration(seconds: 1), initialValue: null);
 
@@ -60,6 +62,8 @@ class TelegramBot {
     weather.initialize();
 
     await panoramaNews.initialize();
+
+    accordionPoll = AccordionPoll(sm: sm);
 
     _setupListeners();
 
@@ -107,6 +111,7 @@ class TelegramBot {
     bot.onCommand('replist').listen((event) => sendReputationList(this, event));
     bot.onCommand('searchsong').listen((event) => searchYoutubeTrack(this, event));
     bot.onCommand('na').listen((event) => checkIfAlive(this, event));
+    bot.onCommand('accordion').listen((event) => startAccordionPoll(this, event));
 
     var bullyTagUserRegexp = RegExp(sm.get('bully_tag_user_regexp'), caseSensitive: false);
     bot.onMessage(keyword: bullyTagUserRegexp).listen((event) => bullyTagUser(this, event));

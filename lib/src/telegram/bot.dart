@@ -5,6 +5,7 @@ import 'package:debounce_throttle/debounce_throttle.dart';
 import 'package:cron/cron.dart';
 
 import 'package:weather/src/modules/swearwords_manager.dart';
+import 'package:weather/src/modules/user_manager.dart';
 import 'package:weather/src/modules/weather.dart';
 import 'package:weather/src/modules/panorama.dart';
 import 'package:weather/src/modules/dadjokes.dart';
@@ -24,6 +25,7 @@ class TelegramBot {
   late TeleDart bot;
   late Telegram telegram;
   late SwearwordsManager sm;
+  late UserManager userManager;
   late Weather weather;
   late DadJokes dadJokes;
   late PanoramaNews panoramaNews;
@@ -55,8 +57,11 @@ class TelegramBot {
     sm = SwearwordsManager();
     await sm.initialize();
 
+    userManager = UserManager();
+    await userManager.initialize();
+
     reputation = Reputation(sm: sm);
-    await reputation.initReputation();
+    await reputation.initialize();
 
     weather = Weather(openweatherKey: openweatherKey);
     weather.initialize();

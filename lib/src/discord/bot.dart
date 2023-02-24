@@ -41,7 +41,7 @@ class DiscordBot {
     await sm.initialize();
 
     reputation = Reputation(sm: sm);
-    await reputation.initReputation();
+    await reputation.initialize();
 
     weather = Weather(openweatherKey: openweatherKey);
     weather.initialize();

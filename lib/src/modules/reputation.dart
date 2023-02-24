@@ -59,7 +59,7 @@ class Reputation {
 
   Reputation({required this.sm});
 
-  Future<void> initReputation() async {
+  Future<void> initialize() async {
     stoneCave = StoneCave(cavepath: _pathToReputationCave);
     await stoneCave.initialize();
 

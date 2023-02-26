@@ -42,6 +42,7 @@ void getWeatherForCity(TelegramBot self, TeleDartMessage message) async {
 
   if (city.isEmpty) {
     await message.reply('Provide a city!');
+
     return;
   }
 
@@ -52,10 +53,6 @@ void getWeatherForCity(TelegramBot self, TeleDartMessage message) async {
   } else {
     await message.reply('There was an error processing your request! Try again');
   }
-}
-
-void ping(TelegramBot self, TeleDartMessage message) async {
-  // various things to test are here
 }
 
 void setNotificationHour(TelegramBot self, TeleDartMessage message) async {
@@ -98,10 +95,11 @@ void getBullyWeatherForCity(TelegramBot self, TeleDartMessage message) async {
 
 void bullyTagUser(TelegramBot self, TeleDartMessage message) async {
   var denisId = 354903232;
+  var messageAuthorId = message.from?.id;
 
-  if (message.from?.id == self.adminId) {
+  if (messageAuthorId == self.adminId) {
     await message.reply('@daimonil');
-  } else if (message.from?.id == denisId) {
+  } else if (messageAuthorId == denisId) {
     await message.reply('@dmbaranov_io');
   }
 }
@@ -109,6 +107,7 @@ void bullyTagUser(TelegramBot self, TeleDartMessage message) async {
 void writeToCoop(TelegramBot self, TeleDartMessage message) async {
   if (message.text == null) {
     await message.reply(self.sm.get('do_not_do_this'));
+
     return;
   }
 
@@ -124,8 +123,8 @@ void writeToCoop(TelegramBot self, TeleDartMessage message) async {
   }
 }
 
-void postUpdateMessage(TelegramBot self, TeleDartMessage message) async {
-  var commitsApiUrl = 'https://api.github.com/repos' + self.repoUrl + '/commits';
+void postUpdateMessage(TelegramBot self) async {
+  var commitsApiUrl = 'https://api.github.com/repos${self.repoUrl}/commits';
 
   var request = await io.HttpClient().getUrl(Uri.parse(commitsApiUrl));
   var response = await request.close();
@@ -163,6 +162,7 @@ Future<void> sendJokeToChat(TelegramBot self) async {
 Future<void> sendRealMusic(TelegramBot self, TeleDartMessage message) async {
   if (message.text == null || message.text?.contains('music.youtube.com') == false) {
     await message.reply(self.sm.get('do_not_do_this'));
+
     return;
   }
 
@@ -187,6 +187,7 @@ Future<void> searchYoutubeTrack(TelegramBot self, TeleDartMessage message) async
 
   if (query == null || query.isEmpty) {
     await message.reply(self.sm.get('do_not_do_this'));
+
     return;
   }
 
@@ -225,6 +226,7 @@ Future<void> searchYoutubeTrackInline(TelegramBot self, TeleDartInlineQuery quer
 Future<void> updateReputation(TelegramBot self, TeleDartMessage message, String change) async {
   if (message.replyToMessage == null) {
     await message.reply(self.sm.get('error_occurred'));
+
     return;
   }
 
@@ -283,6 +285,7 @@ Future<void> startAccordionPoll(TelegramBot self, TeleDartMessage message) async
   var pollSubscription = self.bot.onPoll().listen((poll) {
     if (createdPoll.poll?.id != poll.id) {
       print('Wrong poll');
+
       return;
     }
 

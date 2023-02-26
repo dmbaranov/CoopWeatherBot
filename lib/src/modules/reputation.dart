@@ -23,9 +23,11 @@ class ReputationUser {
         isPremium = json['isPremium'] ?? false {
     resetOptions();
 
-    if (isPremium && !fullName.contains('⭐')) {
+    var markedAsPremium = fullName.contains('⭐');
+
+    if (isPremium && !markedAsPremium) {
       fullName += ' ⭐';
-    } else if (!isPremium && fullName.contains('⭐')) {
+    } else if (!isPremium && markedAsPremium) {
       fullName = fullName.replaceAll(' ⭐', '');
     }
   }

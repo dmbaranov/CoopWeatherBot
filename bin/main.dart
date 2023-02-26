@@ -8,7 +8,7 @@ import 'package:weather/weather.dart' as weather;
 ArgResults getRunArguments(List<String> args) {
   var parser = ArgParser()..addOption('platform', abbr: 'p', allowed: ['discord', 'telegram'], mandatory: true);
 
-  var parsedArguments;
+  ArgResults parsedArguments;
 
   try {
     parsedArguments = parser.parse(args);

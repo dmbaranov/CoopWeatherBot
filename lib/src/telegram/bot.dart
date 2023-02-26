@@ -82,8 +82,8 @@ class TelegramBot {
   void _subscribeToWeather() {
     var weatherStream = weather.weatherStream;
 
-    weatherStream.listen((weatherMessage) async {
-      await telegram.sendMessage(chatId, weatherMessage);
+    weatherStream.listen((weatherMessage) {
+      telegram.sendMessage(chatId, weatherMessage);
     });
   }
 
@@ -106,8 +106,7 @@ class TelegramBot {
     bot.onCommand('getweather').listen((event) => getWeatherForCity(this, event));
     bot.onCommand('setnotificationhour').listen((event) => setNotificationHour(this, event));
     bot.onCommand('write').listen((event) => writeToCoop(this, event));
-    bot.onCommand('ping').listen((event) => ping(this, event));
-    bot.onCommand('updatemessage').listen((event) => postUpdateMessage(this, event));
+    bot.onCommand('updatemessage').listen((event) => postUpdateMessage(this));
     bot.onCommand('sendnews').listen((event) => sendNewsToChat(this));
     bot.onCommand('sendjoke').listen((event) => sendJokeToChat(this));
     bot.onCommand('sendrealmusic').listen((event) => sendRealMusic(this, event));

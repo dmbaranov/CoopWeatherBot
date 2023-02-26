@@ -46,16 +46,7 @@ class DiscordBot {
     weather = Weather(openweatherKey: openweatherKey);
     weather.initialize();
 
-    // It was decided to disable weather notifications for now
-    // _subscribeToWeather();
-
     _startHeroCheckJob();
-  }
-
-  void _subscribeToWeather() {
-    weather.weatherStream.listen((weatherString) {
-      bot.httpEndpoints.sendMessage(Snowflake(channelId), MessageBuilder.content(weatherString));
-    });
   }
 
   void _startHeroCheckJob() async {
@@ -67,6 +58,7 @@ class DiscordBot {
 
       if (onlineUsers.isEmpty) {
         var message = sm.get('no_users_online_at_five');
+
         return bot.httpEndpoints.sendMessage(Snowflake(channelId), MessageBuilder.content(message));
       }
 
@@ -123,6 +115,6 @@ class DiscordBot {
     await Future.wait([usersStream.asFuture()]);
 
     users = await Future.wait(userIds.map((userId) async => await bot.fetchUser(Snowflake(userId))));
-    users = users.where((user) => user.bot == false).toList();
+    users = users.where((user) => !user.bot).toList();
   }
 }

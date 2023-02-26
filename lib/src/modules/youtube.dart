@@ -19,6 +19,7 @@ class Youtube {
     }
 
     var responseJson = json.decode(rawResponse);
+
     return responseJson;
   }
 
@@ -30,6 +31,7 @@ class Youtube {
     }
 
     var videoId = response['items'][0]['id']['videoId'];
+    
     return 'https://www.youtube.com/watch?v=$videoId';
   }
 

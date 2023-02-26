@@ -106,6 +106,7 @@ ChatCommand getWeatherForCity(DiscordBot self) {
 
     if (temperature == null) {
       await context.respond(MessageBuilder.content(self.sm.get('get_weather_for_city_failed')));
+
       return;
     }
 

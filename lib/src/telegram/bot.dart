@@ -6,7 +6,7 @@ import 'package:cron/cron.dart';
 
 import 'package:weather/src/modules/swearwords_manager.dart';
 import 'package:weather/src/modules/user_manager.dart';
-import 'package:weather/src/modules/weather.dart';
+import 'package:weather/src/modules/weather_manager.dart';
 import 'package:weather/src/modules/panorama.dart';
 import 'package:weather/src/modules/dadjokes.dart';
 import 'package:weather/src/modules/reputation.dart';
@@ -26,7 +26,7 @@ class TelegramBot {
   late Telegram telegram;
   late SwearwordsManager sm;
   late UserManager userManager;
-  late Weather weather;
+  late WeatherManager weatherManager;
   late DadJokes dadJokes;
   late PanoramaNews panoramaNews;
   late Reputation reputation;
@@ -63,8 +63,8 @@ class TelegramBot {
     reputation = Reputation(sm: sm);
     await reputation.initialize();
 
-    weather = Weather(openweatherKey: openweatherKey);
-    weather.initialize();
+    weatherManager = WeatherManager(openweatherKey: openweatherKey);
+    weatherManager.initialize();
 
     await panoramaNews.initialize();
 
@@ -73,6 +73,7 @@ class TelegramBot {
     _setupListeners();
 
     _subscribeToWeather();
+    _subscribeToUsersUpdate();
     _startPanoramaNewsJob();
     _startJokesJob();
 
@@ -80,10 +81,18 @@ class TelegramBot {
   }
 
   void _subscribeToWeather() {
-    var weatherStream = weather.weatherStream;
+    var weatherStream = weatherManager.weatherStream;
 
     weatherStream.listen((weatherMessage) {
       telegram.sendMessage(chatId, weatherMessage);
+    });
+  }
+
+  void _subscribeToUsersUpdate() {
+    var userManagerStream = userManager.userManagerStream;
+
+    userManagerStream.listen((_) {
+      print('TODO: update users');
     });
   }
 

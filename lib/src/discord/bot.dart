@@ -7,7 +7,7 @@ import 'package:cron/cron.dart';
 
 import 'package:weather/src/modules/swearwords_manager.dart';
 import 'package:weather/src/modules/reputation.dart';
-import 'package:weather/src/modules/weather.dart';
+import 'package:weather/src/modules/weather_manager.dart';
 
 import './commands.dart';
 
@@ -21,7 +21,7 @@ class DiscordBot {
   late List<IUser> users;
   late SwearwordsManager sm;
   late Reputation reputation;
-  late Weather weather;
+  late WeatherManager weatherManager;
 
   DiscordBot({required this.token, required this.adminId, required this.guildId, required this.channelId, required this.openweatherKey});
 
@@ -43,8 +43,8 @@ class DiscordBot {
     reputation = Reputation(sm: sm);
     await reputation.initialize();
 
-    weather = Weather(openweatherKey: openweatherKey);
-    weather.initialize();
+    weatherManager = WeatherManager(openweatherKey: openweatherKey);
+    weatherManager.initialize();
 
     _startHeroCheckJob();
   }

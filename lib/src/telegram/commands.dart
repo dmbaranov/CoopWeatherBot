@@ -11,7 +11,7 @@ import './utils.dart';
 void addCity(TelegramBot self, TeleDartMessage message) async {
   var cityToAdd = getOneParameterFromMessage(message);
 
-  var result = await self.weather.addCity(cityToAdd);
+  var result = await self.weatherManager.addCity(cityToAdd);
 
   if (result) {
     await message.reply('City $cityToAdd has been added to the watchlist!');
@@ -23,7 +23,7 @@ void addCity(TelegramBot self, TeleDartMessage message) async {
 void removeCity(TelegramBot self, TeleDartMessage message) async {
   var cityToRemove = getOneParameterFromMessage(message);
 
-  var result = await self.weather.removeCity(cityToRemove);
+  var result = await self.weatherManager.removeCity(cityToRemove);
 
   if (result) {
     await message.reply('City $cityToRemove has been removed from the watchlist!');
@@ -33,7 +33,7 @@ void removeCity(TelegramBot self, TeleDartMessage message) async {
 }
 
 void getWatchlist(TelegramBot self, TeleDartMessage message) async {
-  var citiesString = await self.weather.getWatchList();
+  var citiesString = await self.weatherManager.getWatchList();
 
   await message.reply("I'm watching these cities:\n$citiesString");
 }
@@ -47,7 +47,7 @@ void getWeatherForCity(TelegramBot self, TeleDartMessage message) async {
     return;
   }
 
-  var temperature = await self.weather.getWeatherForCity(city);
+  var temperature = await self.weatherManager.getWeatherForCity(city);
 
   if (temperature != null) {
     await message.reply('In city $city the temperature is $temperature°C');
@@ -59,7 +59,7 @@ void getWeatherForCity(TelegramBot self, TeleDartMessage message) async {
 void setNotificationHour(TelegramBot self, TeleDartMessage message) async {
   var nextHour = getOneParameterFromMessage(message);
 
-  var result = self.weather.setNotificationsHour(int.parse(nextHour));
+  var result = self.weatherManager.setNotificationsHour(int.parse(nextHour));
 
   if (result) {
     await message.reply('Notification hour has been set to $nextHour');
@@ -80,7 +80,7 @@ void getBullyWeatherForCity(TelegramBot self, TeleDartMessage message) async {
   var city = messageWords[2];
 
   try {
-    var temperature = await self.weather.getWeatherForCity(city);
+    var temperature = await self.weatherManager.getWeatherForCity(city);
 
     if (temperature == null) {
       throw 'No temperature';

@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
 import 'package:collection/collection.dart';
+import 'package:cron/cron.dart';
 
 const String _pathToUsersFile = 'assets/users.json';
 
@@ -23,8 +25,12 @@ class UMUser {
 class UserManager {
   final File _usersFile = File(_pathToUsersFile);
   final List<UMUser> _users = [];
+  late StreamController<int> _userManagerStreamController;
+  ScheduledTask? _userManagerCronTask;
 
   List<UMUser> get users => _users;
+
+  Stream<int> get userManagerStream => _userManagerStreamController.stream;
 
   Future<void> initialize() async {
     var rawUsersFromFile = await _usersFile.readAsString();
@@ -33,6 +39,9 @@ class UserManager {
     usersFromFile.forEach((rawUser) {
       _users.add(UMUser.fromJson(rawUser));
     });
+
+    _userManagerStreamController = StreamController<int>.broadcast();
+    _updateUserManagerStream();
   }
 
   Future<bool> addUser(UMUser userToAdd) async {
@@ -67,5 +76,13 @@ class UserManager {
     var usersJson = json.encode(_users.map((user) => user.toJson()).toList());
 
     await _usersFile.writeAsString(usersJson);
+  }
+
+  void _updateUserManagerStream() {
+    _userManagerCronTask?.cancel();
+
+    _userManagerCronTask = Cron().schedule(Schedule.parse('0 0 * * *'), () {
+      _userManagerStreamController.sink.add(0);
+    });
   }
 }

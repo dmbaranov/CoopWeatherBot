@@ -41,7 +41,7 @@ class OpenWeather {
   }
 }
 
-class Weather {
+class WeatherManager {
   final String openweatherKey;
   int _notificationHour = 7;
   late OpenWeather _openWeather;
@@ -49,7 +49,7 @@ class Weather {
   late io.File _citiesFile;
   ScheduledTask? _weatherCronTask;
 
-  Weather({required this.openweatherKey});
+  WeatherManager({required this.openweatherKey});
 
   void initialize() {
     _openWeather = OpenWeather(openweatherKey);

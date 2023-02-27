@@ -60,7 +60,7 @@ ChatCommand addWeatherCity(DiscordBot self) {
   return ChatCommand('addcity', 'Add city to receive periodic updates about the weather', (IChatContext context, String city) async {
     await context.respond(MessageBuilder.empty());
 
-    var addedSuccessfully = await self.weather.addCity(city);
+    var addedSuccessfully = await self.weatherManager.addCity(city);
 
     if (addedSuccessfully) {
       await context.respond(MessageBuilder.content(self.sm.get('cities_list_updated')));
@@ -75,7 +75,7 @@ ChatCommand removeWeatherCity(DiscordBot self) {
       (IChatContext context, String city) async {
     await context.respond(MessageBuilder.empty());
 
-    var removedSuccessfully = await self.weather.removeCity(city);
+    var removedSuccessfully = await self.weatherManager.removeCity(city);
 
     if (removedSuccessfully) {
       await context.respond(MessageBuilder.content(self.sm.get('cities_list_updated')));
@@ -89,7 +89,7 @@ ChatCommand getWeatherWatchlist(DiscordBot self) {
   return ChatCommand('getcities', 'Get the list of cities for which weather is being tracked', (IChatContext context) async {
     await context.respond(MessageBuilder.empty());
 
-    var citiesList = await self.weather.getWatchList();
+    var citiesList = await self.weatherManager.getWatchList();
 
     if (citiesList.isNotEmpty) {
       await context.respond(MessageBuilder.content(citiesList));
@@ -103,7 +103,7 @@ ChatCommand getWeatherForCity(DiscordBot self) {
   return ChatCommand('getweather', 'Get weather for the provided city', (IChatContext context, String city) async {
     await context.respond(MessageBuilder.empty());
 
-    var temperature = await self.weather.getWeatherForCity(city);
+    var temperature = await self.weatherManager.getWeatherForCity(city);
 
     if (temperature == null) {
       await context.respond(MessageBuilder.content(self.sm.get('get_weather_for_city_failed')));
@@ -119,7 +119,7 @@ ChatCommand setWeatherNotificationHour(DiscordBot self) {
   return ChatCommand('setweatherhour', 'Set notification hour for weather', (IChatContext context, String hour) async {
     await context.respond(MessageBuilder.empty());
 
-    var setSuccessfully = self.weather.setNotificationsHour(int.parse(hour));
+    var setSuccessfully = self.weatherManager.setNotificationsHour(int.parse(hour));
 
     if (setSuccessfully) {
       await context.respond(MessageBuilder.content(self.sm.get('weather_notification_hour_updated')));

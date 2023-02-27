@@ -16,6 +16,7 @@ ChatCommand increaseReputation(DiscordBot self) {
 
     var result = await self.reputation.updateReputation(from: from, to: to, type: 'increase');
 
+    // TODO: check if instead of new message you can edit previous one
     await context.respond(MessageBuilder.content(result));
   });
 }

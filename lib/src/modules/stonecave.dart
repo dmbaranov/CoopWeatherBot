@@ -50,7 +50,7 @@ class StoneCave {
     List<Stone> cave = [];
 
     stones.forEach((stone) {
-      cave.add(Stone.fromJson(stone as Map<String, dynamic>));
+      cave.add(Stone.fromJson(stone));
     });
 
     return cave;

@@ -3,6 +3,7 @@ import 'dart:math';
 import 'dart:io' as io;
 import 'package:teledart/model.dart';
 import 'package:weather/src/modules/accordion_poll.dart';
+import 'package:weather/src/modules/user_manager.dart';
 
 import './bot.dart';
 import './utils.dart';
@@ -304,4 +305,54 @@ Future<void> startAccordionPoll(TelegramBot self, TeleDartMessage message) async
 
   await self.telegram.sendMessage(self.chatId, voteResult);
   await pollSubscription.cancel();
+}
+
+Future<void> addUser(TelegramBot self, TeleDartMessage message) async {
+  var userData = message.replyToMessage?.from;
+
+  if (userData == null || userData.isBot) {
+    print('Invalid user data');
+
+    return;
+  }
+
+  var fullUsername = '${userData.firstName} ';
+
+  var originalUsername = userData.username;
+  if (originalUsername != null) {
+    fullUsername += '<$originalUsername> ';
+  }
+
+  var originalLastName = userData.lastName;
+  if (originalLastName != null) {
+    fullUsername += originalLastName;
+  }
+
+  var userToAdd = UMUser(id: userData.id.toString(), name: fullUsername, isPremium: userData.isPremium ?? false);
+
+  var addResult = await self.userManager.addUser(userToAdd);
+
+  if (addResult) {
+    await message.reply('User added');
+  } else {
+    await message.reply('User not added');
+  }
+}
+
+Future<void> removeUser(TelegramBot self, TeleDartMessage message) async {
+  var userData = message.replyToMessage?.from;
+
+  if (userData == null || userData.isBot) {
+    print('Invalid user data');
+
+    return;
+  }
+
+  var removeResult = await self.userManager.removeUser(userData.id.toString());
+
+  if (removeResult) {
+    await message.reply('User removed');
+  } else {
+    await message.reply('User not removed');
+  }
 }

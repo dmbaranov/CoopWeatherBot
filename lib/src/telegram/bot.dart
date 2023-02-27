@@ -116,6 +116,8 @@ class TelegramBot {
     bot.onCommand('searchsong').listen((event) => searchYoutubeTrack(this, event));
     bot.onCommand('na').listen((event) => checkIfAlive(this, event));
     bot.onCommand('accordion').listen((event) => startAccordionPoll(this, event));
+    bot.onCommand('adduser').listen((event) => addUser(this, event));
+    bot.onCommand('removeuser').listen((event) => removeUser(this, event));
 
     var bullyTagUserRegexp = RegExp(sm.get('bully_tag_user_regexp'), caseSensitive: false);
     bot.onMessage(keyword: bullyTagUserRegexp).listen((event) => bullyTagUser(this, event));

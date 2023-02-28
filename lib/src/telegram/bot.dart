@@ -60,7 +60,7 @@ class TelegramBot {
     userManager = UserManager();
     await userManager.initialize();
 
-    reputation = Reputation(sm: sm);
+    reputation = Reputation(sm: sm, userManager: userManager);
     await reputation.initialize();
 
     weatherManager = WeatherManager(openweatherKey: openweatherKey);
@@ -92,7 +92,7 @@ class TelegramBot {
     var userManagerStream = userManager.userManagerStream;
 
     userManagerStream.listen((_) {
-      print('TODO: update users');
+      print('TODO: update users premium status');
     });
   }
 

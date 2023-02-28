@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 import 'dart:io' as io;
+import 'package:collection/collection.dart';
 import 'package:teledart/model.dart';
 import 'package:weather/src/modules/accordion_poll.dart';
 import 'package:weather/src/modules/user_manager.dart';
@@ -231,10 +232,10 @@ Future<void> updateReputation(TelegramBot self, TeleDartMessage message, String 
     return;
   }
 
-  var fromId = message.from?.id.toString();
-  var toId = message.replyToMessage?.from?.id.toString();
+  var fromUser = self.userManager.users.firstWhereOrNull((user) => user.id == message.from?.id.toString());
+  var toUser = self.userManager.users.firstWhereOrNull((user) => user.id == message.replyToMessage?.from?.id.toString());
 
-  var changeResult = await self.reputation.updateReputation(from: fromId, to: toId, type: change, isPremium: message.from?.isPremium);
+  var changeResult = await self.reputation.updateReputation(from: fromUser, to: toUser, type: change);
 
   await self.telegram.sendMessage(self.chatId, changeResult);
 }
@@ -329,7 +330,6 @@ Future<void> addUser(TelegramBot self, TeleDartMessage message) async {
   }
 
   var userToAdd = UMUser(id: userData.id.toString(), name: fullUsername, isPremium: userData.isPremium ?? false);
-
   var addResult = await self.userManager.addUser(userToAdd);
 
   if (addResult) {

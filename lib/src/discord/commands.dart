@@ -1,20 +1,19 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:nyxx/nyxx.dart';
 import 'package:nyxx_commands/nyxx_commands.dart';
-
-import 'package:weather/src/modules/reputation.dart';
 
 import './bot.dart';
 
 ChatCommand increaseReputation(DiscordBot self) {
   return ChatCommand('increp', 'Increase reputation for the user', (IChatContext context, IMember who) async {
     await context.respond(MessageBuilder.empty());
-    var from = context.user.id.toString();
-    var to = who.user.id.toString();
+    var fromUser = self.userManager.users.firstWhereOrNull((user) => user.id == context.user.id.toString());
+    var toUser = self.userManager.users.firstWhereOrNull((user) => user.id == who.user.id.toString());
 
-    var result = await self.reputation.updateReputation(from: from, to: to, type: 'increase');
+    var result = await self.reputation.updateReputation(from: fromUser, to: toUser, type: 'increase');
 
     // TODO: check if instead of new message you can edit previous one
     await context.respond(MessageBuilder.content(result));
@@ -24,10 +23,10 @@ ChatCommand increaseReputation(DiscordBot self) {
 ChatCommand decreaseReputation(DiscordBot self) {
   return ChatCommand('decrep', 'Increase reputation for the user', (IChatContext context, IMember who) async {
     await context.respond(MessageBuilder.empty());
-    var from = context.user.id.toString();
-    var to = who.user.id.toString();
+    var fromUser = self.userManager.users.firstWhereOrNull((user) => user.id == context.user.id.toString());
+    var toUser = self.userManager.users.firstWhereOrNull((user) => user.id == who.user.id.toString());
 
-    var result = await self.reputation.updateReputation(from: from, to: to, type: 'decrease');
+    var result = await self.reputation.updateReputation(from: fromUser, to: toUser, type: 'decrease');
 
     await context.respond(MessageBuilder.content(result));
   });
@@ -41,19 +40,6 @@ ChatCommand getReputationList(DiscordBot self) {
 
     await context.respond(MessageBuilder.content(reputationMessage));
   });
-}
-
-ChatCommand generateReputationUsers(DiscordBot self) {
-  return ChatCommand('setrepusers', 'Update reputation users', (IChatContext context) async {
-    await context.respond(MessageBuilder.empty());
-
-    var reputationUsers = self.users
-        .map((rawUser) => ReputationUser.fromJson({'userId': rawUser.id.toString(), 'reputation': 0, 'fullName': rawUser.username}))
-        .toList();
-
-    await self.reputation.setUsers(reputationUsers);
-    await context.respond(MessageBuilder.content(self.sm.get('reputation_users_updated')));
-  }, checks: [self.isAdminCheck()]);
 }
 
 ChatCommand addWeatherCity(DiscordBot self) {

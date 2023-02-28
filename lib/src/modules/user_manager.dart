@@ -8,10 +8,18 @@ const String _pathToUsersFile = 'assets/users.json';
 
 class UMUser {
   final String id;
-  final String name;
   final bool isPremium;
+  String name;
 
-  UMUser({required this.id, required this.name, this.isPremium = false});
+  UMUser({required this.id, required this.name, this.isPremium = false}) {
+    var markedAsPremium = name.contains('⭐');
+
+    if (isPremium && !markedAsPremium) {
+      name += ' ⭐';
+    } else if (!isPremium && markedAsPremium) {
+      name = name.replaceAll(' ⭐', '');
+    }
+  }
 
   UMUser.fromJson(Map<String, dynamic> json)
       : id = json['id'],
@@ -21,7 +29,6 @@ class UMUser {
   Map<String, dynamic> toJson() => {'id': id, 'name': name, 'isPremium': isPremium};
 }
 
-// TODO: to update users, create a stream that would trigger a method from the class. In telegram, get chatMember by id and check his name, premium, etc. Trigger this function once a day
 class UserManager {
   final File _usersFile = File(_pathToUsersFile);
   final List<UMUser> _users = [];
@@ -52,6 +59,7 @@ class UserManager {
     }
 
     _users.add(userToAdd);
+    _userManagerStreamController.sink.add(0);
 
     await _updateUsersFile();
 
@@ -66,6 +74,7 @@ class UserManager {
     }
 
     _users.removeWhere((user) => user.id == userIdToRemove);
+    _userManagerStreamController.sink.add(0);
 
     await _updateUsersFile();
 

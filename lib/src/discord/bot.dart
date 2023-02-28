@@ -8,6 +8,7 @@ import 'package:cron/cron.dart';
 import 'package:weather/src/modules/swearwords_manager.dart';
 import 'package:weather/src/modules/reputation.dart';
 import 'package:weather/src/modules/weather_manager.dart';
+import 'package:weather/src/modules/user_manager.dart';
 
 import './commands.dart';
 
@@ -18,8 +19,8 @@ class DiscordBot {
   final String adminId;
   final String openweatherKey;
   late INyxxWebsocket bot;
-  late List<IUser> users;
   late SwearwordsManager sm;
+  late UserManager userManager;
   late Reputation reputation;
   late WeatherManager weatherManager;
 
@@ -40,7 +41,10 @@ class DiscordBot {
     sm = SwearwordsManager();
     await sm.initialize();
 
-    reputation = Reputation(sm: sm);
+    userManager = UserManager();
+    await userManager.initialize();
+
+    reputation = Reputation(sm: sm, userManager: userManager);
     await reputation.initialize();
 
     weatherManager = WeatherManager(openweatherKey: openweatherKey);
@@ -65,9 +69,9 @@ class DiscordBot {
       var heroesMessage = sm.get('users_online_at_five');
 
       onlineUsers.forEach((userId) {
-        var onlineUser = users.firstWhere((user) => user.id == userId.toSnowflake());
+        var onlineUser = userManager.users.firstWhere((user) => user.id == userId);
 
-        heroesMessage += onlineUser.username;
+        heroesMessage += onlineUser.name;
         heroesMessage += '\n';
       });
 
@@ -85,7 +89,6 @@ class DiscordBot {
       ..addCommand(increaseReputation(this))
       ..addCommand(decreaseReputation(this))
       ..addCommand(getReputationList(this))
-      ..addCommand(generateReputationUsers(this))
       ..addCommand(addWeatherCity(this))
       ..addCommand(removeWeatherCity(this))
       ..addCommand(getWeatherWatchlist(this))
@@ -114,7 +117,10 @@ class DiscordBot {
 
     await Future.wait([usersStream.asFuture()]);
 
-    users = await Future.wait(userIds.map((userId) async => await bot.fetchUser(Snowflake(userId))));
-    users = users.where((user) => !user.bot).toList();
+    userIds.forEach((userId) async {
+      var user = await bot.fetchUser(Snowflake(userId));
+
+      userManager.addUser(UMUser(id: user.id.toString(), name: user.username));
+    });
   }
 }

@@ -3,7 +3,6 @@ import 'package:teledart/telegram.dart';
 import 'package:teledart/model.dart';
 import 'package:debounce_throttle/debounce_throttle.dart';
 import 'package:cron/cron.dart';
-import 'package:weather/src/modules/conversator.dart';
 
 import 'package:weather/src/modules/swearwords_manager.dart';
 import 'package:weather/src/modules/weather.dart';
@@ -12,6 +11,7 @@ import 'package:weather/src/modules/dadjokes.dart';
 import 'package:weather/src/modules/reputation.dart';
 import 'package:weather/src/modules/youtube.dart';
 import 'package:weather/src/modules/accordion_poll.dart';
+import 'package:weather/src/modules/conversator.dart';
 
 import './commands.dart';
 

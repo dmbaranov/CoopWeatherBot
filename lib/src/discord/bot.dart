@@ -8,6 +8,7 @@ import 'package:cron/cron.dart';
 import 'package:weather/src/modules/swearwords_manager.dart';
 import 'package:weather/src/modules/reputation.dart';
 import 'package:weather/src/modules/weather.dart';
+import 'package:weather/src/modules/conversator.dart';
 
 import './commands.dart';
 
@@ -17,13 +18,21 @@ class DiscordBot {
   final String channelId;
   final String adminId;
   final String openweatherKey;
+  final String conversatorKey;
   late INyxxWebsocket bot;
   late List<IUser> users;
   late SwearwordsManager sm;
   late Reputation reputation;
   late Weather weather;
+  late Conversator conversator;
 
-  DiscordBot({required this.token, required this.adminId, required this.guildId, required this.channelId, required this.openweatherKey});
+  DiscordBot(
+      {required this.token,
+      required this.adminId,
+      required this.guildId,
+      required this.channelId,
+      required this.openweatherKey,
+      required this.conversatorKey});
 
   void startBot() async {
     bot = NyxxFactory.createNyxxWebsocket(token, GatewayIntents.all);
@@ -45,6 +54,8 @@ class DiscordBot {
 
     weather = Weather(openweatherKey: openweatherKey);
     weather.initialize();
+
+    conversator = Conversator(conversatorKey);
 
     // It was decided to disable weather notifications for now
     // _subscribeToWeather();
@@ -100,7 +111,8 @@ class DiscordBot {
       ..addCommand(getWeatherForCity(this))
       ..addCommand(setWeatherNotificationHour(this))
       ..addCommand(write(this))
-      ..addCommand(moveAllToDifferentChannel(this));
+      ..addCommand(moveAllToDifferentChannel(this))
+      ..addCommand(getConversatorReply(this));
 
     commands.onCommandError.listen((error) {
       if (error is CheckFailedException) {

@@ -165,5 +165,5 @@ ChatCommand getConversatorReply(DiscordBot self) {
     var reply = await self.conversator.getConversationReply(question);
 
     await context.respond(MessageBuilder.content(reply));
-  });
+  }, checks: [self.isVerifiedServer()]);
 }

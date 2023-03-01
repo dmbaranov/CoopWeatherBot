@@ -127,6 +127,10 @@ class DiscordBot {
     return Check((context) => context.user.id == adminId.toSnowflake());
   }
 
+  Check isVerifiedServer() {
+    return Check((context) => context.channel.id == Snowflake(channelId));
+  }
+
   Future<void> _updateUsersList() async {
     var guild = await bot.fetchGuild(Snowflake(guildId));
     var userIds = [];

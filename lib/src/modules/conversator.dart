@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart';
 
-final String _converstorApiURL = 'https://api.openai.com/v1/chat/completions';
-final String _conversatorModel = 'gpt-3.5-turbo-0301';
+const String _converstorApiURL = 'https://api.openai.com/v1/chat/completions';
+const String _conversatorModel = 'gpt-3.5-turbo-0301';
 
 class Conversator {
   final String conversatorApiKey;

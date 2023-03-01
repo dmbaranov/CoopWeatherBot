@@ -3,6 +3,7 @@ import 'package:teledart/telegram.dart';
 import 'package:teledart/model.dart';
 import 'package:debounce_throttle/debounce_throttle.dart';
 import 'package:cron/cron.dart';
+import 'package:weather/src/modules/conversator.dart';
 
 import 'package:weather/src/modules/swearwords_manager.dart';
 import 'package:weather/src/modules/weather.dart';
@@ -21,6 +22,7 @@ class TelegramBot {
   final int adminId;
   final String youtubeKey;
   final String openweatherKey;
+  final String conversatorKey;
   late TeleDart bot;
   late Telegram telegram;
   late SwearwordsManager sm;
@@ -30,6 +32,7 @@ class TelegramBot {
   late Reputation reputation;
   late Youtube youtube;
   late AccordionPoll accordionPoll;
+  late Conversator conversator;
   late int notificationHour = 7;
   late Debouncer<TeleDartInlineQuery?> debouncer = Debouncer(Duration(seconds: 1), initialValue: null);
 
@@ -39,7 +42,8 @@ class TelegramBot {
       required this.repoUrl,
       required this.adminId,
       required this.youtubeKey,
-      required this.openweatherKey});
+      required this.openweatherKey,
+      required this.conversatorKey});
 
   void startBot() async {
     final botName = (await Telegram(token).getMe()).username;
@@ -49,6 +53,7 @@ class TelegramBot {
     dadJokes = DadJokes();
     panoramaNews = PanoramaNews();
     youtube = Youtube(youtubeKey);
+    conversator = Conversator(conversatorKey);
 
     bot.start();
 
@@ -112,6 +117,7 @@ class TelegramBot {
     bot.onCommand('searchsong').listen((event) => searchYoutubeTrack(this, event));
     bot.onCommand('na').listen((event) => checkIfAlive(this, event));
     bot.onCommand('accordion').listen((event) => startAccordionPoll(this, event));
+    bot.onCommand('ask').listen((event) => getConversatorReply(this, event));
 
     var bullyTagUserRegexp = RegExp(sm.get('bully_tag_user_regexp'), caseSensitive: false);
     bot.onMessage(keyword: bullyTagUserRegexp).listen((event) => bullyTagUser(this, event));

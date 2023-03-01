@@ -7,3 +7,7 @@ String getOneParameterFromMessage(TeleDartMessage message) {
 
   return options[1];
 }
+
+String getFullMessageText(TeleDartMessage message) {
+  return message.text?.split(' ').sublist(1).join(' ') ?? '';
+}

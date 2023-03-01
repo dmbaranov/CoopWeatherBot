@@ -160,7 +160,7 @@ ChatCommand moveAllToDifferentChannel(DiscordBot self) {
 
 ChatCommand getConversatorReply(DiscordBot self) {
   return ChatCommand('ask', 'Ask for advice from the Conversator', (IChatContext context, String question) async {
-    await context.respond(MessageBuilder.empty());
+    await context.respond(MessageBuilder.content(question));
 
     var reply = await self.conversator.getConversationReply(question);
 

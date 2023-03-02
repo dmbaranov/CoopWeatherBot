@@ -7,8 +7,9 @@ import 'package:cron/cron.dart';
 
 import 'package:weather/src/modules/swearwords_manager.dart';
 import 'package:weather/src/modules/reputation.dart';
-import 'package:weather/src/modules/weather.dart';
 import 'package:weather/src/modules/conversator.dart';
+import 'package:weather/src/modules/weather_manager.dart';
+import 'package:weather/src/modules/user_manager.dart';
 
 import './commands.dart';
 
@@ -20,10 +21,10 @@ class DiscordBot {
   final String openweatherKey;
   final String conversatorKey;
   late INyxxWebsocket bot;
-  late List<IUser> users;
   late SwearwordsManager sm;
+  late UserManager userManager;
   late Reputation reputation;
-  late Weather weather;
+  late WeatherManager weatherManager;
   late Conversator conversator;
 
   DiscordBot(
@@ -49,24 +50,18 @@ class DiscordBot {
     sm = SwearwordsManager();
     await sm.initialize();
 
-    reputation = Reputation(sm: sm);
-    await reputation.initReputation();
+    userManager = UserManager();
+    await userManager.initialize();
 
-    weather = Weather(openweatherKey: openweatherKey);
-    weather.initialize();
+    reputation = Reputation(sm: sm, userManager: userManager);
+    await reputation.initialize();
+
+    weatherManager = WeatherManager(openweatherKey: openweatherKey);
+    weatherManager.initialize();
 
     conversator = Conversator(conversatorKey);
 
-    // It was decided to disable weather notifications for now
-    // _subscribeToWeather();
-
     _startHeroCheckJob();
-  }
-
-  void _subscribeToWeather() {
-    weather.weatherStream.listen((weatherString) {
-      bot.httpEndpoints.sendMessage(Snowflake(channelId), MessageBuilder.content(weatherString));
-    });
   }
 
   void _startHeroCheckJob() async {
@@ -78,15 +73,16 @@ class DiscordBot {
 
       if (onlineUsers.isEmpty) {
         var message = sm.get('no_users_online_at_five');
+
         return bot.httpEndpoints.sendMessage(Snowflake(channelId), MessageBuilder.content(message));
       }
 
       var heroesMessage = sm.get('users_online_at_five');
 
       onlineUsers.forEach((userId) {
-        var onlineUser = users.firstWhere((user) => user.id == userId.toSnowflake());
+        var onlineUser = userManager.users.firstWhere((user) => user.id == userId);
 
-        heroesMessage += onlineUser.username;
+        heroesMessage += onlineUser.name;
         heroesMessage += '\n';
       });
 
@@ -104,7 +100,6 @@ class DiscordBot {
       ..addCommand(increaseReputation(this))
       ..addCommand(decreaseReputation(this))
       ..addCommand(getReputationList(this))
-      ..addCommand(generateReputationUsers(this))
       ..addCommand(addWeatherCity(this))
       ..addCommand(removeWeatherCity(this))
       ..addCommand(getWeatherWatchlist(this))
@@ -112,7 +107,9 @@ class DiscordBot {
       ..addCommand(setWeatherNotificationHour(this))
       ..addCommand(write(this))
       ..addCommand(moveAllToDifferentChannel(this))
-      ..addCommand(getConversatorReply(this));
+      ..addCommand(getConversatorReply(this))
+      ..addCommand(addUser(this))
+      ..addCommand(removeUser(this));
 
     commands.onCommandError.listen((error) {
       if (error is CheckFailedException) {
@@ -127,7 +124,7 @@ class DiscordBot {
     return Check((context) => context.user.id == adminId.toSnowflake());
   }
 
-  Check isVerifiedServer() {
+  Check isVerifiedServerCheck() {
     return Check((context) => context.channel.id == Snowflake(channelId));
   }
 
@@ -138,7 +135,14 @@ class DiscordBot {
 
     await Future.wait([usersStream.asFuture()]);
 
-    users = await Future.wait(userIds.map((userId) async => await bot.fetchUser(Snowflake(userId))));
-    users = users.where((user) => user.bot == false).toList();
+    userIds.forEach((userId) async {
+      await Future.delayed(Duration(milliseconds: 500));
+
+      var user = await bot.fetchUser(Snowflake(userId));
+
+      if (!user.bot) {
+        userManager.addUser(UMUser(id: user.id.toString(), name: user.username));
+      }
+    });
   }
 }

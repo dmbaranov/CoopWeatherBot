@@ -56,7 +56,7 @@ class PanoramaNews {
       result = {'title': title, 'url': _newsBaseUrl + postHref};
 
       _cache[title] = 1;
-      await _writeToCacheFile(title);
+      _writeToCacheFile(title);
       break;
     }
 
@@ -77,7 +77,7 @@ class PanoramaNews {
     }
   }
 
-  Future<void> _writeToCacheFile(String title) async {
+  void _writeToCacheFile(String title) {
     _savedNewsFile.writeAsStringSync('$title\n', mode: io.FileMode.append);
   }
 

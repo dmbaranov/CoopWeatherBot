@@ -1,1 +1,28 @@
-[]
+[
+  {
+    "timestamp": 0,
+    "stoneHash": "jsdhfkj2h34i2374ykjadhfk123",
+    "prevStoneHash": "0",
+    "data": {
+      "from": "123",
+      "to": {
+        "id": "456",
+        "reputation": -1,
+        "name": "UserName"
+      },
+      "type": "decrease",
+      "reputation": [
+        {
+          "id": "123",
+          "reputation": 13,
+          "name": "AnotherUser"
+        },
+        {
+          "id": "456",
+          "reputation": -13,
+          "name": "UserName"
+        }
+      ]
+    }
+  }
+]

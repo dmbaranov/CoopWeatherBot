@@ -46,11 +46,11 @@ class StoneCave {
 
   Future<List<Stone>> getCave() async {
     var rawCaveData = await io.File(cavepath).readAsString();
-    var stones = json.decode(rawCaveData);
+    List stones = json.decode(rawCaveData);
     List<Stone> cave = [];
 
-    await Future.forEach(stones, (stone) async {
-      cave.add(Stone.fromJson(stone as Map<String, dynamic>));
+    stones.forEach((stone) {
+      cave.add(Stone.fromJson(stone));
     });
 
     return cave;
@@ -98,6 +98,7 @@ class StoneCave {
 
   Future<Stone?> getLastStone() async {
     var cave = await getCave();
+
     return cave.isEmpty ? null : cave.last;
   }
 }

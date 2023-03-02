@@ -13,7 +13,15 @@ dependencies:
   nyxx: ^4.4.0
   nyxx_commands: ^4.3.0
   cron: ^0.5.1
+  args: ^2.4.0
+  http: ^0.13.5
+  collection: ^1.17.1
 
 dev_dependencies:
-  pedantic: ^1.8.0
+  analyzer: ^5.6.0
+  dart_code_metrics: ^5.6.0
+  lints: ^2.0.1
   test: ^1.6.0
+
+dependency_overrides:
+  analyzer: ^5.6.0

@@ -5,7 +5,8 @@ import 'package:debounce_throttle/debounce_throttle.dart';
 import 'package:cron/cron.dart';
 
 import 'package:weather/src/modules/swearwords_manager.dart';
-import 'package:weather/src/modules/weather.dart';
+import 'package:weather/src/modules/user_manager.dart';
+import 'package:weather/src/modules/weather_manager.dart';
 import 'package:weather/src/modules/panorama.dart';
 import 'package:weather/src/modules/dadjokes.dart';
 import 'package:weather/src/modules/reputation.dart';
@@ -26,7 +27,8 @@ class TelegramBot {
   late TeleDart bot;
   late Telegram telegram;
   late SwearwordsManager sm;
-  late Weather weather;
+  late UserManager userManager;
+  late WeatherManager weatherManager;
   late DadJokes dadJokes;
   late PanoramaNews panoramaNews;
   late Reputation reputation;
@@ -60,11 +62,14 @@ class TelegramBot {
     sm = SwearwordsManager();
     await sm.initialize();
 
-    reputation = Reputation(sm: sm);
-    await reputation.initReputation();
+    userManager = UserManager();
+    await userManager.initialize();
 
-    weather = Weather(openweatherKey: openweatherKey);
-    weather.initialize();
+    reputation = Reputation(sm: sm, userManager: userManager);
+    await reputation.initialize();
+
+    weatherManager = WeatherManager(openweatherKey: openweatherKey);
+    weatherManager.initialize();
 
     await panoramaNews.initialize();
 
@@ -73,6 +78,7 @@ class TelegramBot {
     _setupListeners();
 
     _subscribeToWeather();
+    _subscribeToUsersUpdate();
     _startPanoramaNewsJob();
     _startJokesJob();
 
@@ -80,10 +86,18 @@ class TelegramBot {
   }
 
   void _subscribeToWeather() {
-    var weatherStream = weather.weatherStream;
+    var weatherStream = weatherManager.weatherStream;
 
-    weatherStream.listen((weatherMessage) async {
-      await telegram.sendMessage(chatId, weatherMessage);
+    weatherStream.listen((weatherMessage) {
+      telegram.sendMessage(chatId, weatherMessage);
+    });
+  }
+
+  void _subscribeToUsersUpdate() {
+    var userManagerStream = userManager.userManagerStream;
+
+    userManagerStream.listen((_) {
+      print('TODO: update users premium status');
     });
   }
 
@@ -106,8 +120,7 @@ class TelegramBot {
     bot.onCommand('getweather').listen((event) => getWeatherForCity(this, event));
     bot.onCommand('setnotificationhour').listen((event) => setNotificationHour(this, event));
     bot.onCommand('write').listen((event) => writeToCoop(this, event));
-    bot.onCommand('ping').listen((event) => ping(this, event));
-    bot.onCommand('updatemessage').listen((event) => postUpdateMessage(this, event));
+    bot.onCommand('updatemessage').listen((event) => postUpdateMessage(this));
     bot.onCommand('sendnews').listen((event) => sendNewsToChat(this));
     bot.onCommand('sendjoke').listen((event) => sendJokeToChat(this));
     bot.onCommand('sendrealmusic').listen((event) => sendRealMusic(this, event));
@@ -118,6 +131,8 @@ class TelegramBot {
     bot.onCommand('na').listen((event) => checkIfAlive(this, event));
     bot.onCommand('accordion').listen((event) => startAccordionPoll(this, event));
     bot.onCommand('ask').listen((event) => getConversatorReply(this, event));
+    bot.onCommand('adduser').listen((event) => addUser(this, event));
+    bot.onCommand('removeuser').listen((event) => removeUser(this, event));
 
     var bullyTagUserRegexp = RegExp(sm.get('bully_tag_user_regexp'), caseSensitive: false);
     bot.onMessage(keyword: bullyTagUserRegexp).listen((event) => bullyTagUser(this, event));

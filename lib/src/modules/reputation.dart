@@ -67,9 +67,7 @@ class Reputation {
   void _updateUsersList() async {
     var lastStone = await stoneCave.getLastStone();
 
-    if (lastStone == null) return;
-
-    List stoneUsers = lastStone.data['reputation'];
+    List stoneUsers = lastStone?.data['reputation'] ?? [];
 
     _users.clear();
 

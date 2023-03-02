@@ -1,6 +1,6 @@
 [
   {
-    "userId": "123",
-    "fullName": "Test name"
+    "id": "123",
+    "name": "Test name"
   }
 ]

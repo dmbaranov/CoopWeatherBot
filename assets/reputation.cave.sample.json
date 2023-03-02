@@ -6,21 +6,21 @@
     "data": {
       "from": "123",
       "to": {
-        "userId": "456",
+        "id": "456",
         "reputation": -1,
-        "fullName": "UserName"
+        "name": "UserName"
       },
       "type": "decrease",
       "reputation": [
         {
-          "userId": "123",
+          "id": "123",
           "reputation": 13,
-          "fullName": "AnotherUser"
+          "name": "AnotherUser"
         },
         {
-          "userId": "456",
+          "id": "456",
           "reputation": -13,
-          "fullName": "UserName"
+          "name": "UserName"
         }
       ]
     }

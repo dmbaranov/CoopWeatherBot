@@ -26,8 +26,16 @@ void runDiscordBot(DotEnv env) {
   final guildId = env['discordguildid']!;
   final channelId = env['discordchannelid']!;
   final openweatherKey = env['openweather']!;
+  final conversatorKey = env['conversatorkey']!;
 
-  weather.DiscordBot(token: token, adminId: adminId, guildId: guildId, channelId: channelId, openweatherKey: openweatherKey).startBot();
+  weather.DiscordBot(
+          token: token,
+          adminId: adminId,
+          guildId: guildId,
+          channelId: channelId,
+          openweatherKey: openweatherKey,
+          conversatorKey: conversatorKey)
+      .startBot();
 }
 
 void runTelegramBot(DotEnv env) {
@@ -37,9 +45,16 @@ void runTelegramBot(DotEnv env) {
   final adminId = int.parse(env['telegramadminid']!);
   final youtubeKey = env['youtube']!;
   final openweatherKey = env['openweather']!;
+  final conversatorKey = env['conversatorkey']!;
 
   weather.TelegramBot(
-          token: token, chatId: chatId, repoUrl: repoUrl, adminId: adminId, youtubeKey: youtubeKey, openweatherKey: openweatherKey)
+          token: token,
+          chatId: chatId,
+          repoUrl: repoUrl,
+          adminId: adminId,
+          youtubeKey: youtubeKey,
+          openweatherKey: openweatherKey,
+          conversatorKey: conversatorKey)
       .startBot();
 }
 

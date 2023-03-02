@@ -113,8 +113,7 @@ void writeToCoop(TelegramBot self, TeleDartMessage message) async {
     return;
   }
 
-  var rawText = message.text?.split(' ');
-  var text = rawText?.sublist(1).join(' ') ?? '';
+  var text = getFullMessageText(message);
 
   print('${message.from?.toJson()} is writing to Coop: ${message.toJson()}');
 
@@ -185,7 +184,7 @@ Future<void> sendRealMusic(TelegramBot self, TeleDartMessage message) async {
 }
 
 Future<void> searchYoutubeTrack(TelegramBot self, TeleDartMessage message) async {
-  var query = message.text?.split(' ').sublist(1).join(' ');
+  var query = getFullMessageText(message);
 
   if (query == null || query.isEmpty) {
     await message.reply(self.sm.get('do_not_do_this'));
@@ -306,6 +305,13 @@ Future<void> startAccordionPoll(TelegramBot self, TeleDartMessage message) async
 
   await self.telegram.sendMessage(self.chatId, voteResult);
   await pollSubscription.cancel();
+}
+
+Future<void> getConversatorReply(TelegramBot self, TeleDartMessage message) async {
+  var question = getFullMessageText(message);
+  var reply = await self.conversator.getConversationReply(question);
+
+  await message.reply(reply);
 }
 
 Future<void> addUser(TelegramBot self, TeleDartMessage message) async {

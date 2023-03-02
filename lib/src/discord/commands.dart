@@ -145,3 +145,13 @@ ChatCommand moveAllToDifferentChannel(DiscordBot self) {
     await channelUsersFile.delete();
   }, checks: [self.isAdminCheck()]);
 }
+
+ChatCommand getConversatorReply(DiscordBot self) {
+  return ChatCommand('ask', 'Ask for advice from the Conversator', (IChatContext context, String question) async {
+    await context.respond(MessageBuilder.content(question));
+
+    var reply = await self.conversator.getConversationReply(question);
+
+    await context.respond(MessageBuilder.content(reply));
+  }, checks: [self.isVerifiedServer()]);
+}

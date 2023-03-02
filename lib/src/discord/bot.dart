@@ -7,6 +7,7 @@ import 'package:cron/cron.dart';
 
 import 'package:weather/src/modules/swearwords_manager.dart';
 import 'package:weather/src/modules/reputation.dart';
+import 'package:weather/src/modules/conversator.dart';
 import 'package:weather/src/modules/weather_manager.dart';
 import 'package:weather/src/modules/user_manager.dart';
 
@@ -18,13 +19,21 @@ class DiscordBot {
   final String channelId;
   final String adminId;
   final String openweatherKey;
+  final String conversatorKey;
   late INyxxWebsocket bot;
   late SwearwordsManager sm;
   late UserManager userManager;
   late Reputation reputation;
   late WeatherManager weatherManager;
+  late Conversator conversator;
 
-  DiscordBot({required this.token, required this.adminId, required this.guildId, required this.channelId, required this.openweatherKey});
+  DiscordBot(
+      {required this.token,
+      required this.adminId,
+      required this.guildId,
+      required this.channelId,
+      required this.openweatherKey,
+      required this.conversatorKey});
 
   void startBot() async {
     bot = NyxxFactory.createNyxxWebsocket(token, GatewayIntents.all);
@@ -49,6 +58,8 @@ class DiscordBot {
 
     weatherManager = WeatherManager(openweatherKey: openweatherKey);
     weatherManager.initialize();
+
+    conversator = Conversator(conversatorKey);
 
     _startHeroCheckJob();
   }
@@ -95,7 +106,8 @@ class DiscordBot {
       ..addCommand(getWeatherForCity(this))
       ..addCommand(setWeatherNotificationHour(this))
       ..addCommand(write(this))
-      ..addCommand(moveAllToDifferentChannel(this));
+      ..addCommand(moveAllToDifferentChannel(this))
+      ..addCommand(getConversatorReply(this));
 
     commands.onCommandError.listen((error) {
       if (error is CheckFailedException) {
@@ -108,6 +120,10 @@ class DiscordBot {
 
   Check isAdminCheck() {
     return Check((context) => context.user.id == adminId.toSnowflake());
+  }
+
+  Check isVerifiedServer() {
+    return Check((context) => context.channel.id == Snowflake(channelId));
   }
 
   Future<void> _updateUsersList() async {

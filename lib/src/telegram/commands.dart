@@ -186,7 +186,7 @@ Future<void> sendRealMusic(TelegramBot self, TeleDartMessage message) async {
 Future<void> searchYoutubeTrack(TelegramBot self, TeleDartMessage message) async {
   var query = getFullMessageText(message);
 
-  if (query == null || query.isEmpty) {
+  if (query.isEmpty) {
     await message.reply(self.sm.get('do_not_do_this'));
 
     return;

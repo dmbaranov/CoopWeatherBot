@@ -107,7 +107,9 @@ class DiscordBot {
       ..addCommand(setWeatherNotificationHour(this))
       ..addCommand(write(this))
       ..addCommand(moveAllToDifferentChannel(this))
-      ..addCommand(getConversatorReply(this));
+      ..addCommand(getConversatorReply(this))
+      ..addCommand(addUser(this))
+      ..addCommand(removeUser(this));
 
     commands.onCommandError.listen((error) {
       if (error is CheckFailedException) {
@@ -122,7 +124,7 @@ class DiscordBot {
     return Check((context) => context.user.id == adminId.toSnowflake());
   }
 
-  Check isVerifiedServer() {
+  Check isVerifiedServerCheck() {
     return Check((context) => context.channel.id == Snowflake(channelId));
   }
 
@@ -134,9 +136,13 @@ class DiscordBot {
     await Future.wait([usersStream.asFuture()]);
 
     userIds.forEach((userId) async {
+      await Future.delayed(Duration(milliseconds: 500));
+
       var user = await bot.fetchUser(Snowflake(userId));
 
-      userManager.addUser(UMUser(id: user.id.toString(), name: user.username));
+      if (!user.bot) {
+        userManager.addUser(UMUser(id: user.id.toString(), name: user.username));
+      }
     });
   }
 }

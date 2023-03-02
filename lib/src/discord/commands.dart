@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:nyxx/nyxx.dart';
 import 'package:nyxx_commands/nyxx_commands.dart';
+import 'package:weather/src/modules/user_manager.dart';
 
 import './bot.dart';
 
@@ -153,5 +154,50 @@ ChatCommand getConversatorReply(DiscordBot self) {
     var reply = await self.conversator.getConversationReply(question);
 
     await context.respond(MessageBuilder.content(reply));
-  }, checks: [self.isVerifiedServer()]);
+  }, checks: [self.isVerifiedServerCheck()]);
+}
+
+ChatCommand addUser(DiscordBot self) {
+  return ChatCommand('adduser', 'Add user to the bot', (IChatContext context, IMember who) async {
+    await context.respond(MessageBuilder.empty());
+
+    var discordUser = await self.bot.fetchUser(who.id);
+
+    if (discordUser.bot) {
+      print('Invalid user data');
+
+      return;
+    }
+
+    var userToAdd = UMUser(id: who.id.toString(), name: discordUser.username);
+    var addResult = await self.userManager.addUser(userToAdd);
+
+    if (addResult) {
+      await context.respond(MessageBuilder.content('User added'));
+    } else {
+      await context.respond(MessageBuilder.content('User not added'));
+    }
+  }, checks: [self.isAdminCheck()]);
+}
+
+ChatCommand removeUser(DiscordBot self) {
+  return ChatCommand('removeuser', 'Remove user from the bot', (IChatContext context, IMember who) async {
+    await context.respond(MessageBuilder.empty());
+
+    var discordUser = await self.bot.fetchUser(who.id);
+
+    if (discordUser.bot) {
+      print('Invalid user data');
+
+      return;
+    }
+
+    var removeResult = await self.userManager.removeUser(discordUser.id.toString());
+
+    if (removeResult) {
+      await context.respond(MessageBuilder.content('User removed'));
+    } else {
+      await context.respond(MessageBuilder.content('User not removed'));
+    }
+  }, checks: [self.isAdminCheck()]);
 }

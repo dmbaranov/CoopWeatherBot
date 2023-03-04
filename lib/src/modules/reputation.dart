@@ -129,7 +129,7 @@ class Reputation {
     }
 
     var updatedReputation = _users.map((user) => user.toJson()).toList();
-    await stoneCave.addStone(Stone(data: {'from': changeAuthor.id, 'to': userToUpdate, 'type': type, 'reputation': updatedReputation}));
+    await stoneCave.addStone(Stone(data: {'from': changeAuthor.id, 'to': userToUpdate.id, 'type': type, 'reputation': updatedReputation}));
 
     return changeResult;
   }

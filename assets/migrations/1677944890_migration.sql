@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS migration
+(
+    id   SERIAL PRIMARY KEY,
+    name VARCHAR(255) UNIQUE NOT NULL
+);

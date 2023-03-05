@@ -3,6 +3,7 @@ import 'package:teledart/telegram.dart';
 import 'package:teledart/model.dart';
 import 'package:debounce_throttle/debounce_throttle.dart';
 import 'package:cron/cron.dart';
+import 'package:postgres/postgres.dart';
 
 import 'package:weather/src/modules/swearwords_manager.dart';
 import 'package:weather/src/modules/user_manager.dart';
@@ -24,6 +25,7 @@ class TelegramBot {
   final String youtubeKey;
   final String openweatherKey;
   final String conversatorKey;
+  final PostgreSQLConnection dbConnection;
   late TeleDart bot;
   late Telegram telegram;
   late SwearwordsManager sm;
@@ -45,7 +47,8 @@ class TelegramBot {
       required this.adminId,
       required this.youtubeKey,
       required this.openweatherKey,
-      required this.conversatorKey});
+      required this.conversatorKey,
+      required this.dbConnection});
 
   void startBot() async {
     final botName = (await Telegram(token).getMe()).username;

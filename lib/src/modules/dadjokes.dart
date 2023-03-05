@@ -17,6 +17,7 @@ class DadJokes {
   final String _apiBaseUrl = _dadJokesUrl;
 
   Future<DadJokesJoke> getJoke() async {
+    // TODO: refactor http requests and get rid of Client (https://dart.dev/tutorials/server/fetch-data)
     var request = await HttpClient().getUrl(Uri.parse(_apiBaseUrl));
     request.headers.add('Accept', 'application/json');
 

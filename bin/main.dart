@@ -29,10 +29,10 @@ ArgResults getRunArguments(List<String> args) {
   return parsedArguments;
 }
 
-void runMigrations(PostgreSQLConnection dbConnection) {
+Future<void> runMigrations(PostgreSQLConnection dbConnection) async {
   MigrationsManager migrationsManager = MigrationsManager(dbConnection);
 
-  migrationsManager.runMigrations();
+  await migrationsManager.runMigrations();
 }
 
 void runDiscordBot(DotEnv env) {
@@ -79,7 +79,7 @@ void main(List<String> args) async {
   var arguments = getRunArguments(args);
   var env = DotEnv(includePlatformEnvironment: true)..load();
 
-  runMigrations(dbConnection);
+  await runMigrations(dbConnection);
 
   runZonedGuarded(() {
     if (arguments['platform'] == 'discord') runDiscordBot(env);

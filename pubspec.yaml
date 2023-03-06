@@ -17,6 +17,7 @@ dependencies:
   http: ^0.13.5
   collection: ^1.17.1
   postgres: ^2.6.1
+  meta: ^1.9.0
 
 dev_dependencies:
   analyzer: ^5.6.0

@@ -1,9 +1,10 @@
 import 'dart:io';
 import 'package:postgres/postgres.dart';
 
-const String _pathToMigrations = 'assets/migrations';
+const String _pathToMigrations = 'assets/db/migrations';
 const List<String> _alwaysRunMigrations = ['1677944890_migration.sql'];
 
+// TODO: create a separate method to run migration.sql migration, current solution doesn't work
 class MigrationsManager {
   final PostgreSQLConnection dbConnection;
   final String _migrationsDirectory = _pathToMigrations;
@@ -12,9 +13,9 @@ class MigrationsManager {
 
   Future<void> runMigrations() async {
     var migrationsLocation = Directory(_migrationsDirectory);
-    var migrationEntities = await migrationsLocation.list().toList()
+    var rawMigrationsContent = await migrationsLocation.list().toList()
       ..sort((a, b) => a.uri.pathSegments.last.compareTo(b.uri.pathSegments.last));
-    var migrations = migrationEntities.whereType<File>();
+    var migrations = rawMigrationsContent.whereType<File>();
 
     await Future.forEach(migrations, (migration) async {
       var migrationName = migration.uri.pathSegments.last;

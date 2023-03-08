@@ -2,9 +2,8 @@ import 'dart:io';
 import 'package:postgres/postgres.dart';
 
 const String _pathToMigrations = 'assets/db/migrations';
-const List<String> _alwaysRunMigrations = ['1677944890_migration.sql'];
+const String _migrationTableMigrationName = '1677944890_migration.sql';
 
-// TODO: create a separate method to run migration.sql migration, current solution doesn't work
 class MigrationsManager {
   final PostgreSQLConnection dbConnection;
   final String _migrationsDirectory = _pathToMigrations;
@@ -19,6 +18,11 @@ class MigrationsManager {
 
     await Future.forEach(migrations, (migration) async {
       var migrationName = migration.uri.pathSegments.last;
+
+      if (migrationName == _migrationTableMigrationName) {
+        return _createMigrationsTableIfNeeded(migration);
+      }
+
       var runMigration = await _shouldRunMigration(migrationName);
 
       if (runMigration) {
@@ -30,9 +34,16 @@ class MigrationsManager {
     });
   }
 
-  Future<bool> _shouldRunMigration(String migrationName) async {
-    if (_alwaysRunMigrations.contains(migrationName)) return true;
+  Future<void> _createMigrationsTableIfNeeded(File migration) async {
+    var migrationTable = await dbConnection.query("SELECT * FROM information_schema.tables WHERE table_name = 'migration'");
 
+    if (migrationTable.isEmpty) {
+      var query = await migration.readAsString();
+      await _runMigration(query, _migrationTableMigrationName);
+    }
+  }
+
+  Future<bool> _shouldRunMigration(String migrationName) async {
     var savedMigration = await dbConnection
         .query('SELECT id FROM migration WHERE name = @migrationName', substitutionValues: {'migrationName': migrationName});
 

@@ -28,13 +28,26 @@ class Entity {
   }
 
   @protected
-  executeQuery(String? query) async {
+  executeQuery(String? query, [Map<String, dynamic>? substitutionValues]) async {
     if (query == null) {
       print('Wrong query $query');
 
       return;
     }
 
-    return dbConnection.query(query);
+    return dbConnection.query(query, substitutionValues: substitutionValues);
+  }
+
+  @protected
+  executeTransaction(String? query, [Map<String, dynamic>? substitutionValues]) async {
+    if (query == null) {
+      print('Wrong query $query');
+
+      return;
+    }
+
+    return dbConnection.transaction((ctx) async {
+      await ctx.query(query, substitutionValues: substitutionValues);
+    });
   }
 }

@@ -51,7 +51,9 @@ class MigrationsManager {
   }
 
   Future<void> _runMigration(String query, String migrationName) async {
-    await dbConnection.query(query);
-    await dbConnection.query('INSERT INTO migration(name) VALUES(@migrationName)', substitutionValues: {'migrationName': migrationName});
+    await dbConnection.transaction((ctx) async {
+      await ctx.query(query);
+      await ctx.query('INSERT INTO migration(name) VALUES(@migrationName)', substitutionValues: {'migrationName': migrationName});
+    });
   }
 }

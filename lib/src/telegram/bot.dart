@@ -5,6 +5,7 @@ import 'package:debounce_throttle/debounce_throttle.dart';
 import 'package:cron/cron.dart';
 import 'package:postgres/postgres.dart';
 
+import 'package:weather/src/modules/database-manager/datanase_manager.dart';
 import 'package:weather/src/modules/swearwords_manager.dart';
 import 'package:weather/src/modules/user_manager.dart';
 import 'package:weather/src/modules/weather_manager.dart';
@@ -28,6 +29,7 @@ class TelegramBot {
   final PostgreSQLConnection dbConnection;
   late TeleDart bot;
   late Telegram telegram;
+  late DatabaseManager dbManager;
   late SwearwordsManager sm;
   late UserManager userManager;
   late WeatherManager weatherManager;
@@ -55,6 +57,10 @@ class TelegramBot {
 
     telegram = Telegram(token);
     bot = TeleDart(token, Event(botName!), fetcher: LongPolling(Telegram(token), limit: 100, timeout: 50));
+
+    dbManager = DatabaseManager(dbConnection);
+    await dbManager.initialize();
+
     dadJokes = DadJokes();
     panoramaNews = PanoramaNews();
     youtube = Youtube(youtubeKey);
@@ -65,7 +71,7 @@ class TelegramBot {
     sm = SwearwordsManager();
     await sm.initialize();
 
-    userManager = UserManager();
+    userManager = UserManager(dbManager: dbManager);
     await userManager.initialize();
 
     reputation = Reputation(sm: sm, userManager: userManager);

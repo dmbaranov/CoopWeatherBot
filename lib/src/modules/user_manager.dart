@@ -1,10 +1,7 @@
 import 'dart:async';
-import 'dart:io';
-import 'dart:convert';
 import 'package:collection/collection.dart';
 import 'package:cron/cron.dart';
-
-const String _pathToUsersFile = 'assets/users.json';
+import 'database-manager/datanase_manager.dart';
 
 class UMUser {
   final String id;
@@ -20,32 +17,24 @@ class UMUser {
       name = name.replaceAll(' ⭐', '');
     }
   }
-
-  UMUser.fromJson(Map<String, dynamic> json)
-      : id = json['id'],
-        name = json['name'],
-        isPremium = json['isPremium'] ?? false;
-
-  Map<String, dynamic> toJson() => {'id': id, 'name': name, 'isPremium': isPremium};
 }
 
 class UserManager {
-  final File _usersFile = File(_pathToUsersFile);
+  final DatabaseManager dbManager;
   final List<UMUser> _users = [];
   late StreamController<int> _userManagerStreamController;
   ScheduledTask? _userManagerCronTask;
+
+  UserManager({required this.dbManager});
 
   List<UMUser> get users => _users;
 
   Stream<int> get userManagerStream => _userManagerStreamController.stream;
 
   Future<void> initialize() async {
-    var rawUsersFromFile = await _usersFile.readAsString();
-    List usersFromFile = json.decode(rawUsersFromFile);
+    var dbUsers = await dbManager.user.getAllUsers();
 
-    usersFromFile.forEach((rawUser) {
-      _users.add(UMUser.fromJson(rawUser));
-    });
+    dbUsers.forEach((user) => _users.add(UMUser(id: user.id, name: user.name, isPremium: user.isPremium)));
 
     _userManagerStreamController = StreamController<int>.broadcast();
     _updateUserManagerStream();
@@ -61,7 +50,7 @@ class UserManager {
     _users.add(userToAdd);
     _userManagerStreamController.sink.add(0);
 
-    await _updateUsersFile();
+    await dbManager.user.createUser(id: userToAdd.id, name: userToAdd.name, isPremium: userToAdd.isPremium);
 
     return true;
   }
@@ -76,15 +65,9 @@ class UserManager {
     _users.removeWhere((user) => user.id == userIdToRemove);
     _userManagerStreamController.sink.add(0);
 
-    await _updateUsersFile();
+    await dbManager.user.deleteUser(userIdToRemove);
 
     return true;
-  }
-
-  Future<void> _updateUsersFile() async {
-    var usersJson = json.encode(_users.map((user) => user.toJson()).toList());
-
-    await _usersFile.writeAsString(usersJson);
   }
 
   void _updateUserManagerStream() {

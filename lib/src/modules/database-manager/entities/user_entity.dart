@@ -1,4 +1,3 @@
-import 'package:postgres/postgres.dart';
 import 'entity.dart';
 
 class UserData {
@@ -24,5 +23,9 @@ class UserEntity extends Entity {
 
   Future<void> deleteUser(String id) async {
     await executeTransaction(queriesMap['delete_user'], {'id': id});
+  }
+
+  Future<void> updatePremiumStatus(String id, bool isPremium) async {
+    await executeTransaction(queriesMap['update_premium_status'], {'id': id, 'isPremium': isPremium});
   }
 }

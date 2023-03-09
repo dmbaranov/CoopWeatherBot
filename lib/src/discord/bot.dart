@@ -36,32 +36,32 @@ class DiscordBot {
       required this.conversatorKey});
 
   void startBot() async {
-    bot = NyxxFactory.createNyxxWebsocket(token, GatewayIntents.all);
-
-    bot
-      ..registerPlugin(Logging())
-      ..registerPlugin(CliIntegration())
-      ..registerPlugin(IgnoreExceptions())
-      ..registerPlugin(_setupCommands());
-
-    await bot.connect();
-    await _updateUsersList();
-
-    sm = SwearwordsManager();
-    await sm.initialize();
-
-    userManager = UserManager();
-    await userManager.initialize();
-
-    reputation = Reputation(sm: sm, userManager: userManager);
-    await reputation.initialize();
-
-    weatherManager = WeatherManager(openweatherKey: openweatherKey);
-    weatherManager.initialize();
-
-    conversator = Conversator(conversatorKey);
-
-    _startHeroCheckJob();
+    // bot = NyxxFactory.createNyxxWebsocket(token, GatewayIntents.all);
+    //
+    // bot
+    //   ..registerPlugin(Logging())
+    //   ..registerPlugin(CliIntegration())
+    //   ..registerPlugin(IgnoreExceptions())
+    //   ..registerPlugin(_setupCommands());
+    //
+    // await bot.connect();
+    // await _updateUsersList();
+    //
+    // sm = SwearwordsManager();
+    // await sm.initialize();
+    //
+    // userManager = UserManager();
+    // await userManager.initialize();
+    //
+    // reputation = Reputation(sm: sm, userManager: userManager);
+    // await reputation.initialize();
+    //
+    // weatherManager = WeatherManager(openweatherKey: openweatherKey);
+    // weatherManager.initialize();
+    //
+    // conversator = Conversator(conversatorKey);
+    //
+    // _startHeroCheckJob();
   }
 
   void _startHeroCheckJob() async {

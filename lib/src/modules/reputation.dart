@@ -37,7 +37,6 @@ class ReputationUser extends UMUser {
     if (option == 'decrease' && canDecrease) _decreaseOptionsLeft--;
   }
 
-  @override
   Map<String, dynamic> toJson() => {'id': id, 'reputation': reputation, 'name': name, 'isPremium': isPremium};
 }
 

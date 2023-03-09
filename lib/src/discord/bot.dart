@@ -129,20 +129,20 @@ class DiscordBot {
   }
 
   Future<void> _updateUsersList() async {
-    var guild = await bot.fetchGuild(Snowflake(guildId));
-    var userIds = [];
-    var usersStream = guild.fetchMembers(limit: 999).listen((userId) => userIds.add(userId));
-
-    await Future.wait([usersStream.asFuture()]);
-
-    userIds.forEach((userId) async {
-      await Future.delayed(Duration(milliseconds: 500));
-
-      var user = await bot.fetchUser(Snowflake(userId));
-
-      if (!user.bot) {
-        userManager.addUser(UMUser(id: user.id.toString(), name: user.username));
-      }
-    });
+    // var guild = await bot.fetchGuild(Snowflake(guildId));
+    // var userIds = [];
+    // var usersStream = guild.fetchMembers(limit: 999).listen((userId) => userIds.add(userId));
+    //
+    // await Future.wait([usersStream.asFuture()]);
+    //
+    // userIds.forEach((userId) async {
+    //   await Future.delayed(Duration(milliseconds: 500));
+    //
+    //   var user = await bot.fetchUser(Snowflake(userId));
+    //
+    //   if (!user.bot) {
+    //     userManager.addUser(UMUser(id: user.id.toString(), name: user.username));
+    //   }
+    // });
   }
 }

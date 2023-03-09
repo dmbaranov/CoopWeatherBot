@@ -159,24 +159,24 @@ ChatCommand getConversatorReply(DiscordBot self) {
 
 ChatCommand addUser(DiscordBot self) {
   return ChatCommand('adduser', 'Add user to the bot', (IChatContext context, IMember who) async {
-    await context.respond(MessageBuilder.empty());
-
-    var discordUser = await self.bot.fetchUser(who.id);
-
-    if (discordUser.bot) {
-      print('Invalid user data');
-
-      return;
-    }
-
-    var userToAdd = UMUser(id: who.id.toString(), name: discordUser.username);
-    var addResult = await self.userManager.addUser(userToAdd);
-
-    if (addResult) {
-      await context.respond(MessageBuilder.content('User added'));
-    } else {
-      await context.respond(MessageBuilder.content('User not added'));
-    }
+    // await context.respond(MessageBuilder.empty());
+    //
+    // var discordUser = await self.bot.fetchUser(who.id);
+    //
+    // if (discordUser.bot) {
+    //   print('Invalid user data');
+    //
+    //   return;
+    // }
+    //
+    // var userToAdd = UMUser(id: who.id.toString(), name: discordUser.username);
+    // var addResult = await self.userManager.addUser(userToAdd);
+    //
+    // if (addResult) {
+    //   await context.respond(MessageBuilder.content('User added'));
+    // } else {
+    //   await context.respond(MessageBuilder.content('User not added'));
+    // }
   }, checks: [self.isAdminCheck()]);
 }
 

@@ -4,7 +4,6 @@ import 'dart:io' as io;
 import 'package:collection/collection.dart';
 import 'package:teledart/model.dart';
 import 'package:weather/src/modules/accordion_poll.dart';
-import 'package:weather/src/modules/user_manager.dart';
 
 import './bot.dart';
 import './utils.dart';
@@ -335,8 +334,8 @@ Future<void> addUser(TelegramBot self, TeleDartMessage message) async {
     fullUsername += originalLastName;
   }
 
-  var userToAdd = UMUser(id: userData.id.toString(), name: fullUsername, isPremium: userData.isPremium ?? false);
-  var addResult = await self.userManager.addUser(userToAdd);
+  var addResult = await self.userManager
+      .addUser(id: userData.id.toString(), chatId: message.chat.id.toString(), name: fullUsername, isPremium: userData.isPremium ?? false);
 
   if (addResult) {
     await message.reply('User added');

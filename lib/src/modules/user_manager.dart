@@ -6,9 +6,10 @@ import 'database-manager/datanase_manager.dart';
 class UMUser {
   final String id;
   final bool isPremium;
+  String? chatId;
   String name;
 
-  UMUser({required this.id, required this.name, this.isPremium = false}) {
+  UMUser({required this.id, required this.name, this.chatId, this.isPremium = false}) {
     var markedAsPremium = name.contains('⭐');
 
     if (isPremium && !markedAsPremium) {
@@ -40,17 +41,17 @@ class UserManager {
     _updateUserManagerStream();
   }
 
-  Future<bool> addUser(UMUser userToAdd) async {
-    var foundUser = _users.firstWhereOrNull((user) => user.id == userToAdd.id);
+  Future<bool> addUser({required String id, required String chatId, required String name, bool isPremium = false}) async {
+    var foundUser = _users.firstWhereOrNull((user) => user.id == id);
 
     if (foundUser != null) {
       return false;
     }
 
-    _users.add(userToAdd);
+    _users.add(UMUser(id: id, chatId: chatId, name: name, isPremium: isPremium));
     _userManagerStreamController.sink.add(0);
 
-    await dbManager.user.createUser(id: userToAdd.id, name: userToAdd.name, isPremium: userToAdd.isPremium);
+    await dbManager.user.createUser(id: id, chatId: chatId, name: name, isPremium: isPremium);
 
     return true;
   }

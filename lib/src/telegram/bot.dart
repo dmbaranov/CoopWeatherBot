@@ -5,7 +5,7 @@ import 'package:debounce_throttle/debounce_throttle.dart';
 import 'package:cron/cron.dart';
 import 'package:postgres/postgres.dart';
 
-import 'package:weather/src/modules/database-manager/datanase_manager.dart';
+import 'package:weather/src/modules/database-manager/database_manager.dart';
 import 'package:weather/src/modules/swearwords_manager.dart';
 import 'package:weather/src/modules/user_manager.dart';
 import 'package:weather/src/modules/weather_manager.dart';
@@ -15,6 +15,7 @@ import 'package:weather/src/modules/reputation.dart';
 import 'package:weather/src/modules/youtube.dart';
 import 'package:weather/src/modules/accordion_poll.dart';
 import 'package:weather/src/modules/conversator.dart';
+import 'package:weather/src/modules/chat_manager.dart';
 
 import './commands.dart';
 
@@ -39,6 +40,7 @@ class TelegramBot {
   late Youtube youtube;
   late AccordionPoll accordionPoll;
   late Conversator conversator;
+  late ChatManager chatManager;
   late int notificationHour = 7;
   late Debouncer<TeleDartInlineQuery?> debouncer = Debouncer(Duration(seconds: 1), initialValue: null);
 
@@ -65,6 +67,7 @@ class TelegramBot {
     panoramaNews = PanoramaNews();
     youtube = Youtube(youtubeKey);
     conversator = Conversator(conversatorKey);
+    chatManager = ChatManager(dbManager: dbManager);
 
     bot.start();
 
@@ -142,6 +145,7 @@ class TelegramBot {
     bot.onCommand('ask').listen((event) => getConversatorReply(this, event));
     bot.onCommand('adduser').listen((event) => addUser(this, event));
     bot.onCommand('removeuser').listen((event) => removeUser(this, event));
+    bot.onCommand('initialize').listen((event) => initChat(this, event));
 
     var bullyTagUserRegexp = RegExp(sm.get('bully_tag_user_regexp'), caseSensitive: false);
     bot.onMessage(keyword: bullyTagUserRegexp).listen((event) => bullyTagUser(this, event));

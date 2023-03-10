@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:collection/collection.dart';
 import 'package:cron/cron.dart';
-import 'database-manager/datanase_manager.dart';
+import 'database-manager/database_manager.dart';
 
 class UMUser {
   final String id;
@@ -20,6 +20,7 @@ class UMUser {
   }
 }
 
+// TODO: _users not needed and should be replaced with the DB?
 class UserManager {
   final DatabaseManager dbManager;
   final List<UMUser> _users = [];
@@ -48,10 +49,14 @@ class UserManager {
       return false;
     }
 
+    var creationResult = await dbManager.user.createUser(id: id, chatId: chatId, name: name, isPremium: isPremium);
+
+    if (creationResult != 1) {
+      return false;
+    }
+
     _users.add(UMUser(id: id, chatId: chatId, name: name, isPremium: isPremium));
     _userManagerStreamController.sink.add(0);
-
-    await dbManager.user.createUser(id: id, chatId: chatId, name: name, isPremium: isPremium);
 
     return true;
   }
@@ -63,10 +68,14 @@ class UserManager {
       return false;
     }
 
+    var deletionResult = await dbManager.user.deleteUser(userIdToRemove);
+
+    if (deletionResult != 1) {
+      return false;
+    }
+
     _users.removeWhere((user) => user.id == userIdToRemove);
     _userManagerStreamController.sink.add(0);
-
-    await dbManager.user.deleteUser(userIdToRemove);
 
     return true;
   }

@@ -32,22 +32,26 @@ class Entity {
     if (query == null) {
       print('Wrong query $query');
 
-      return;
+      return null;
     }
 
     return dbConnection.query(query, substitutionValues: substitutionValues);
   }
 
   @protected
-  executeTransaction(String? query, [Map<String, dynamic>? substitutionValues]) async {
+  Future<int> executeTransaction(String? query, [Map<String, dynamic>? substitutionValues]) async {
     if (query == null) {
       print('Wrong query $query');
 
-      return;
+      return 0;
     }
 
-    return dbConnection.transaction((ctx) async {
-      await ctx.query(query, substitutionValues: substitutionValues);
+    int result = await dbConnection.transaction((ctx) async {
+      var queryResult = await ctx.query(query, substitutionValues: substitutionValues);
+
+      return queryResult.affectedRowCount;
     });
+
+    return result;
   }
 }

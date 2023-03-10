@@ -18,15 +18,15 @@ class BotUserEntity extends Entity {
     return rawUsers.map((rawUser) => BotUserData(id: rawUser[0], name: rawUser[1], chatId: rawUser[2], isPremium: rawUser[3])).toList();
   }
 
-  Future<void> createUser({required String id, required String chatId, required String name, bool isPremium = false}) async {
-    await executeTransaction(queriesMap['create_bot_user'], {'id': id, 'chatId': chatId, 'name': name, 'isPremium': isPremium});
+  Future<int> createUser({required String id, required String chatId, required String name, bool isPremium = false}) {
+    return executeTransaction(queriesMap['create_bot_user'], {'id': id, 'chatId': chatId, 'name': name, 'isPremium': isPremium});
   }
 
-  Future<void> deleteUser(String id) async {
-    await executeTransaction(queriesMap['delete_bot_user'], {'id': id});
+  Future<int> deleteUser(String id) {
+    return executeTransaction(queriesMap['delete_bot_user'], {'id': id});
   }
 
-  Future<void> updatePremiumStatus(String id, bool isPremium) async {
-    await executeTransaction(queriesMap['update_premium_status'], {'id': id, 'isPremium': isPremium});
+  Future<int> updatePremiumStatus(String id, bool isPremium) {
+    return executeTransaction(queriesMap['update_premium_status'], {'id': id, 'isPremium': isPremium});
   }
 }

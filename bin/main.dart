@@ -85,6 +85,7 @@ void main(List<String> args) async {
     if (arguments['platform'] == 'discord') runDiscordBot(env);
     if (arguments['platform'] == 'telegram') runTelegramBot(env, dbConnection);
   }, (error, stack) {
+    // TODO: add time
     print('Error caught');
     print(error);
     print(stack);

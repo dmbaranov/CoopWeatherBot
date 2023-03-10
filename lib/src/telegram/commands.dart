@@ -361,3 +361,16 @@ Future<void> removeUser(TelegramBot self, TeleDartMessage message) async {
     await message.reply('User not removed');
   }
 }
+
+Future<void> initChat(TelegramBot self, TeleDartMessage message) async {
+  var chatId = message.chat.id.toString();
+  var chatName = message.chat.title.toString();
+
+  var result = await self.chatManager.createChat(id: chatId, name: chatName);
+
+  if (result) {
+    await message.reply('Chat initialized successfully');
+  } else {
+    await message.reply("Chat hasn't been initialized");
+  }
+}

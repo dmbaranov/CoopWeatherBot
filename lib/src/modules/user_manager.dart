@@ -1,15 +1,14 @@
 import 'dart:async';
-import 'package:collection/collection.dart';
 import 'package:cron/cron.dart';
 import 'database-manager/database_manager.dart';
 
 class UMUser {
   final String id;
   final bool isPremium;
-  String? chatId;
+  final String chatId;
   String name;
 
-  UMUser({required this.id, required this.name, this.chatId, this.isPremium = false}) {
+  UMUser({required this.id, required this.name, required this.chatId, this.isPremium = false}) {
     var markedAsPremium = name.contains('⭐');
 
     if (isPremium && !markedAsPremium) {
@@ -20,61 +19,46 @@ class UMUser {
   }
 }
 
-// TODO: _users not needed and should be replaced with the DB?
 class UserManager {
   final DatabaseManager dbManager;
-  final List<UMUser> _users = [];
+
   late StreamController<int> _userManagerStreamController;
   ScheduledTask? _userManagerCronTask;
 
   UserManager({required this.dbManager});
 
-  List<UMUser> get users => _users;
-
   Stream<int> get userManagerStream => _userManagerStreamController.stream;
 
-  Future<void> initialize() async {
-    var dbUsers = await dbManager.user.getAllUsers();
-
-    dbUsers.forEach((user) => _users.add(UMUser(id: user.id, name: user.name, isPremium: user.isPremium)));
-
+  void initialize() {
     _userManagerStreamController = StreamController<int>.broadcast();
     _updateUserManagerStream();
   }
 
+  Future<List<UMUser>> getUsersForChat(String chatId) async {
+    var users = await dbManager.user.getAllUsersForChat(chatId);
+
+    return users.map((dbUser) => UMUser(id: dbUser.id, name: dbUser.name, chatId: dbUser.chatId, isPremium: dbUser.isPremium)).toList();
+  }
+
   Future<bool> addUser({required String id, required String chatId, required String name, bool isPremium = false}) async {
-    var foundUser = _users.firstWhereOrNull((user) => user.id == id);
-
-    if (foundUser != null) {
-      return false;
-    }
-
     var creationResult = await dbManager.user.createUser(id: id, chatId: chatId, name: name, isPremium: isPremium);
 
-    if (creationResult != 1) {
-      return false;
+    if (creationResult == 1) {
+      _userManagerStreamController.sink.add(0);
+
+      return true;
     }
 
-    _users.add(UMUser(id: id, chatId: chatId, name: name, isPremium: isPremium));
-    _userManagerStreamController.sink.add(0);
-
-    return true;
+    return false;
   }
 
   Future<bool> removeUser(String userIdToRemove) async {
-    var foundUser = _users.firstWhereOrNull((user) => user.id == userIdToRemove);
-
-    if (foundUser == null) {
-      return false;
-    }
-
     var deletionResult = await dbManager.user.deleteUser(userIdToRemove);
 
-    if (deletionResult != 1) {
+    if (deletionResult == 1) {
       return false;
     }
 
-    _users.removeWhere((user) => user.id == userIdToRemove);
     _userManagerStreamController.sink.add(0);
 
     return true;

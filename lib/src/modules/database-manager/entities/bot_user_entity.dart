@@ -12,8 +12,8 @@ class BotUserData {
 class BotUserEntity extends Entity {
   BotUserEntity({required super.dbConnection}) : super(entityName: 'bot_user');
 
-  Future<List<BotUserData>> getAllUsers() async {
-    List rawUsers = await executeQuery(queriesMap['get_all_bot_users']);
+  Future<List<BotUserData>> getAllUsersForChat(String chatId) async {
+    List rawUsers = await executeQuery(queriesMap['get_all_bot_users_for_chat'], {'chatId': chatId});
 
     return rawUsers.map((rawUser) => BotUserData(id: rawUser[0], name: rawUser[1], chatId: rawUser[2], isPremium: rawUser[3])).toList();
   }

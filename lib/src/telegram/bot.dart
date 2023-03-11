@@ -75,7 +75,7 @@ class TelegramBot {
     await sm.initialize();
 
     userManager = UserManager(dbManager: dbManager);
-    await userManager.initialize();
+    userManager.initialize();
 
     reputation = Reputation(sm: sm, userManager: userManager);
     await reputation.initialize();

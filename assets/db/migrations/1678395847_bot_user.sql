@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS bot_user
 (
-    id         VARCHAR(255) NOT NULL UNIQUE,
+    id         VARCHAR(255) NOT NULL,
     name       VARCHAR(255) NOT NULL,
     chat_id    VARCHAR(255) NOT NULL,
     is_premium BOOLEAN      NOT NULL DEFAULT FALSE,

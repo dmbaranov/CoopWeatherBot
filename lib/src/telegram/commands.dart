@@ -244,9 +244,11 @@ Future<void> updateReputation(TelegramBot self, TeleDartMessage message, ChangeO
 }
 
 Future<void> sendReputationList(TelegramBot self, TeleDartMessage message) async {
-  var reputationMessage = self.reputation.getReputationMessage();
+  var reputationData = await self.reputation.getReputationMessage(message.chat.id.toString());
 
-  await message.reply(reputationMessage);
+  print('${reputationData[0].name}, ${reputationData[0].reputation}');
+
+  // await message.reply(reputationMessage);
 }
 
 Future<void> checkIfAlive(TelegramBot self, TeleDartMessage message) async {

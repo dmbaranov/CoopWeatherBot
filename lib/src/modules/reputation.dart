@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:cron/cron.dart';
 import 'database-manager/database_manager.dart';
-import 'database-manager/entities/reputation_entity.dart' show ReputationData;
+import 'database-manager/entities/reputation_entity.dart' show SingleReputationData, ChatReputationData;
 
 enum ChangeOption { increase, decrease }
 
@@ -74,17 +74,10 @@ class Reputation {
     return result == 1;
   }
 
-  String getReputationMessage() {
-    return '';
-    // var reputationMessage = sm.get('reputation_message_start');
+  Future<List<ChatReputationData>> getReputationMessage(String chatId) async {
+    var reputation = await dbManager.reputation.getReputationForChat(chatId);
 
-    // _users.sort((userA, userB) => userB.reputation - userA.reputation);
-    // _users.forEach((user) {
-    //   reputationMessage += sm.get('user_reputation', {'name': user.name, 'reputation': user.reputation.toString()});
-    //   reputationMessage += '\n';
-    // });
-
-    // return reputationMessage;
+    return reputation;
   }
 
   Future<bool> _updateReputation(String chatId, String userId, int reputation) async {
@@ -99,11 +92,11 @@ class Reputation {
     return result == 1;
   }
 
-  bool _canIncreaseReputationCheck(ReputationData user) {
+  bool _canIncreaseReputationCheck(SingleReputationData user) {
     return user.increaseOptionsLeft > 0;
   }
 
-  bool _canDecreaseReputationCheck(ReputationData user) {
+  bool _canDecreaseReputationCheck(SingleReputationData user) {
     return user.decreaseOptionsLeft > 0;
   }
 }

@@ -1,27 +1,31 @@
 import 'entity.dart';
 
-class ReputationData {
+class SingleReputationData {
   final String id;
   final int reputation;
   final int increaseOptionsLeft;
   final int decreaseOptionsLeft;
 
-  ReputationData({required this.id, required this.reputation, required this.increaseOptionsLeft, required this.decreaseOptionsLeft});
+  SingleReputationData({required this.id, required this.reputation, required this.increaseOptionsLeft, required this.decreaseOptionsLeft});
+}
+
+class ChatReputationData {
+  final String name;
+  final int reputation;
+
+  ChatReputationData({required this.name, required this.reputation});
 }
 
 class ReputationEntity extends Entity {
   ReputationEntity({required super.dbConnection}) : super(entityName: 'reputation');
 
-  Future<List<ReputationData>> getReputationForChat(String chatId) async {
+  Future<List<ChatReputationData>> getReputationForChat(String chatId) async {
     List rawReputation = await executeQuery(queriesMap['get_reputation_for_chat'], {'chatId': chatId});
 
-    return rawReputation
-        .map((reputation) => ReputationData(
-            id: reputation[0], reputation: reputation[1], increaseOptionsLeft: reputation[2], decreaseOptionsLeft: reputation[3]))
-        .toList();
+    return rawReputation.map((reputation) => ChatReputationData(name: reputation[0], reputation: reputation[1])).toList();
   }
 
-  Future<ReputationData?> getSingleReputationData(String chatId, String userId) async {
+  Future<SingleReputationData?> getSingleReputationData(String chatId, String userId) async {
     var data = await executeQuery(queriesMap['get_single_reputation_data'], {'chatId': chatId, 'userId': userId});
 
     if (data.length != 1) {
@@ -32,7 +36,7 @@ class ReputationEntity extends Entity {
 
     var reputationData = data[0];
 
-    return ReputationData(
+    return SingleReputationData(
         id: reputationData[0],
         reputation: reputationData[1],
         increaseOptionsLeft: reputationData[2],

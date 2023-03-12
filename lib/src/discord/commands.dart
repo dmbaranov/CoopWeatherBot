@@ -35,11 +35,11 @@ ChatCommand decreaseReputation(DiscordBot self) {
 
 ChatCommand getReputationList(DiscordBot self) {
   return ChatCommand('replist', 'Get current reputation', (IChatContext context) async {
-    await context.respond(MessageBuilder.empty());
-
-    var reputationMessage = self.reputation.getReputationMessage();
-
-    await context.respond(MessageBuilder.content(reputationMessage));
+    // await context.respond(MessageBuilder.empty());
+    //
+    // var reputationMessage = self.reputation.getReputationMessage();
+    //
+    // await context.respond(MessageBuilder.content(reputationMessage));
   });
 }
 

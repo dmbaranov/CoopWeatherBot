@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:math';
 import 'dart:io' as io;
-import 'package:collection/collection.dart';
 import 'package:teledart/model.dart';
 import 'package:weather/src/modules/accordion_poll.dart';
+import 'package:weather/src/modules/reputation.dart';
 
 import './bot.dart';
 import './utils.dart';
@@ -223,19 +223,24 @@ Future<void> searchYoutubeTrackInline(TelegramBot self, TeleDartInlineQuery quer
   await self.bot.answerInlineQuery(query.id, [...inlineQueryResult], cacheTime: 10);
 }
 
-Future<void> updateReputation(TelegramBot self, TeleDartMessage message, String change) async {
-  if (message.replyToMessage == null) {
+Future<void> updateReputation(TelegramBot self, TeleDartMessage message, ChangeOption change) async {
+  var fromUserId = message.from?.id;
+  var toUserId = message.replyToMessage?.from?.id;
+
+  if (fromUserId == null || toUserId == null) {
     await message.reply(self.sm.get('error_occurred'));
 
     return;
   }
 
-  var fromUser = self.userManager.users.firstWhereOrNull((user) => user.id == message.from?.id.toString());
-  var toUser = self.userManager.users.firstWhereOrNull((user) => user.id == message.replyToMessage?.from?.id.toString());
+  var changeResult = await self.reputation.updateReputation(
+      chatId: message.chat.id.toString(), fromUserId: fromUserId.toString(), toUserId: toUserId.toString(), change: change);
 
-  var changeResult = await self.reputation.updateReputation(from: fromUser, to: toUser, type: change);
-
-  await self.telegram.sendMessage(self.chatId, changeResult);
+  if (changeResult) {
+    await self.telegram.sendMessage(message.chat.id, 'Success');
+  } else {
+    await self.telegram.sendMessage(message.chat.id, 'Failure');
+  }
 }
 
 Future<void> sendReputationList(TelegramBot self, TeleDartMessage message) async {
@@ -372,5 +377,22 @@ Future<void> initChat(TelegramBot self, TeleDartMessage message) async {
     await message.reply('Chat initialized successfully');
   } else {
     await message.reply("Chat hasn't been initialized");
+  }
+}
+
+Future<void> createReputation(TelegramBot self, TeleDartMessage message) async {
+  var chatId = message.chat.id.toString();
+  var userId = message.replyToMessage?.from?.id;
+
+  if (userId == null) {
+    await message.reply('User not selected');
+  }
+
+  var result = await self.reputation.createReputationData(chatId, userId.toString());
+
+  if (result) {
+    await message.reply('Created');
+  } else {
+    await message.reply('Not created');
   }
 }

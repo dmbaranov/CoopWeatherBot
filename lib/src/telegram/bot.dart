@@ -77,8 +77,8 @@ class TelegramBot {
     userManager = UserManager(dbManager: dbManager);
     userManager.initialize();
 
-    reputation = Reputation(sm: sm, userManager: userManager);
-    await reputation.initialize();
+    reputation = Reputation(dbManager: dbManager);
+    reputation.initialize();
 
     weatherManager = WeatherManager(openweatherKey: openweatherKey);
     weatherManager.initialize();
@@ -136,8 +136,8 @@ class TelegramBot {
     bot.onCommand('sendnews').listen((event) => sendNewsToChat(this));
     bot.onCommand('sendjoke').listen((event) => sendJokeToChat(this));
     bot.onCommand('sendrealmusic').listen((event) => sendRealMusic(this, event));
-    bot.onCommand('increp').listen((event) => updateReputation(this, event, 'increase'));
-    bot.onCommand('decrep').listen((event) => updateReputation(this, event, 'decrease'));
+    bot.onCommand('increp').listen((event) => updateReputation(this, event, ChangeOption.increase));
+    bot.onCommand('decrep').listen((event) => updateReputation(this, event, ChangeOption.decrease));
     bot.onCommand('replist').listen((event) => sendReputationList(this, event));
     bot.onCommand('searchsong').listen((event) => searchYoutubeTrack(this, event));
     bot.onCommand('na').listen((event) => checkIfAlive(this, event));
@@ -146,6 +146,7 @@ class TelegramBot {
     bot.onCommand('adduser').listen((event) => addUser(this, event));
     bot.onCommand('removeuser').listen((event) => removeUser(this, event));
     bot.onCommand('initialize').listen((event) => initChat(this, event));
+    bot.onCommand('createreputation').listen((event) => createReputation(this, event));
 
     var bullyTagUserRegexp = RegExp(sm.get('bully_tag_user_regexp'), caseSensitive: false);
     bot.onMessage(keyword: bullyTagUserRegexp).listen((event) => bullyTagUser(this, event));

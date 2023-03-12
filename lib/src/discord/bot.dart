@@ -80,10 +80,10 @@ class DiscordBot {
       var heroesMessage = sm.get('users_online_at_five');
 
       onlineUsers.forEach((userId) {
-        var onlineUser = userManager.users.firstWhere((user) => user.id == userId);
-
-        heroesMessage += onlineUser.name;
-        heroesMessage += '\n';
+        // var onlineUser = userManager.users.firstWhere((user) => user.id == userId);
+        //
+        // heroesMessage += onlineUser.name;
+        // heroesMessage += '\n';
       });
 
       await bot.httpEndpoints.sendMessage(Snowflake(channelId), MessageBuilder.content(heroesMessage));

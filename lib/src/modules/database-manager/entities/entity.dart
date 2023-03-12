@@ -28,11 +28,11 @@ class Entity {
   }
 
   @protected
-  executeQuery(String? query, [Map<String, dynamic>? substitutionValues]) async {
+  Future<List> executeQuery(String? query, [Map<String, dynamic>? substitutionValues]) async {
     if (query == null) {
       print('Wrong query $query');
 
-      return null;
+      return [];
     }
 
     return dbConnection.query(query, substitutionValues: substitutionValues);

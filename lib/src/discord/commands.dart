@@ -10,26 +10,26 @@ import './bot.dart';
 
 ChatCommand increaseReputation(DiscordBot self) {
   return ChatCommand('increp', 'Increase reputation for the user', (IChatContext context, IMember who) async {
-    await context.respond(MessageBuilder.empty());
-    var fromUser = self.userManager.users.firstWhereOrNull((user) => user.id == context.user.id.toString());
-    var toUser = self.userManager.users.firstWhereOrNull((user) => user.id == who.user.id.toString());
-
-    var result = await self.reputation.updateReputation(from: fromUser, to: toUser, type: 'increase');
-
-    // TODO: check if instead of new message you can edit previous one
-    await context.respond(MessageBuilder.content(result));
+    // await context.respond(MessageBuilder.empty());
+    // var fromUser = self.userManager.users.firstWhereOrNull((user) => user.id == context.user.id.toString());
+    // var toUser = self.userManager.users.firstWhereOrNull((user) => user.id == who.user.id.toString());
+    //
+    // var result = await self.reputation.updateReputation(from: fromUser, to: toUser, type: 'increase');
+    //
+    // // TODO: check if instead of new message you can edit previous one
+    // await context.respond(MessageBuilder.content(result));
   });
 }
 
 ChatCommand decreaseReputation(DiscordBot self) {
   return ChatCommand('decrep', 'Increase reputation for the user', (IChatContext context, IMember who) async {
     await context.respond(MessageBuilder.empty());
-    var fromUser = self.userManager.users.firstWhereOrNull((user) => user.id == context.user.id.toString());
-    var toUser = self.userManager.users.firstWhereOrNull((user) => user.id == who.user.id.toString());
-
-    var result = await self.reputation.updateReputation(from: fromUser, to: toUser, type: 'decrease');
-
-    await context.respond(MessageBuilder.content(result));
+    // var fromUser = self.userManager.users.firstWhereOrNull((user) => user.id == context.user.id.toString());
+    // var toUser = self.userManager.users.firstWhereOrNull((user) => user.id == who.user.id.toString());
+    //
+    // var result = await self.reputation.updateReputation(from: fromUser, to: toUser, type: 'decrease');
+    //
+    // await context.respond(MessageBuilder.content(result));
   });
 }
 

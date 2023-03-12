@@ -1,147 +1,120 @@
 import 'dart:async';
-import 'package:collection/collection.dart';
 import 'package:cron/cron.dart';
-import 'swearwords_manager.dart';
-import 'stonecave.dart';
-import 'user_manager.dart';
+import 'database-manager/database_manager.dart';
+import 'database-manager/entities/reputation_entity.dart' show ReputationData;
 
-const String _pathToReputationCave = 'assets/reputation.cave.json';
-const int _defaultOptionsSize = 3;
-const int _premiumOptionsSize = 6;
+// class ReputationUser extends UMUser {
+//   int reputation;
+//   int _increaseOptionsLeft = _defaultOptionsSize;
+//   int _decreaseOptionsLeft = _defaultOptionsSize;
+//
+//   ReputationUser({required id, required name, required this.reputation, isPremium}) : super(id: id, name: name, isPremium: isPremium) {
+//     resetOptions();
+//   }
+//
+//   bool get canIncrease => _increaseOptionsLeft > 0;
+//
+//   bool get canDecrease => _decreaseOptionsLeft > 0;
+//
+//   void resetOptions() {
+//     _increaseOptionsLeft = isPremium ? _premiumOptionsSize : _defaultOptionsSize;
+//     _decreaseOptionsLeft = isPremium ? _premiumOptionsSize : _defaultOptionsSize;
+//   }
+//
+//   void optionUsed(String option) {
+//     var allowedOptions = ['increase', 'decrease'];
+//     if (!allowedOptions.contains(option)) {
+//       return;
+//     }
+//
+//     if (option == 'increase' && canIncrease) _increaseOptionsLeft--;
+//     if (option == 'decrease' && canDecrease) _decreaseOptionsLeft--;
+//   }
+//
+//   Map<String, dynamic> toJson() => {'id': id, 'reputation': reputation, 'name': name, 'isPremium': isPremium};
+// }
 
-class ReputationUser extends UMUser {
-  int reputation;
-  int _increaseOptionsLeft = _defaultOptionsSize;
-  int _decreaseOptionsLeft = _defaultOptionsSize;
-
-  ReputationUser({required id, required name, required this.reputation, isPremium}) : super(id: id, name: name, isPremium: isPremium) {
-    resetOptions();
-  }
-
-  bool get canIncrease => _increaseOptionsLeft > 0;
-
-  bool get canDecrease => _decreaseOptionsLeft > 0;
-
-  void resetOptions() {
-    _increaseOptionsLeft = isPremium ? _premiumOptionsSize : _defaultOptionsSize;
-    _decreaseOptionsLeft = isPremium ? _premiumOptionsSize : _defaultOptionsSize;
-  }
-
-  void optionUsed(String option) {
-    var allowedOptions = ['increase', 'decrease'];
-    if (!allowedOptions.contains(option)) {
-      return;
-    }
-
-    if (option == 'increase' && canIncrease) _increaseOptionsLeft--;
-    if (option == 'decrease' && canDecrease) _decreaseOptionsLeft--;
-  }
-
-  Map<String, dynamic> toJson() => {'id': id, 'reputation': reputation, 'name': name, 'isPremium': isPremium};
-}
+enum ChangeOption { increase, decrease }
 
 class Reputation {
-  final SwearwordsManager sm;
-  final UserManager userManager;
-  final List<ReputationUser> _users = [];
-  late StoneCave stoneCave;
+  final DatabaseManager dbManager;
 
-  Reputation({required this.sm, required this.userManager});
+  Reputation({required this.dbManager});
 
-  Future<void> initialize() async {
-    stoneCave = StoneCave(cavepath: _pathToReputationCave);
-    await stoneCave.initialize();
-
-    _updateUsersList();
+  void initialize() {
     _startResetVotesJob();
-    _subscribeToUsersUpdate();
-  }
-
-  void _subscribeToUsersUpdate() {
-    var userManagerStream = userManager.userManagerStream;
-
-    userManagerStream.listen((_) => _updateUsersList());
-  }
-
-  void _updateUsersList() async {
-    var lastStone = await stoneCave.getLastStone();
-
-    List stoneUsers = lastStone?.data['reputation'] ?? [];
-
-    _users.clear();
-
-    userManager.users.forEach((umUser) {
-      var userDataFromStone = stoneUsers.firstWhereOrNull((stoneUser) => stoneUser['id'] == umUser.id);
-
-      var reputationUser =
-          ReputationUser(id: umUser.id, name: umUser.name, isPremium: umUser.isPremium, reputation: userDataFromStone?['reputation'] ?? 0);
-
-      _users.add(reputationUser);
-    });
   }
 
   void _startResetVotesJob() {
     Cron().schedule(Schedule.parse('0 0 * * *'), () {
-      _users.forEach((user) => user.resetOptions());
+      // TODO: update user votes
     });
   }
 
-  Future<String> updateReputation({required String type, UMUser? from, UMUser? to}) async {
-    var changeResult = '';
+  Future<bool> updateReputation(
+      {required String chatId, required String fromUserId, required String toUserId, required ChangeOption change}) async {
+    var fromUser = await dbManager.reputation.getSingleReputationData(chatId, fromUserId);
+    var toUser = await dbManager.reputation.getSingleReputationData(chatId, toUserId);
 
-    if (from == null || to == null) {
-      return sm.get('error_occurred');
+    if (fromUser == null || toUser == null) {
+      return false;
     }
 
-    var isCaveValid = await stoneCave.checkCaveIntegrity();
-    if (!isCaveValid) {
-      return sm.get('reputation_cave_integrity_failed');
+    if (fromUserId == toUserId) {
+      // return false;
     }
 
-    var changeAuthor = _users.firstWhereOrNull((user) => user.id == from.id);
-    var userToUpdate = _users.firstWhereOrNull((user) => user.id == to.id);
-
-    if (userToUpdate == null || changeAuthor == null) {
-      return sm.get('error_occurred');
+    if (!_canIncreaseReputationCheck(fromUser)) {
+      return false;
     }
 
-    if (userToUpdate.id == changeAuthor.id) {
-      return sm.get('self_admire_attempt');
-    }
+    var newReputationValue = change == ChangeOption.increase ? toUser.reputation + 1 : toUser.reputation - 1;
 
-    if (type == 'increase') {
-      if (changeAuthor.canIncrease) {
-        userToUpdate.reputation += 1;
-        changeAuthor.optionUsed('increase');
-        changeResult = sm.get('reputation_increased', {'name': userToUpdate.name});
-      } else {
-        changeResult = sm.get('reputation_change_failed');
-      }
-    } else if (type == 'decrease') {
-      if (changeAuthor.canDecrease) {
-        userToUpdate.reputation -= 1;
-        changeAuthor.optionUsed('decrease');
-        changeResult = sm.get('reputation_decreased', {'name': userToUpdate.name});
-      } else {
-        changeResult = sm.get('reputation_change_failed');
-      }
-    }
+    return _updateReputation(chatId, toUserId, newReputationValue);
+  }
 
-    var updatedReputation = _users.map((user) => user.toJson()).toList();
-    await stoneCave.addStone(Stone(data: {'from': changeAuthor.id, 'to': userToUpdate.id, 'type': type, 'reputation': updatedReputation}));
+  Future<bool> createReputationData(String chatId, String userId) async {
+    var result = await dbManager.reputation.createReputationData(chatId, userId, 3);
 
-    return changeResult;
+    return result == 1;
   }
 
   String getReputationMessage() {
-    var reputationMessage = sm.get('reputation_message_start');
+    return '';
+    // var reputationMessage = sm.get('reputation_message_start');
 
-    _users.sort((userA, userB) => userB.reputation - userA.reputation);
-    _users.forEach((user) {
-      reputationMessage += sm.get('user_reputation', {'name': user.name, 'reputation': user.reputation.toString()});
-      reputationMessage += '\n';
-    });
+    // _users.sort((userA, userB) => userB.reputation - userA.reputation);
+    // _users.forEach((user) {
+    //   reputationMessage += sm.get('user_reputation', {'name': user.name, 'reputation': user.reputation.toString()});
+    //   reputationMessage += '\n';
+    // });
 
-    return reputationMessage;
+    // return reputationMessage;
+  }
+
+  Future<bool> _updateReputation(String chatId, String userId, int reputation) async {
+    var result = await dbManager.reputation.updateReputation(chatId, userId, reputation);
+
+    return result == 1;
+  }
+
+  // bool _increaseReputation(ReputationData fromUser, ReputationData toUser) {
+  //   print('increasing');
+  //
+  //   return true;
+  // }
+  //
+  // bool _decreaseReputation(ReputationData fromUser, ReputationData toUser) {
+  //   print('decreasing');
+  //
+  //   return false;
+  // }
+
+  bool _canIncreaseReputationCheck(ReputationData user) {
+    return user.increaseOptionsLeft > 0;
+  }
+
+  bool _canDecreaseReputationCheck(ReputationData user) {
+    return user.decreaseOptionsLeft > 0;
   }
 }

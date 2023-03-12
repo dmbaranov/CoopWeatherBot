@@ -19,14 +19,14 @@ class BotUserEntity extends Entity {
   }
 
   Future<int> createUser({required String id, required String chatId, required String name, bool isPremium = false}) {
-    return executeTransaction(queriesMap['create_bot_user'], {'id': id, 'chatId': chatId, 'name': name, 'isPremium': isPremium});
+    return executeTransaction(queriesMap['create_bot_user'], {'userId': id, 'chatId': chatId, 'name': name, 'isPremium': isPremium});
   }
 
   Future<int> deleteUser(String id) {
-    return executeTransaction(queriesMap['delete_bot_user'], {'id': id});
+    return executeTransaction(queriesMap['delete_bot_user'], {'userId': id});
   }
 
   Future<int> updatePremiumStatus(String id, bool isPremium) {
-    return executeTransaction(queriesMap['update_premium_status'], {'id': id, 'isPremium': isPremium});
+    return executeTransaction(queriesMap['update_premium_status'], {'userId': id, 'isPremium': isPremium});
   }
 }

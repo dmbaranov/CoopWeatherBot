@@ -52,4 +52,9 @@ class ReputationEntity extends Entity {
     return executeTransaction(queriesMap['create_reputation_data'],
         {'chatId': chatId, 'userId': userId, 'increaseOptionsLeft': numberOfOptions, 'decreaseOptionsLeft': numberOfOptions});
   }
+
+  Future<int> resetChangeOptions(int numberOfOptions) {
+    return executeTransaction(
+        queriesMap['reset_change_options'], {'increaseOptionsLeft': numberOfOptions, 'decreaseOptionsLeft': numberOfOptions});
+  }
 }

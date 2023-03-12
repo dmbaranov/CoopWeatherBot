@@ -15,8 +15,15 @@ class Reputation {
   }
 
   void _startResetVotesJob() {
-    Cron().schedule(Schedule.parse('0 0 * * *'), () {
-      // TODO: update user votes
+    Cron().schedule(Schedule.parse('0 0 * * *'), () async {
+      var numberOfOptions = 3;
+      var result = await dbManager.reputation.resetChangeOptions(numberOfOptions);
+
+      if (result == 0) {
+        print('Something went wrong with resetting reputation change options');
+      } else {
+        print('Reset reputation change options for $result rows');
+      }
     });
   }
 

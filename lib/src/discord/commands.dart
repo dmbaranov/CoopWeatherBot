@@ -182,22 +182,22 @@ ChatCommand addUser(DiscordBot self) {
 
 ChatCommand removeUser(DiscordBot self) {
   return ChatCommand('removeuser', 'Remove user from the bot', (IChatContext context, IMember who) async {
-    await context.respond(MessageBuilder.empty());
-
-    var discordUser = await self.bot.fetchUser(who.id);
-
-    if (discordUser.bot) {
-      print('Invalid user data');
-
-      return;
-    }
-
-    var removeResult = await self.userManager.removeUser(discordUser.id.toString());
-
-    if (removeResult) {
-      await context.respond(MessageBuilder.content('User removed'));
-    } else {
-      await context.respond(MessageBuilder.content('User not removed'));
-    }
+    // await context.respond(MessageBuilder.empty());
+    //
+    // var discordUser = await self.bot.fetchUser(who.id);
+    //
+    // if (discordUser.bot) {
+    //   print('Invalid user data');
+    //
+    //   return;
+    // }
+    //
+    // var removeResult = await self.userManager.removeUser(discordUser.id.toString());
+    //
+    // if (removeResult) {
+    //   await context.respond(MessageBuilder.content('User removed'));
+    // } else {
+    //   await context.respond(MessageBuilder.content('User not removed'));
+    // }
   }, checks: [self.isAdminCheck()]);
 }

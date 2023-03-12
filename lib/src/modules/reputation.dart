@@ -3,37 +3,6 @@ import 'package:cron/cron.dart';
 import 'database-manager/database_manager.dart';
 import 'database-manager/entities/reputation_entity.dart' show ReputationData;
 
-// class ReputationUser extends UMUser {
-//   int reputation;
-//   int _increaseOptionsLeft = _defaultOptionsSize;
-//   int _decreaseOptionsLeft = _defaultOptionsSize;
-//
-//   ReputationUser({required id, required name, required this.reputation, isPremium}) : super(id: id, name: name, isPremium: isPremium) {
-//     resetOptions();
-//   }
-//
-//   bool get canIncrease => _increaseOptionsLeft > 0;
-//
-//   bool get canDecrease => _decreaseOptionsLeft > 0;
-//
-//   void resetOptions() {
-//     _increaseOptionsLeft = isPremium ? _premiumOptionsSize : _defaultOptionsSize;
-//     _decreaseOptionsLeft = isPremium ? _premiumOptionsSize : _defaultOptionsSize;
-//   }
-//
-//   void optionUsed(String option) {
-//     var allowedOptions = ['increase', 'decrease'];
-//     if (!allowedOptions.contains(option)) {
-//       return;
-//     }
-//
-//     if (option == 'increase' && canIncrease) _increaseOptionsLeft--;
-//     if (option == 'decrease' && canDecrease) _decreaseOptionsLeft--;
-//   }
-//
-//   Map<String, dynamic> toJson() => {'id': id, 'reputation': reputation, 'name': name, 'isPremium': isPremium};
-// }
-
 enum ChangeOption { increase, decrease }
 
 class Reputation {
@@ -61,19 +30,38 @@ class Reputation {
     }
 
     if (fromUserId == toUserId) {
-      // return false;
-    }
-
-    if (!_canIncreaseReputationCheck(fromUser)) {
       return false;
     }
 
-    var newReputationValue = change == ChangeOption.increase ? toUser.reputation + 1 : toUser.reputation - 1;
+    if (change == ChangeOption.increase && !_canIncreaseReputationCheck(fromUser)) {
+      return false;
+    } else if (change == ChangeOption.decrease && !_canDecreaseReputationCheck(fromUser)) {
+      return false;
+    }
 
-    return _updateReputation(chatId, toUserId, newReputationValue);
+    var reputationValue = toUser.reputation;
+    var increaseOptions = fromUser.increaseOptionsLeft;
+    var decreaseOptions = fromUser.decreaseOptionsLeft;
+
+    if (change == ChangeOption.increase) {
+      reputationValue += 1;
+      increaseOptions -= 1;
+    } else {
+      reputationValue -= 1;
+      decreaseOptions -= 1;
+    }
+
+    var optionsUpdated = await _updateChangeOptions(chatId, fromUserId, increaseOptions, decreaseOptions);
+
+    if (!optionsUpdated) {
+      return false;
+    }
+
+    return _updateReputation(chatId, toUserId, reputationValue);
   }
 
   Future<bool> createReputationData(String chatId, String userId) async {
+    // TODO: add 6 options for premium users
     var result = await dbManager.reputation.createReputationData(chatId, userId, 3);
 
     return result == 1;
@@ -98,17 +86,11 @@ class Reputation {
     return result == 1;
   }
 
-  // bool _increaseReputation(ReputationData fromUser, ReputationData toUser) {
-  //   print('increasing');
-  //
-  //   return true;
-  // }
-  //
-  // bool _decreaseReputation(ReputationData fromUser, ReputationData toUser) {
-  //   print('decreasing');
-  //
-  //   return false;
-  // }
+  Future<bool> _updateChangeOptions(String chatId, String userId, int increaseOptions, int decreaseOptions) async {
+    var result = await dbManager.reputation.updateChangeOptions(chatId, userId, increaseOptions, decreaseOptions);
+
+    return result == 1;
+  }
 
   bool _canIncreaseReputationCheck(ReputationData user) {
     return user.increaseOptionsLeft > 0;

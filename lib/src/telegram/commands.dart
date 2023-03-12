@@ -358,7 +358,9 @@ Future<void> removeUser(TelegramBot self, TeleDartMessage message) async {
     return;
   }
 
-  var removeResult = await self.userManager.removeUser(userData.id.toString());
+  var chatId = message.chat.id.toString();
+  var userId = userData.id.toString();
+  var removeResult = await self.userManager.removeUser(chatId, userId);
 
   if (removeResult) {
     await message.reply('User removed');

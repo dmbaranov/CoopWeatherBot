@@ -43,6 +43,11 @@ class ReputationEntity extends Entity {
     return executeTransaction(queriesMap['update_reputation'], {'chatId': chatId, 'userId': userId, 'reputation': reputation});
   }
 
+  Future<int> updateChangeOptions(String chatId, String userId, int increaseOptionsLeft, int decreaseOptionsLeft) {
+    return executeTransaction(queriesMap['update_change_options'],
+        {'chatId': chatId, 'userId': userId, 'increaseOptionsLeft': increaseOptionsLeft, 'decreaseOptionsLeft': decreaseOptionsLeft});
+  }
+
   Future<int> createReputationData(String chatId, String userId, int numberOfOptions) {
     return executeTransaction(queriesMap['create_reputation_data'],
         {'chatId': chatId, 'userId': userId, 'increaseOptionsLeft': numberOfOptions, 'decreaseOptionsLeft': numberOfOptions});

@@ -52,8 +52,8 @@ class UserManager {
     return false;
   }
 
-  Future<bool> removeUser(String userIdToRemove) async {
-    var deletionResult = await dbManager.user.deleteUser(userIdToRemove);
+  Future<bool> removeUser(String chatId, String userId) async {
+    var deletionResult = await dbManager.user.deleteUser(chatId, userId);
 
     if (deletionResult == 1) {
       return false;

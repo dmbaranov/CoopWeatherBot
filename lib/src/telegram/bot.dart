@@ -80,8 +80,8 @@ class TelegramBot {
     reputation = Reputation(dbManager: dbManager);
     reputation.initialize();
 
-    weatherManager = WeatherManager(openweatherKey: openweatherKey);
-    weatherManager.initialize();
+    weatherManager = WeatherManager(openweatherKey: openweatherKey, dbManager: dbManager);
+    await weatherManager.initialize();
 
     await panoramaNews.initialize();
 
@@ -100,8 +100,14 @@ class TelegramBot {
   void _subscribeToWeather() {
     var weatherStream = weatherManager.weatherStream;
 
-    weatherStream.listen((weatherMessage) {
-      telegram.sendMessage(chatId, weatherMessage);
+    weatherStream.listen((weatherData) {
+      var message = '';
+
+      weatherData.weatherData.forEach((weatherData) {
+        message += 'City: ${weatherData.city}, temperature: ${weatherData.temp}\n';
+      });
+
+      telegram.sendMessage(weatherData.chatId, message);
     });
   }
 
@@ -147,6 +153,7 @@ class TelegramBot {
     bot.onCommand('removeuser').listen((event) => removeUser(this, event));
     bot.onCommand('initialize').listen((event) => initChat(this, event));
     bot.onCommand('createreputation').listen((event) => createReputation(this, event));
+    bot.onCommand('createweather').listen((event) => createWeather(this, event));
 
     var bullyTagUserRegexp = RegExp(sm.get('bully_tag_user_regexp'), caseSensitive: false);
     bot.onMessage(keyword: bullyTagUserRegexp).listen((event) => bullyTagUser(this, event));

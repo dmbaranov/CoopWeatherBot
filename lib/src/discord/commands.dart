@@ -45,44 +45,44 @@ ChatCommand getReputationList(DiscordBot self) {
 
 ChatCommand addWeatherCity(DiscordBot self) {
   return ChatCommand('addcity', 'Add city to receive periodic updates about the weather', (IChatContext context, String city) async {
-    await context.respond(MessageBuilder.empty());
-
-    var addedSuccessfully = await self.weatherManager.addCity(city);
-
-    if (addedSuccessfully) {
-      await context.respond(MessageBuilder.content(self.sm.get('cities_list_updated')));
-    } else {
-      await context.respond(MessageBuilder.content(self.sm.get('cities_list_update_failed')));
-    }
+    // await context.respond(MessageBuilder.empty());
+    //
+    // var addedSuccessfully = await self.weatherManager.addCity(city);
+    //
+    // if (addedSuccessfully) {
+    //   await context.respond(MessageBuilder.content(self.sm.get('cities_list_updated')));
+    // } else {
+    //   await context.respond(MessageBuilder.content(self.sm.get('cities_list_update_failed')));
+    // }
   });
 }
 
 ChatCommand removeWeatherCity(DiscordBot self) {
   return ChatCommand('removecity', 'Remove city to stop receiving periodic updates about the weather',
       (IChatContext context, String city) async {
-    await context.respond(MessageBuilder.empty());
-
-    var removedSuccessfully = await self.weatherManager.removeCity(city);
-
-    if (removedSuccessfully) {
-      await context.respond(MessageBuilder.content(self.sm.get('cities_list_updated')));
-    } else {
-      await context.respond(MessageBuilder.content(self.sm.get('cities_list_update_failed')));
-    }
+    // await context.respond(MessageBuilder.empty());
+    //
+    // var removedSuccessfully = await self.weatherManager.removeCity(city);
+    //
+    // if (removedSuccessfully) {
+    //   await context.respond(MessageBuilder.content(self.sm.get('cities_list_updated')));
+    // } else {
+    //   await context.respond(MessageBuilder.content(self.sm.get('cities_list_update_failed')));
+    // }
   });
 }
 
 ChatCommand getWeatherWatchlist(DiscordBot self) {
   return ChatCommand('getcities', 'Get the list of cities for which weather is being tracked', (IChatContext context) async {
-    await context.respond(MessageBuilder.empty());
-
-    var citiesList = await self.weatherManager.getWatchList();
-
-    if (citiesList.isNotEmpty) {
-      await context.respond(MessageBuilder.content(citiesList));
-    } else {
-      await context.respond(MessageBuilder.content(self.sm.get('get_weather_cities_failed')));
-    }
+    // await context.respond(MessageBuilder.empty());
+    //
+    // var citiesList = await self.weatherManager.getWatchList();
+    //
+    // if (citiesList.isNotEmpty) {
+    //   await context.respond(MessageBuilder.content(citiesList));
+    // } else {
+    //   await context.respond(MessageBuilder.content(self.sm.get('get_weather_cities_failed')));
+    // }
   });
 }
 
@@ -104,15 +104,15 @@ ChatCommand getWeatherForCity(DiscordBot self) {
 
 ChatCommand setWeatherNotificationHour(DiscordBot self) {
   return ChatCommand('setweatherhour', 'Set notification hour for weather', (IChatContext context, String hour) async {
-    await context.respond(MessageBuilder.empty());
-
-    var setSuccessfully = self.weatherManager.setNotificationsHour(int.parse(hour));
-
-    if (setSuccessfully) {
-      await context.respond(MessageBuilder.content(self.sm.get('weather_notification_hour_updated')));
-    } else {
-      await context.respond(MessageBuilder.content(self.sm.get('weather_notification_update_failed')));
-    }
+    // await context.respond(MessageBuilder.empty());
+    //
+    // var setSuccessfully = self.weatherManager.setNotificationsHour(int.parse(hour));
+    //
+    // if (setSuccessfully) {
+    //   await context.respond(MessageBuilder.content(self.sm.get('weather_notification_hour_updated')));
+    // } else {
+    //   await context.respond(MessageBuilder.content(self.sm.get('weather_notification_update_failed')));
+    // }
   });
 }
 

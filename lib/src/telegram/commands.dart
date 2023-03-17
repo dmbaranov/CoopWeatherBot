@@ -11,7 +11,7 @@ import './utils.dart';
 void addCity(TelegramBot self, TeleDartMessage message) async {
   var cityToAdd = getOneParameterFromMessage(message);
 
-  var result = await self.weatherManager.addCity(cityToAdd);
+  var result = await self.weatherManager.addCity(message.chat.id.toString(), cityToAdd);
 
   if (result) {
     await message.reply('City $cityToAdd has been added to the watchlist!');
@@ -23,7 +23,7 @@ void addCity(TelegramBot self, TeleDartMessage message) async {
 void removeCity(TelegramBot self, TeleDartMessage message) async {
   var cityToRemove = getOneParameterFromMessage(message);
 
-  var result = await self.weatherManager.removeCity(cityToRemove);
+  var result = await self.weatherManager.removeCity(message.chat.id.toString(), cityToRemove);
 
   if (result) {
     await message.reply('City $cityToRemove has been removed from the watchlist!');
@@ -33,7 +33,7 @@ void removeCity(TelegramBot self, TeleDartMessage message) async {
 }
 
 void getWatchlist(TelegramBot self, TeleDartMessage message) async {
-  var citiesString = await self.weatherManager.getWatchList();
+  var citiesString = await self.weatherManager.getWatchList(message.chat.id.toString());
 
   await message.reply("I'm watching these cities:\n$citiesString");
 }
@@ -59,7 +59,7 @@ void getWeatherForCity(TelegramBot self, TeleDartMessage message) async {
 void setNotificationHour(TelegramBot self, TeleDartMessage message) async {
   var nextHour = getOneParameterFromMessage(message);
 
-  var result = self.weatherManager.setNotificationsHour(int.parse(nextHour));
+  var result = await self.weatherManager.setNotificationHour(message.chat.id.toString(), int.parse(nextHour));
 
   if (result) {
     await message.reply('Notification hour has been set to $nextHour');
@@ -245,10 +245,13 @@ Future<void> updateReputation(TelegramBot self, TeleDartMessage message, ChangeO
 
 Future<void> sendReputationList(TelegramBot self, TeleDartMessage message) async {
   var reputationData = await self.reputation.getReputationMessage(message.chat.id.toString());
+  var reputationMessage = '';
 
-  print('${reputationData[0].name}, ${reputationData[0].reputation}');
+  reputationData.forEach((reputation) {
+    reputationMessage += '${reputation.name}: ${reputation.reputation}\n';
+  });
 
-  // await message.reply(reputationMessage);
+  await message.reply(reputationMessage);
 }
 
 Future<void> checkIfAlive(TelegramBot self, TeleDartMessage message) async {
@@ -393,6 +396,18 @@ Future<void> createReputation(TelegramBot self, TeleDartMessage message) async {
   }
 
   var result = await self.reputation.createReputationData(chatId, userId.toString());
+
+  if (result) {
+    await message.reply('Created');
+  } else {
+    await message.reply('Not created');
+  }
+}
+
+Future<void> createWeather(TelegramBot self, TeleDartMessage message) async {
+  var chatId = message.chat.id.toString();
+
+  var result = await self.weatherManager.createWeatherData(chatId);
 
   if (result) {
     await message.reply('Created');

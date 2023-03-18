@@ -21,7 +21,6 @@ import './commands.dart';
 
 class TelegramBot {
   final String token;
-  final int chatId;
   final String repoUrl;
   final int adminId;
   final String youtubeKey;
@@ -46,7 +45,6 @@ class TelegramBot {
 
   TelegramBot(
       {required this.token,
-      required this.chatId,
       required this.repoUrl,
       required this.adminId,
       required this.youtubeKey,
@@ -139,8 +137,8 @@ class TelegramBot {
     bot.onCommand('setnotificationhour').listen((event) => setNotificationHour(this, event));
     bot.onCommand('write').listen((event) => writeToCoop(this, event));
     bot.onCommand('updatemessage').listen((event) => postUpdateMessage(this));
-    bot.onCommand('sendnews').listen((event) => sendNewsToChat(this));
-    bot.onCommand('sendjoke').listen((event) => sendJokeToChat(this));
+    bot.onCommand('sendnews').listen((event) => sendNewsToChat(this, event));
+    bot.onCommand('sendjoke').listen((event) => sendJokeToChat(this, event));
     bot.onCommand('sendrealmusic').listen((event) => sendRealMusic(this, event));
     bot.onCommand('increp').listen((event) => updateReputation(this, event, ChangeOption.increase));
     bot.onCommand('decrep').listen((event) => updateReputation(this, event, ChangeOption.decrease));

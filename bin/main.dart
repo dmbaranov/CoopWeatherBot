@@ -64,7 +64,6 @@ void runTelegramBot(DotEnv env, PostgreSQLConnection dbConnection) {
 
   weather.TelegramBot(
           token: token,
-          chatId: chatId,
           repoUrl: repoUrl,
           adminId: adminId,
           youtubeKey: youtubeKey,

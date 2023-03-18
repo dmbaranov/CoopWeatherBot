@@ -145,21 +145,42 @@ void postUpdateMessage(TelegramBot self) async {
   });
 }
 
-Future<void> sendNewsToChat(TelegramBot self) async {
+Future<void> sendNewsToChat(TelegramBot self, [TeleDartMessage? message]) async {
   var instantViewUrl = 'a.devs.today/';
   var news = await self.panoramaNews.getNews();
 
   if (news.title.isEmpty) return;
 
-  var message = '${news.title}\n\nFull<a href="${instantViewUrl + news.url}">:</a> ${news.url}';
+  var newsMessage = '${news.title}\n\nFull<a href="${instantViewUrl + news.url}">:</a> ${news.url}';
 
-  await self.telegram.sendMessage(self.chatId, message, parseMode: 'HTML');
+  if (message != null) {
+    await self.telegram.sendMessage(message.chat.id, newsMessage, parseMode: 'HTML');
+
+    return;
+  }
+
+  // TODO: move sendToAllChats to a separate function
+  var chatIds = await self.chatManager.getAllChatIds();
+
+  chatIds.forEach((chatId) {
+    self.telegram.sendMessage(int.parse(chatId), newsMessage);
+  });
 }
 
-Future<void> sendJokeToChat(TelegramBot self) async {
+Future<void> sendJokeToChat(TelegramBot self, [TeleDartMessage? message]) async {
   var joke = await self.dadJokes.getJoke();
 
-  await self.telegram.sendMessage(self.chatId, joke.joke);
+  if (message != null) {
+    await self.telegram.sendMessage(message.chat.id, joke.joke);
+
+    return;
+  }
+
+  var chatIds = await self.chatManager.getAllChatIds();
+
+  chatIds.forEach((chatId) {
+    self.telegram.sendMessage(int.parse(chatId), joke.joke);
+  });
 }
 
 Future<void> sendRealMusic(TelegramBot self, TeleDartMessage message) async {
@@ -180,7 +201,7 @@ Future<void> sendRealMusic(TelegramBot self, TeleDartMessage message) async {
   text = text.replaceAll('music.', '');
 
   try {
-    await self.telegram.sendMessage(self.chatId, text);
+    await self.telegram.sendMessage(message.chat.id, text);
   } catch (e) {
     await self.telegram.sendMessage(message.chat.id, self.sm.get('do_not_do_this'));
   }
@@ -291,7 +312,7 @@ Future<void> startAccordionPoll(TelegramBot self, TeleDartMessage message) async
   self.accordionPoll.startPoll(votedMessageAuthor.id.toString());
 
   var createdPoll = await self.telegram.sendPoll(
-    self.chatId,
+    message.chat.id,
     self.sm.get('accordion_vote_title'),
     pollOptions,
     explanation: self.sm.get('accordion_explanation'),
@@ -320,7 +341,7 @@ Future<void> startAccordionPoll(TelegramBot self, TeleDartMessage message) async
 
   var voteResult = self.accordionPoll.endVoteAndGetResults();
 
-  await self.telegram.sendMessage(self.chatId, voteResult);
+  await self.telegram.sendMessage(message.chat.id, voteResult);
   await pollSubscription.cancel();
 }
 

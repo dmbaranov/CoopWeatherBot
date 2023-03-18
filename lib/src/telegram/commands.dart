@@ -33,7 +33,8 @@ void removeCity(TelegramBot self, TeleDartMessage message) async {
 }
 
 void getWatchlist(TelegramBot self, TeleDartMessage message) async {
-  var citiesString = await self.weatherManager.getWatchList(message.chat.id.toString());
+  var cities = await self.weatherManager.getWatchList(message.chat.id.toString());
+  var citiesString = cities.join('\n');
 
   await self.telegram.sendMessage(message.chat.id, "I'm watching these cities:\n$citiesString");
 }

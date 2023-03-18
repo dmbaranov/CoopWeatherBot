@@ -104,7 +104,7 @@ class TelegramBot {
       var message = '';
 
       weatherData.weatherData.forEach((weatherData) {
-        message += 'City: ${weatherData.city}, temperature: ${weatherData.temp}\n';
+        message += 'In city: ${weatherData.city} the temperature is ${weatherData.temp}\n\n';
       });
 
       telegram.sendMessage(weatherData.chatId, message);

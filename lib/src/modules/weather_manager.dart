@@ -150,7 +150,9 @@ class WeatherManager {
       try {
         var weather = await _openWeather.getCurrentWeather(city);
 
-        result.add(OpenWeatherData(city, weather.temp));
+        result.add(OpenWeatherData(weather.city, weather.temp));
+
+        await Future.delayed(Duration(milliseconds: 500));
       } catch (err) {
         print("Can't get weather for city $city");
       }

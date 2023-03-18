@@ -29,7 +29,7 @@ class ReputationEntity extends Entity {
     var data = await executeQuery(queriesMap['get_single_reputation_data'], {'chatId': chatId, 'userId': userId});
 
     if (data.length != 1) {
-      print('One piece of data was expected, got ${data.length} instead');
+      print('One piece of reputation data data was expected, got ${data.length} instead');
 
       return null;
     }

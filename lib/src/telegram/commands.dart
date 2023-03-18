@@ -14,9 +14,9 @@ void addCity(TelegramBot self, TeleDartMessage message) async {
   var result = await self.weatherManager.addCity(message.chat.id.toString(), cityToAdd);
 
   if (result) {
-    await message.reply('City $cityToAdd has been added to the watchlist!');
+    await self.telegram.sendMessage(message.chat.id, 'City $cityToAdd has been added to the watchlist!');
   } else {
-    await message.reply('Error');
+    await self.telegram.sendMessage(message.chat.id, 'Error');
   }
 }
 
@@ -26,23 +26,23 @@ void removeCity(TelegramBot self, TeleDartMessage message) async {
   var result = await self.weatherManager.removeCity(message.chat.id.toString(), cityToRemove);
 
   if (result) {
-    await message.reply('City $cityToRemove has been removed from the watchlist!');
+    await self.telegram.sendMessage(message.chat.id, 'City $cityToRemove has been removed from the watchlist!');
   } else {
-    await message.reply('Error');
+    await self.telegram.sendMessage(message.chat.id, 'Error');
   }
 }
 
 void getWatchlist(TelegramBot self, TeleDartMessage message) async {
   var citiesString = await self.weatherManager.getWatchList(message.chat.id.toString());
 
-  await message.reply("I'm watching these cities:\n$citiesString");
+  await self.telegram.sendMessage(message.chat.id, "I'm watching these cities:\n$citiesString");
 }
 
 void getWeatherForCity(TelegramBot self, TeleDartMessage message) async {
   var city = getOneParameterFromMessage(message);
 
   if (city.isEmpty) {
-    await message.reply('Provide a city!');
+    await self.telegram.sendMessage(message.chat.id, 'Provide a city!');
 
     return;
   }
@@ -50,9 +50,9 @@ void getWeatherForCity(TelegramBot self, TeleDartMessage message) async {
   var temperature = await self.weatherManager.getWeatherForCity(city);
 
   if (temperature != null) {
-    await message.reply('In city $city the temperature is $temperature°C');
+    await self.telegram.sendMessage(message.chat.id, 'In city $city the temperature is $temperature°C');
   } else {
-    await message.reply('There was an error processing your request! Try again');
+    await self.telegram.sendMessage(message.chat.id, 'There was an error processing your request! Try again');
   }
 }
 
@@ -62,9 +62,9 @@ void setNotificationHour(TelegramBot self, TeleDartMessage message) async {
   var result = await self.weatherManager.setNotificationHour(message.chat.id.toString(), int.parse(nextHour));
 
   if (result) {
-    await message.reply('Notification hour has been set to $nextHour');
+    await self.telegram.sendMessage(message.chat.id, 'Notification hour has been set to $nextHour');
   } else {
-    await message.reply('Error');
+    await self.telegram.sendMessage(message.chat.id, 'Error');
   }
 }
 
@@ -79,19 +79,15 @@ void getBullyWeatherForCity(TelegramBot self, TeleDartMessage message) async {
 
   var city = messageWords[2];
 
-  try {
-    var temperature = await self.weatherManager.getWeatherForCity(city);
+  var temperature = await self.weatherManager.getWeatherForCity(city);
 
-    if (temperature == null) {
-      throw 'No temperature';
-    }
+  if (temperature == null) {
+    await self.telegram.sendMessage(message.chat.id, self.sm.get('error_occurred'));
 
-    await message.reply(self.sm.get('weather_in_city', {'city': city, 'temp': temperature.toString()}));
-  } catch (err) {
-    print(err);
-
-    await message.reply(self.sm.get('error_occurred'));
+    return;
   }
+
+  await self.telegram.sendMessage(message.chat.id, self.sm.get('weather_in_city', {'city': city, 'temp': temperature.toString()}));
 }
 
 void bullyTagUser(TelegramBot self, TeleDartMessage message) async {
@@ -99,28 +95,30 @@ void bullyTagUser(TelegramBot self, TeleDartMessage message) async {
   var messageAuthorId = message.from?.id;
 
   if (messageAuthorId == self.adminId) {
-    await message.reply('@daimonil');
+    await self.telegram.sendMessage(message.chat.id, '@daimonil');
   } else if (messageAuthorId == denisId) {
-    await message.reply('@dmbaranov_io');
+    await self.telegram.sendMessage(message.chat.id, '@dmbaranov_io');
   }
 }
 
 void writeToCoop(TelegramBot self, TeleDartMessage message) async {
-  if (message.text == null) {
-    await message.reply(self.sm.get('do_not_do_this'));
-
-    return;
-  }
-
-  var text = getFullMessageText(message);
-
-  print('${message.from?.toJson()} is writing to Coop: ${message.toJson()}');
-
-  try {
-    await self.telegram.sendMessage(self.chatId, text);
-  } catch (e) {
-    await message.reply(self.sm.get('do_not_do_this'));
-  }
+  // TODO: add parameter to get chatId here and send message there
+  await message.reply('Temporarily disabled');
+  // if (message.text == null) {
+  //   await self.telegram.sendMessage(message.chat.id, self.sm.get('do_not_do_this'));
+  //
+  //   return;
+  // }
+  //
+  // var text = getFullMessageText(message);
+  //
+  // print('${message.from?.toJson()} is writing to Coop: ${message.toJson()}');
+  //
+  // try {
+  //   await self.telegram.sendMessage(self.chatId, text);
+  // } catch (e) {
+  //   await self.telegram.sendMessage(message.chat.id, self.sm.get('do_not_do_this'));
+  // }
 }
 
 void postUpdateMessage(TelegramBot self) async {
@@ -139,7 +137,11 @@ void postUpdateMessage(TelegramBot self) async {
 
   var updateMessage = self.sm.get('update_completed', {'update': commitMessage});
 
-  await self.telegram.sendMessage(self.chatId, updateMessage);
+  var chatIds = await self.chatManager.getAllChatIds();
+
+  chatIds.forEach((chatId) {
+    self.telegram.sendMessage(int.parse(chatId), updateMessage);
+  });
 }
 
 Future<void> sendNewsToChat(TelegramBot self) async {
@@ -160,8 +162,9 @@ Future<void> sendJokeToChat(TelegramBot self) async {
 }
 
 Future<void> sendRealMusic(TelegramBot self, TeleDartMessage message) async {
+  // TODO: add a check that this chat exists. here and to the other commands
   if (message.text == null || message.text?.contains('music.youtube.com') == false) {
-    await message.reply(self.sm.get('do_not_do_this'));
+    await self.telegram.sendMessage(message.chat.id, self.sm.get('do_not_do_this'));
 
     return;
   }
@@ -178,7 +181,7 @@ Future<void> sendRealMusic(TelegramBot self, TeleDartMessage message) async {
   try {
     await self.telegram.sendMessage(self.chatId, text);
   } catch (e) {
-    await message.reply(self.sm.get('do_not_do_this'));
+    await self.telegram.sendMessage(message.chat.id, self.sm.get('do_not_do_this'));
   }
 }
 
@@ -186,7 +189,7 @@ Future<void> searchYoutubeTrack(TelegramBot self, TeleDartMessage message) async
   var query = getFullMessageText(message);
 
   if (query.isEmpty) {
-    await message.reply(self.sm.get('do_not_do_this'));
+    await self.telegram.sendMessage(message.chat.id, self.sm.get('do_not_do_this'));
 
     return;
   }
@@ -194,9 +197,9 @@ Future<void> searchYoutubeTrack(TelegramBot self, TeleDartMessage message) async
   var videoUrl = await self.youtube.getYoutubeVideoUrl(query);
 
   if (videoUrl.isEmpty) {
-    await message.reply(self.sm.get('not_found'));
+    await self.telegram.sendMessage(message.chat.id, self.sm.get('not_found'));
   } else {
-    await message.reply(videoUrl);
+    await self.telegram.sendMessage(message.chat.id, videoUrl);
   }
 }
 
@@ -228,7 +231,7 @@ Future<void> updateReputation(TelegramBot self, TeleDartMessage message, ChangeO
   var toUserId = message.replyToMessage?.from?.id;
 
   if (fromUserId == null || toUserId == null) {
-    await message.reply(self.sm.get('error_occurred'));
+    await self.telegram.sendMessage(message.chat.id, self.sm.get('error_occurred'));
 
     return;
   }
@@ -251,16 +254,20 @@ Future<void> sendReputationList(TelegramBot self, TeleDartMessage message) async
     reputationMessage += '${reputation.name}: ${reputation.reputation}\n';
   });
 
-  await message.reply(reputationMessage);
+  if (reputationMessage.isEmpty) {
+    await self.telegram.sendMessage(message.chat.id, "No reputation for this chat");
+  } else {
+    await self.telegram.sendMessage(message.chat.id, reputationMessage);
+  }
 }
 
 Future<void> checkIfAlive(TelegramBot self, TeleDartMessage message) async {
-  await message.reply(self.sm.get('bot_is_alive'));
+  await self.telegram.sendMessage(message.chat.id, self.sm.get('bot_is_alive'));
 }
 
 Future<void> startAccordionPoll(TelegramBot self, TeleDartMessage message) async {
   if (self.accordionPoll.isVoteActive) {
-    await message.reply(self.sm.get('accordion_vote_in_progress'));
+    await self.telegram.sendMessage(message.chat.id, self.sm.get('accordion_vote_in_progress'));
 
     return;
   }
@@ -268,11 +275,11 @@ Future<void> startAccordionPoll(TelegramBot self, TeleDartMessage message) async
   var votedMessageAuthor = message.replyToMessage?.from;
 
   if (votedMessageAuthor == null) {
-    await message.reply(self.sm.get('accordion_message_not_chosen'));
+    await self.telegram.sendMessage(message.chat.id, self.sm.get('accordion_message_not_chosen'));
 
     return;
   } else if (votedMessageAuthor.isBot) {
-    await message.reply(self.sm.get('accordion_bot_message'));
+    await self.telegram.sendMessage(message.chat.id, self.sm.get('accordion_bot_message'));
 
     return;
   }
@@ -320,7 +327,7 @@ Future<void> getConversatorReply(TelegramBot self, TeleDartMessage message) asyn
   var question = getFullMessageText(message);
   var reply = await self.conversator.getConversationReply(question);
 
-  await message.reply(reply);
+  await self.telegram.sendMessage(message.chat.id, reply);
 }
 
 Future<void> addUser(TelegramBot self, TeleDartMessage message) async {
@@ -348,9 +355,9 @@ Future<void> addUser(TelegramBot self, TeleDartMessage message) async {
       .addUser(id: userData.id.toString(), chatId: message.chat.id.toString(), name: fullUsername, isPremium: userData.isPremium ?? false);
 
   if (addResult) {
-    await message.reply('User added');
+    await self.telegram.sendMessage(message.chat.id, 'User added');
   } else {
-    await message.reply('User not added');
+    await self.telegram.sendMessage(message.chat.id, 'User not added');
   }
 }
 
@@ -368,9 +375,9 @@ Future<void> removeUser(TelegramBot self, TeleDartMessage message) async {
   var removeResult = await self.userManager.removeUser(chatId, userId);
 
   if (removeResult) {
-    await message.reply('User removed');
+    await self.telegram.sendMessage(message.chat.id, 'User removed');
   } else {
-    await message.reply('User not removed');
+    await self.telegram.sendMessage(message.chat.id, 'User not removed');
   }
 }
 
@@ -381,9 +388,9 @@ Future<void> initChat(TelegramBot self, TeleDartMessage message) async {
   var result = await self.chatManager.createChat(id: chatId, name: chatName);
 
   if (result) {
-    await message.reply('Chat initialized successfully');
+    await self.telegram.sendMessage(message.chat.id, 'Chat initialized successfully');
   } else {
-    await message.reply("Chat hasn't been initialized");
+    await self.telegram.sendMessage(message.chat.id, "Chat hasn't been initialized");
   }
 }
 
@@ -392,15 +399,15 @@ Future<void> createReputation(TelegramBot self, TeleDartMessage message) async {
   var userId = message.replyToMessage?.from?.id;
 
   if (userId == null) {
-    await message.reply('User not selected');
+    await self.telegram.sendMessage(message.chat.id, 'User not selected');
   }
 
   var result = await self.reputation.createReputationData(chatId, userId.toString());
 
   if (result) {
-    await message.reply('Created');
+    await self.telegram.sendMessage(message.chat.id, 'Created');
   } else {
-    await message.reply('Not created');
+    await self.telegram.sendMessage(message.chat.id, 'Not created');
   }
 }
 
@@ -410,8 +417,8 @@ Future<void> createWeather(TelegramBot self, TeleDartMessage message) async {
   var result = await self.weatherManager.createWeatherData(chatId);
 
   if (result) {
-    await message.reply('Created');
+    await self.telegram.sendMessage(message.chat.id, 'Created');
   } else {
-    await message.reply('Not created');
+    await self.telegram.sendMessage(message.chat.id, 'Not created');
   }
 }

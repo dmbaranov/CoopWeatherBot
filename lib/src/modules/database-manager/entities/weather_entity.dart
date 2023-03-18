@@ -34,7 +34,7 @@ class WeatherEntity extends Entity {
     var data = await executeQuery(queriesMap['get_cities'], {'chatId': chatId});
 
     if (data.length != 1) {
-      print('One piece of data was expected, got ${data.length} instead');
+      print('One piece of cities data was expected, got ${data.length} instead');
 
       return null;
     }

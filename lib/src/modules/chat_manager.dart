@@ -10,4 +10,8 @@ class ChatManager {
 
     return creationResult == 1;
   }
+
+  Future<List<String>> getAllChatIds() {
+    return dbManager.chat.getAllChatIds();
+  }
 }

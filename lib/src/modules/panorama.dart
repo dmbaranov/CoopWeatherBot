@@ -31,13 +31,17 @@ class PanoramaNews {
       var post = posts[i];
       var postHref = post.attributes['href'];
 
-      if (postHref == null || !postHref.startsWith('/news')) continue;
+      if (postHref == null || !postHref.startsWith('/news')) {
+        continue;
+      }
 
       var title = post.querySelector('.text-sm > div')?.text;
 
       var newsWasSentBefore = await dbManager.news.checkIfNewsExists(chatId, postHref);
 
-      if (title == null || newsWasSentBefore) continue;
+      if (title == null || newsWasSentBefore) {
+        continue;
+      }
 
       var createResult = await dbManager.news.addNews(chatId, postHref);
 

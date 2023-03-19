@@ -83,14 +83,21 @@ class StoneCave {
   Future<bool> checkCaveIntegrity() async {
     var cave = await getCave();
 
-    if (cave.isEmpty) return true;
+    if (cave.isEmpty) {
+      return true;
+    }
 
     for (var i = 1; i < cave.length; i++) {
       var currentStone = cave[i];
       var previousStone = cave[i - 1];
 
-      if (currentStone.stoneHash != currentStone.generateOwnHash()) return false;
-      if (currentStone.prevStoneHash != previousStone.stoneHash) return false;
+      if (currentStone.stoneHash != currentStone.generateOwnHash()) {
+        return false;
+      }
+      
+      if (currentStone.prevStoneHash != previousStone.stoneHash) {
+        return false;
+      }
     }
 
     return true;

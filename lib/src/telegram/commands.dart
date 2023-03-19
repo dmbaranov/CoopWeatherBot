@@ -147,23 +147,30 @@ void postUpdateMessage(TelegramBot self) async {
 
 Future<void> sendNewsToChat(TelegramBot self, [TeleDartMessage? message]) async {
   var instantViewUrl = 'a.devs.today/';
-  var news = await self.panoramaNews.getNews();
-
-  if (news.title.isEmpty) return;
-
-  var newsMessage = '${news.title}\n\nFull<a href="${instantViewUrl + news.url}">:</a> ${news.url}';
 
   if (message != null) {
-    await self.telegram.sendMessage(message.chat.id, newsMessage, parseMode: 'HTML');
+    var news = await self.panoramaNews.getNews(message.chat.id.toString());
 
-    return;
+    if (news != null) {
+      var newsMessage = '${news.title}\n\nFull<a href="${instantViewUrl + news.url}">:</a> ${news.url}';
+
+      self.telegram.sendMessage(message.chat.id, newsMessage, parseMode: 'HTML');
+
+      return;
+    }
   }
 
   // TODO: move sendToAllChats to a separate function
   var chatIds = await self.chatManager.getAllChatIds();
 
-  chatIds.forEach((chatId) {
-    self.telegram.sendMessage(int.parse(chatId), newsMessage);
+  await Future.forEach(chatIds, (chatId) async {
+    var news = await self.panoramaNews.getNews(chatId);
+
+    if (news != null) {
+      var newsMessage = '${news.title}\n\nFull<a href="${instantViewUrl + news.url}">:</a> ${news.url}';
+
+      self.telegram.sendMessage(chatId, newsMessage, parseMode: 'HTML');
+    }
   });
 }
 
@@ -404,6 +411,7 @@ Future<void> removeUser(TelegramBot self, TeleDartMessage message) async {
 }
 
 Future<void> initChat(TelegramBot self, TeleDartMessage message) async {
+  // TODO: also create a SYSTEM user for new chats. use it to change reputation, etc.
   var chatId = message.chat.id.toString();
   var chatName = message.chat.title.toString();
 

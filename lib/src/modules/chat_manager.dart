@@ -6,7 +6,7 @@ class ChatManager {
   ChatManager({required this.dbManager});
 
   Future<bool> createChat({required String id, required String name}) async {
-    var creationResult = await dbManager.chat.createChat(id: id, name: name);
+    var creationResult = await dbManager.chat.createChat(id, name);
 
     return creationResult == 1;
   }

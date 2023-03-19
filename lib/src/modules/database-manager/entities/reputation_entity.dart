@@ -20,13 +20,21 @@ class ReputationEntity extends Entity {
   ReputationEntity({required super.dbConnection}) : super(entityName: 'reputation');
 
   Future<List<ChatReputationData>> getReputationForChat(String chatId) async {
-    List rawReputation = await executeQuery(queriesMap['get_reputation_for_chat'], {'chatId': chatId});
+    var rawReputation = await executeQuery(queriesMap['get_reputation_for_chat'], {'chatId': chatId});
+
+    if (rawReputation == null) {
+      return [];
+    }
 
     return rawReputation.map((reputation) => ChatReputationData(name: reputation[0], reputation: reputation[1])).toList();
   }
 
   Future<SingleReputationData?> getSingleReputationData(String chatId, String userId) async {
     var data = await executeQuery(queriesMap['get_single_reputation_data'], {'chatId': chatId, 'userId': userId});
+
+    if (data == null) {
+      return null;
+    }
 
     if (data.length != 1) {
       print('One piece of reputation data data was expected, got ${data.length} instead');

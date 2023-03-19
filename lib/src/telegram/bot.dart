@@ -62,10 +62,10 @@ class TelegramBot {
     await dbManager.initialize();
 
     dadJokes = DadJokes();
-    panoramaNews = PanoramaNews();
     youtube = Youtube(youtubeKey);
     conversator = Conversator(conversatorKey);
     chatManager = ChatManager(dbManager: dbManager);
+    panoramaNews = PanoramaNews(dbManager: dbManager);
 
     bot.start();
 
@@ -80,8 +80,6 @@ class TelegramBot {
 
     weatherManager = WeatherManager(openweatherKey: openweatherKey, dbManager: dbManager);
     await weatherManager.initialize();
-
-    await panoramaNews.initialize();
 
     accordionPoll = AccordionPoll(sm: sm);
 

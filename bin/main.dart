@@ -7,8 +7,12 @@ import 'package:postgres/postgres.dart';
 import 'package:weather/weather.dart' as weather;
 import 'package:weather/src/utils/migrations_manager.dart';
 
-Future<PostgreSQLConnection> getDatabaseConnection() async {
-  var connection = PostgreSQLConnection('localhost', 5432, 'coop_weather_bot', username: 'postgres', password: 'postgres');
+Future<PostgreSQLConnection> getDatabaseConnection(DotEnv env) async {
+  final username = env['dbuser']!;
+  final password = env['dbpassword']!;
+  final database = env['dbdatabase']!;
+
+  var connection = PostgreSQLConnection('localhost', 5432, database, username: username, password: password);
   await connection.open();
 
   return connection;
@@ -73,9 +77,10 @@ void runTelegramBot(DotEnv env, PostgreSQLConnection dbConnection) {
 }
 
 void main(List<String> args) async {
-  final dbConnection = await getDatabaseConnection();
-  var arguments = getRunArguments(args);
   var env = DotEnv(includePlatformEnvironment: true)..load();
+
+  final dbConnection = await getDatabaseConnection(env);
+  var arguments = getRunArguments(args);
 
   await runMigrations(dbConnection);
 

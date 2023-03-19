@@ -55,7 +55,6 @@ void runDiscordBot(DotEnv env) {
 
 void runTelegramBot(DotEnv env, PostgreSQLConnection dbConnection) {
   final token = env['telegramtoken']!;
-  final chatId = int.parse(env['telegramchatid']!);
   final repoUrl = env['githubrepo']!;
   final adminId = int.parse(env['telegramadminid']!);
   final youtubeKey = env['youtube']!;

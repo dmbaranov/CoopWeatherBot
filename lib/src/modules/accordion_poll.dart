@@ -2,6 +2,7 @@ import 'swearwords_manager.dart';
 
 enum VoteOption { yes, no, maybe }
 
+// TODO: add voting duration as a parameter but not less than 180 sec
 class AccordionPoll {
   final SwearwordsManager sm;
   bool _isVoteActive = false;

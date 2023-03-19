@@ -1,17 +1,14 @@
 import 'dart:async';
-import 'dart:io';
-import 'dart:convert';
-import 'package:collection/collection.dart';
 import 'package:cron/cron.dart';
-
-const String _pathToUsersFile = 'assets/users.json';
+import 'database-manager/database_manager.dart';
 
 class UMUser {
   final String id;
   final bool isPremium;
+  final String chatId;
   String name;
 
-  UMUser({required this.id, required this.name, this.isPremium = false}) {
+  UMUser({required this.id, required this.name, required this.chatId, this.isPremium = false}) {
     var markedAsPremium = name.contains('⭐');
 
     if (isPremium && !markedAsPremium) {
@@ -20,71 +17,51 @@ class UMUser {
       name = name.replaceAll(' ⭐', '');
     }
   }
-
-  UMUser.fromJson(Map<String, dynamic> json)
-      : id = json['id'],
-        name = json['name'],
-        isPremium = json['isPremium'] ?? false;
-
-  Map<String, dynamic> toJson() => {'id': id, 'name': name, 'isPremium': isPremium};
 }
 
 class UserManager {
-  final File _usersFile = File(_pathToUsersFile);
-  final List<UMUser> _users = [];
+  final DatabaseManager dbManager;
+
   late StreamController<int> _userManagerStreamController;
   ScheduledTask? _userManagerCronTask;
 
-  List<UMUser> get users => _users;
+  UserManager({required this.dbManager});
 
   Stream<int> get userManagerStream => _userManagerStreamController.stream;
 
-  Future<void> initialize() async {
-    var rawUsersFromFile = await _usersFile.readAsString();
-    List usersFromFile = json.decode(rawUsersFromFile);
-
-    usersFromFile.forEach((rawUser) {
-      _users.add(UMUser.fromJson(rawUser));
-    });
-
+  void initialize() {
     _userManagerStreamController = StreamController<int>.broadcast();
     _updateUserManagerStream();
   }
 
-  Future<bool> addUser(UMUser userToAdd) async {
-    var foundUser = _users.firstWhereOrNull((user) => user.id == userToAdd.id);
+  Future<List<UMUser>> getUsersForChat(String chatId) async {
+    var users = await dbManager.user.getAllUsersForChat(chatId);
 
-    if (foundUser != null) {
+    return users.map((dbUser) => UMUser(id: dbUser.id, name: dbUser.name, chatId: dbUser.chatId, isPremium: dbUser.isPremium)).toList();
+  }
+
+  Future<bool> addUser({required String id, required String chatId, required String name, bool isPremium = false}) async {
+    var creationResult = await dbManager.user.createUser(id: id, chatId: chatId, name: name, isPremium: isPremium);
+
+    if (creationResult == 1) {
+      _userManagerStreamController.sink.add(0);
+
+      return true;
+    }
+
+    return false;
+  }
+
+  Future<bool> removeUser(String chatId, String userId) async {
+    var deletionResult = await dbManager.user.deleteUser(chatId, userId);
+
+    if (deletionResult == 1) {
       return false;
     }
 
-    _users.add(userToAdd);
     _userManagerStreamController.sink.add(0);
 
-    await _updateUsersFile();
-
     return true;
-  }
-
-  Future<bool> removeUser(String userIdToRemove) async {
-    var foundUser = _users.firstWhereOrNull((user) => user.id == userIdToRemove);
-
-    if (foundUser == null) {
-      return false;
-    }
-
-    _users.removeWhere((user) => user.id == userIdToRemove);
-    _userManagerStreamController.sink.add(0);
-
-    await _updateUsersFile();
-
-    return true;
-  }
-
-  Future<void> _updateUsersFile() async {
-    var usersJson = json.encode(_users.map((user) => user.toJson()).toList());
-
-    await _usersFile.writeAsString(usersJson);
   }
 
   void _updateUserManagerStream() {

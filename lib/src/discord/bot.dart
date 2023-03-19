@@ -36,32 +36,32 @@ class DiscordBot {
       required this.conversatorKey});
 
   void startBot() async {
-    bot = NyxxFactory.createNyxxWebsocket(token, GatewayIntents.all);
-
-    bot
-      ..registerPlugin(Logging())
-      ..registerPlugin(CliIntegration())
-      ..registerPlugin(IgnoreExceptions())
-      ..registerPlugin(_setupCommands());
-
-    await bot.connect();
-    await _updateUsersList();
-
-    sm = SwearwordsManager();
-    await sm.initialize();
-
-    userManager = UserManager();
-    await userManager.initialize();
-
-    reputation = Reputation(sm: sm, userManager: userManager);
-    await reputation.initialize();
-
-    weatherManager = WeatherManager(openweatherKey: openweatherKey);
-    weatherManager.initialize();
-
-    conversator = Conversator(conversatorKey);
-
-    _startHeroCheckJob();
+    // bot = NyxxFactory.createNyxxWebsocket(token, GatewayIntents.all);
+    //
+    // bot
+    //   ..registerPlugin(Logging())
+    //   ..registerPlugin(CliIntegration())
+    //   ..registerPlugin(IgnoreExceptions())
+    //   ..registerPlugin(_setupCommands());
+    //
+    // await bot.connect();
+    // await _updateUsersList();
+    //
+    // sm = SwearwordsManager();
+    // await sm.initialize();
+    //
+    // userManager = UserManager();
+    // await userManager.initialize();
+    //
+    // reputation = Reputation(sm: sm, userManager: userManager);
+    // await reputation.initialize();
+    //
+    // weatherManager = WeatherManager(openweatherKey: openweatherKey);
+    // weatherManager.initialize();
+    //
+    // conversator = Conversator(conversatorKey);
+    //
+    // _startHeroCheckJob();
   }
 
   void _startHeroCheckJob() async {
@@ -80,10 +80,10 @@ class DiscordBot {
       var heroesMessage = sm.get('users_online_at_five');
 
       onlineUsers.forEach((userId) {
-        var onlineUser = userManager.users.firstWhere((user) => user.id == userId);
-
-        heroesMessage += onlineUser.name;
-        heroesMessage += '\n';
+        // var onlineUser = userManager.users.firstWhere((user) => user.id == userId);
+        //
+        // heroesMessage += onlineUser.name;
+        // heroesMessage += '\n';
       });
 
       await bot.httpEndpoints.sendMessage(Snowflake(channelId), MessageBuilder.content(heroesMessage));
@@ -129,20 +129,20 @@ class DiscordBot {
   }
 
   Future<void> _updateUsersList() async {
-    var guild = await bot.fetchGuild(Snowflake(guildId));
-    var userIds = [];
-    var usersStream = guild.fetchMembers(limit: 999).listen((userId) => userIds.add(userId));
-
-    await Future.wait([usersStream.asFuture()]);
-
-    userIds.forEach((userId) async {
-      await Future.delayed(Duration(milliseconds: 500));
-
-      var user = await bot.fetchUser(Snowflake(userId));
-
-      if (!user.bot) {
-        userManager.addUser(UMUser(id: user.id.toString(), name: user.username));
-      }
-    });
+    // var guild = await bot.fetchGuild(Snowflake(guildId));
+    // var userIds = [];
+    // var usersStream = guild.fetchMembers(limit: 999).listen((userId) => userIds.add(userId));
+    //
+    // await Future.wait([usersStream.asFuture()]);
+    //
+    // userIds.forEach((userId) async {
+    //   await Future.delayed(Duration(milliseconds: 500));
+    //
+    //   var user = await bot.fetchUser(Snowflake(userId));
+    //
+    //   if (!user.bot) {
+    //     userManager.addUser(UMUser(id: user.id.toString(), name: user.username));
+    //   }
+    // });
   }
 }

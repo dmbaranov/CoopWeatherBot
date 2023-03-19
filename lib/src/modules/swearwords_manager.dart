@@ -13,7 +13,9 @@ class SwearwordsManager {
   String get(String key, [Map<String, String>? replacements]) {
     var rawString = swearwords[key] as String;
 
-    if (replacements == null) return rawString;
+    if (replacements == null) {
+      return rawString;
+    }
 
     replacements.keys.forEach((replacementKey) {
       rawString = rawString.replaceAll('\$$replacementKey', replacements[replacementKey] as String);

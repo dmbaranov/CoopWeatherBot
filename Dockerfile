@@ -1,0 +1,5 @@
+FROM postgres
+ENV POSTGRES_DB coop_weather_bot
+ENV POSTGRES_USER postgres
+ENV POSTGRES_PASSWORD postgres
+EXPOSE 5432

@@ -3,18 +3,20 @@ import 'dart:convert';
 import 'dart:io' as io;
 
 import 'package:cron/cron.dart';
+import 'database-manager/database_manager.dart';
 
 class OpenWeatherData {
   final String city;
   final num temp;
 
   OpenWeatherData(this.city, this.temp);
+}
 
-  OpenWeatherData.fromJson(Map<String, dynamic> json)
-      : city = json['city'],
-        temp = json['temp'];
+class ChatWeatherData {
+  final String chatId;
+  final List<OpenWeatherData> weatherData;
 
-  Map<String, dynamic> toJson() => {'city': city, 'temp': temp};
+  ChatWeatherData({required this.chatId, required this.weatherData});
 }
 
 class OpenWeather {
@@ -35,67 +37,68 @@ class OpenWeather {
     }
 
     var responseJson = json.decode(rawResponse);
-    var rawWeatherData = {'city': responseJson['name'], 'temp': responseJson['main']['temp']};
 
-    return OpenWeatherData.fromJson(rawWeatherData);
+    return OpenWeatherData(responseJson['name'], responseJson['main']['temp']);
   }
 }
 
 class WeatherManager {
+  final DatabaseManager dbManager;
   final String openweatherKey;
-  int _notificationHour = 7;
   late OpenWeather _openWeather;
-  late StreamController<String> _weatherStreamController;
-  late io.File _citiesFile;
-  ScheduledTask? _weatherCronTask;
+  late StreamController<ChatWeatherData> _weatherStreamController;
+  List<ScheduledTask> _weatherCronTasks = [];
 
-  WeatherManager({required this.openweatherKey});
+  WeatherManager({required this.dbManager, required this.openweatherKey});
 
-  void initialize() {
+  Stream<ChatWeatherData> get weatherStream => _weatherStreamController.stream;
+
+  Future<void> initialize() async {
     _openWeather = OpenWeather(openweatherKey);
-    _citiesFile = io.File('assets/cities.txt');
-    _weatherStreamController = StreamController<String>.broadcast();
+    _weatherStreamController = StreamController<ChatWeatherData>.broadcast();
 
-    _updateWeatherStream();
+    await _updateWeatherStream();
   }
 
-  Stream<String> get weatherStream => _weatherStreamController.stream;
+  Future<bool> createWeatherData(String chatId) async {
+    var defaultNotificationHour = 7;
+    var result = await dbManager.weather.createWeatherData(chatId, defaultNotificationHour);
 
-  Future<bool> addCity(String cityToAdd) async {
-    var cities = await _citiesFile.readAsLines();
+    return result == 1;
+  }
 
-    if (cities.contains(cityToAdd.toLowerCase()) || cityToAdd.isEmpty) {
+  Future<bool> addCity(String chatId, String city) async {
+    var chatCities = await dbManager.weather.getCities(chatId) ?? [];
+
+    if (chatCities.contains(city)) {
       return false;
     }
 
-    var citiesList = cities.map((city) => city.toLowerCase()).toList();
-    citiesList.add(cityToAdd.toLowerCase());
+    List<String> updatedCitiesList = List.from(chatCities)..add(city);
 
-    await _citiesFile.writeAsString(citiesList.join('\n'));
+    var updateResult = await dbManager.weather.updateCities(chatId, updatedCitiesList);
 
-    return true;
+    return updateResult == 1;
   }
 
-  Future<bool> removeCity(String cityToRemove) async {
-    var cities = await _citiesFile.readAsLines();
+  Future<bool> removeCity(String chatId, String city) async {
+    var chatCities = await dbManager.weather.getCities(chatId) ?? [];
 
-    if (!cities.contains(cityToRemove.toLowerCase()) || cityToRemove.isEmpty) {
+    if (!chatCities.contains(city)) {
       return false;
     }
 
-    var updatedCities = cities.where((city) => city != cityToRemove.toLowerCase()).join('\n').toString();
+    List<String> updatedCitiesList = chatCities.where((existingCity) => existingCity != city).toList();
 
-    await _citiesFile.writeAsString(updatedCities);
+    var updateResult = await dbManager.weather.updateCities(chatId, updatedCitiesList);
 
-    return true;
+    return updateResult == 1;
   }
 
-  Future<String> getWatchList() async {
-    var cities = await _citiesFile.readAsLines();
+  Future<List<String>> getWatchList(String chatId) async {
+    var cities = await dbManager.weather.getCities(chatId);
 
-    if (cities.isEmpty) return '';
-
-    return cities.join('\n');
+    return cities ?? [];
   }
 
   Future<num?> getWeatherForCity(String city) async {
@@ -110,35 +113,51 @@ class WeatherManager {
     }
   }
 
-  bool setNotificationsHour(int nextNotificationHour) {
-    if (_notificationHour >= 0 && _notificationHour <= 23) {
-      _notificationHour = nextNotificationHour;
-      _updateWeatherStream();
+  Future<bool> setNotificationHour(String chatId, int notificationHour) async {
+    if (notificationHour >= 0 && notificationHour <= 23) {
+      var updateResult = await dbManager.weather.setNotificationHour(chatId, notificationHour);
 
-      return true;
+      await _updateWeatherStream();
+
+      return updateResult == 1;
     }
 
     return false;
   }
 
-  void _updateWeatherStream() {
-    _weatherCronTask?.cancel();
+  Future<void> _updateWeatherStream() async {
+    var notificationHoursForChats = await dbManager.weather.getNotificationHours();
 
-    _weatherCronTask = Cron().schedule(Schedule.parse('0 $_notificationHour * * *'), () async {
-      var cities = await _citiesFile.readAsLines();
-      var message = '';
+    await Future.forEach(_weatherCronTasks, (task) async => await task.cancel());
 
-      await Future.forEach(cities, (city) async {
-        try {
-          var data = await _openWeather.getCurrentWeather(city.toString());
+    _weatherCronTasks = notificationHoursForChats
+        .map((config) => Cron().schedule(Schedule.parse('0 ${config.notificationHour} * * *'), () async {
+              var cities = await dbManager.weather.getCities(config.chatId);
 
-          message += 'In city ${data.city} the temperature is ${data.temp}°C\n\n';
-        } catch (err) {
-          print('Error during the notification: $err');
-        }
-      });
+              if (cities != null) {
+                var weatherData = await _getWeatherForCities(cities);
 
-      _weatherStreamController.sink.add(message);
+                _weatherStreamController.sink.add(ChatWeatherData(chatId: config.chatId, weatherData: weatherData));
+              }
+            }))
+        .toList();
+  }
+
+  Future<List<OpenWeatherData>> _getWeatherForCities(List<String> cities) async {
+    List<OpenWeatherData> result = [];
+
+    await Future.forEach(cities, (city) async {
+      try {
+        var weather = await _openWeather.getCurrentWeather(city);
+
+        result.add(OpenWeatherData(weather.city, weather.temp));
+
+        await Future.delayed(Duration(milliseconds: 500));
+      } catch (err) {
+        print("Can't get weather for city $city");
+      }
     });
+
+    return result;
   }
 }

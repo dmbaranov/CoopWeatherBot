@@ -1,6 +1,7 @@
 {
   "general": {
     "something_went_wrong": "Произошла ошибка",
+    "success": "Операция завершена успешно",
     "bot_is_alive": "Все системы функционируют исправно",
     "bully_tag_user_regexp": "эй\\,?\\s{0,}чувак",
     "update_completed": "Обновление завершено!\n\nChangelog:\n$update"

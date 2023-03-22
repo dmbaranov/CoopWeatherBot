@@ -276,7 +276,7 @@ Future<void> sendReputationList(TelegramBot self, TeleDartMessage message) async
   if (reputationMessage.isEmpty) {
     await self.telegram.sendMessage(message.chat.id, self.sm.get('general.something_went_wrong'));
   } else {
-    await self.telegram.sendMessage(message.chat.id, reputationMessage);
+    await self.telegram.sendMessage(message.chat.id, self.sm.get('reputation.other.list', {'reputation': reputationMessage}));
   }
 }
 
@@ -434,15 +434,15 @@ Future<void> createReputation(TelegramBot self, TeleDartMessage message) async {
   var userId = message.replyToMessage?.from?.id;
 
   if (userId == null) {
-    await self.telegram.sendMessage(message.chat.id, 'User not selected');
+    await self.telegram.sendMessage(message.chat.id, self.sm.get('general.something_went_wrong'));
   }
 
   var result = await self.reputation.createReputationData(chatId, userId.toString());
 
   if (result) {
-    await self.telegram.sendMessage(message.chat.id, 'Created');
+    await self.telegram.sendMessage(message.chat.id, self.sm.get('general.success'));
   } else {
-    await self.telegram.sendMessage(message.chat.id, 'Not created');
+    await self.telegram.sendMessage(message.chat.id, self.sm.get('general.something_went_wrong'));
   }
 }
 
@@ -452,8 +452,8 @@ Future<void> createWeather(TelegramBot self, TeleDartMessage message) async {
   var result = await self.weatherManager.createWeatherData(chatId);
 
   if (result) {
-    await self.telegram.sendMessage(message.chat.id, 'Created');
+    await self.telegram.sendMessage(message.chat.id, self.sm.get('general.success'));
   } else {
-    await self.telegram.sendMessage(message.chat.id, 'Not created');
+    await self.telegram.sendMessage(message.chat.id, self.sm.get('general.something_went_wrong'));
   }
 }

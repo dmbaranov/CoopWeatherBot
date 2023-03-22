@@ -115,7 +115,7 @@ void postUpdateMessage(TelegramBot self) async {
   var responseJson = json.decode(rawResponse);
   var commitMessage = responseJson[0]['commit']['message'];
 
-  var updateMessage = self.sm.get('update_completed', {'update': commitMessage});
+  var updateMessage = self.sm.get('general.update_completed', {'update': commitMessage});
 
   var chatIds = await self.chatManager.getAllChatIds();
 
@@ -173,7 +173,7 @@ Future<void> sendJokeToChat(TelegramBot self, [TeleDartMessage? message]) async 
 Future<void> sendRealMusic(TelegramBot self, TeleDartMessage message) async {
   // TODO: add a check that this chat exists. here and to the other commands
   if (message.text == null || message.text?.contains('music.youtube.com') == false) {
-    await self.telegram.sendMessage(message.chat.id, self.sm.get('do_not_do_this'));
+    await self.telegram.sendMessage(message.chat.id, self.sm.get('general.something_went_wrong'));
 
     return;
   }
@@ -190,7 +190,7 @@ Future<void> sendRealMusic(TelegramBot self, TeleDartMessage message) async {
   try {
     await self.telegram.sendMessage(message.chat.id, text);
   } catch (e) {
-    await self.telegram.sendMessage(message.chat.id, self.sm.get('do_not_do_this'));
+    await self.telegram.sendMessage(message.chat.id, self.sm.get('general.something_went_wrong'));
   }
 }
 
@@ -198,7 +198,7 @@ Future<void> searchYoutubeTrack(TelegramBot self, TeleDartMessage message) async
   var query = getFullMessageText(message);
 
   if (query.isEmpty) {
-    await self.telegram.sendMessage(message.chat.id, self.sm.get('do_not_do_this'));
+    await self.telegram.sendMessage(message.chat.id, self.sm.get('general.something_went_wrong'));
 
     return;
   }
@@ -206,7 +206,7 @@ Future<void> searchYoutubeTrack(TelegramBot self, TeleDartMessage message) async
   var videoUrl = await self.youtube.getYoutubeVideoUrl(query);
 
   if (videoUrl.isEmpty) {
-    await self.telegram.sendMessage(message.chat.id, self.sm.get('not_found'));
+    await self.telegram.sendMessage(message.chat.id, self.sm.get('general.something_went_wrong'));
   } else {
     await self.telegram.sendMessage(message.chat.id, videoUrl);
   }
@@ -274,19 +274,19 @@ Future<void> sendReputationList(TelegramBot self, TeleDartMessage message) async
   });
 
   if (reputationMessage.isEmpty) {
-    await self.telegram.sendMessage(message.chat.id, "No reputation for this chat");
+    await self.telegram.sendMessage(message.chat.id, self.sm.get('general.something_went_wrong'));
   } else {
     await self.telegram.sendMessage(message.chat.id, reputationMessage);
   }
 }
 
 Future<void> checkIfAlive(TelegramBot self, TeleDartMessage message) async {
-  await self.telegram.sendMessage(message.chat.id, self.sm.get('bot_is_alive'));
+  await self.telegram.sendMessage(message.chat.id, self.sm.get('general.bot_is_alive'));
 }
 
 Future<void> startAccordionPoll(TelegramBot self, TeleDartMessage message) async {
   if (self.accordionPoll.isVoteActive) {
-    await self.telegram.sendMessage(message.chat.id, self.sm.get('accordion_vote_in_progress'));
+    await self.telegram.sendMessage(message.chat.id, self.sm.get('accordion.other.accordion_vote_in_progress'));
 
     return;
   }

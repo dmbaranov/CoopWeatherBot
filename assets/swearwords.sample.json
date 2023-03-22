@@ -1,41 +1,57 @@
 {
-  "weather_in_city": "В городе $city температура $temp°C",
-  "error_occurred": "Произошла ошибка",
-  "do_not_do_this": "Так делать нельзя",
-  "you_are_not_an_admin": "В доступе отказано",
-  "update_completed": "Обновление завершено!\n\nChangelog:\n$update",
-  "not_found": "Не найдено",
-  "self_admire_attempt": "Нельзя повышать собственную репутацию",
-  "reputation_increased": "Уважаемый, $name, ваша репутация была увеличена",
-  "reputation_decreased": "Уважаемый, $name, ваша репутация была понижена",
-  "reputation_change_failed": "Не удалось изменить репутацию",
-  "reputation_message_start": "Текущая репутация:\n\n",
-  "user_reputation": "У $name репутация $reputation",
-  "reputation_cave_integrity_failed": "Целостность StoneCave репутации повреждена, изменение репутации отменено",
-  "yo": "эй",
-  "dude": "чувак",
-  "bully_weather_regexp": "эй\\,?\\s{0,}чувак\\,?",
-  "bully_tag_user_regexp": "эй\\,?\\s{0,}чувак",
-  "reputation_users_updated": "Список юзеров обновлен",
-  "cities_list_updated": "Список городов обновлен",
-  "cities_list_update_failed": "Обновление списка городов не удалось",
-  "get_weather_cities_failed": "Получение списка городов не удалось",
-  "get_weather_for_city_failed": "Получение погоды в городе не удалось",
-  "weather_notification_hour_updated": "Время для погоды успешно обновлено",
-  "weather_notification_update_failed": "Обновление времени для погоды не удалось",
-  "users_online_at_five": "Сегодня в 5 часов онлайн:\n\n",
-  "no_users_online_at_five": "Сегодня в 5 часов в онлайне никого нет",
-  "bot_is_alive": "Все системы функционируют исправно",
-  "accordion_vote_title": "Баян?",
-  "accordion_option_yes": "Да",
-  "accordion_option_no": "Нет",
-  "accordion_option_maybe": "Не знаю",
-  "accordion_explanation": "Как ты думаешь, это баян или нет?",
-  "accordion_no_results": "Никто не принял участие в голосовании",
-  "accordion_vote_in_progress": "Голосование уже запущено",
-  "accordion_message_not_chosen": "Выбери сообщение, за которое ты хочешь проголосовать",
-  "accordion_bot_message": "Бот никогда не постит баяны",
-  "accordion_yes_voted": "Решение принято. Это баян",
-  "accordion_no_voted": "Решение принятно. Это не баян",
-  "accordion_maybe_voted": "Решение принято. Голосущие не пришли к соглашению"
+  "general": {
+    "something_went_wrong": "Произошла ошибка",
+    "bot_is_alive": "Все системы функционируют исправно",
+    "bully_tag_user_regexp": "эй\\,?\\s{0,}чувак",
+    "update_completed": "Обновление завершено!\n\nChangelog:\n$update"
+  },
+  "accordion": {
+    "results": {
+      "yes": "Решение принято. Это баян",
+      "no": "Решение принятно. Это не баян",
+      "maybe": "Решение принято. Голосущие не пришли к соглашению",
+      "no_results": "Никто не принял участие в голосовании"
+    },
+    "options": {
+      "yes": "Да",
+      "no": "Нет",
+      "maybe": "Не знаю"
+    },
+    "other": {
+      "title": "Баян?!",
+      "vote_in_progress": "Голосование уже запущено",
+      "message_not_chosen": "Выбери сообщение, за которое ты хочешь проголосовать",
+      "bot_vote_attempt": "Бот никогда не постит баяны",
+      "explanation": "Как ты думаешь, это баян или нет?"
+    }
+  },
+  "chat": {
+    "initialization": {
+      "success": "Чат инициализирован успешно"
+    }
+  },
+  "reputation": {
+    "change": {
+      "increase_success": "Репутация была увеличена",
+      "decrease_success": "Репутация была понижена",
+      "user_not_found": "Пользователь не найден",
+      "self_update": "Изменять репутацию самому себе запрещено",
+      "not_enough_options": "Недостаточно очков для голосования"
+    }
+  },
+  "user": {
+    "user_added": "Пользователь добавлен",
+    "user_removed": "Пользователь удален"
+  },
+  "weather": {
+    "cities": {
+      "added": "Город $city добавлен",
+      "removed": "Город $city удален",
+      "watchlist": "Отслеживаются следующие города:\n$cities",
+      "temperature": "В городе $city температура $temperature°C"
+    },
+    "other": {
+      "notification_hour_set": "Время погодных напоминаний установлено на $hour:00"
+    }
+  }
 }

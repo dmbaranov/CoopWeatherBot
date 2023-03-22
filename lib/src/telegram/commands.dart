@@ -14,9 +14,9 @@ void addCity(TelegramBot self, TeleDartMessage message) async {
   var result = await self.weatherManager.addCity(message.chat.id.toString(), cityToAdd);
 
   if (result) {
-    await self.telegram.sendMessage(message.chat.id, 'City $cityToAdd has been added to the watchlist!');
+    await self.telegram.sendMessage(message.chat.id, self.sm.get('weather.cities.added', {'city': cityToAdd}));
   } else {
-    await self.telegram.sendMessage(message.chat.id, 'Error');
+    await self.telegram.sendMessage(message.chat.id, self.sm.get('general.something_went_wrong'));
   }
 }
 
@@ -26,9 +26,9 @@ void removeCity(TelegramBot self, TeleDartMessage message) async {
   var result = await self.weatherManager.removeCity(message.chat.id.toString(), cityToRemove);
 
   if (result) {
-    await self.telegram.sendMessage(message.chat.id, 'City $cityToRemove has been removed from the watchlist!');
+    await self.telegram.sendMessage(message.chat.id, self.sm.get('weather.cities.removed', {'city': cityToRemove}));
   } else {
-    await self.telegram.sendMessage(message.chat.id, 'Error');
+    await self.telegram.sendMessage(message.chat.id, self.sm.get('general.something_went_wrong'));
   }
 }
 
@@ -36,14 +36,14 @@ void getWatchlist(TelegramBot self, TeleDartMessage message) async {
   var cities = await self.weatherManager.getWatchList(message.chat.id.toString());
   var citiesString = cities.join('\n');
 
-  await self.telegram.sendMessage(message.chat.id, "I'm watching these cities:\n$citiesString");
+  await self.telegram.sendMessage(message.chat.id, self.sm.get('weather.cities.watchlist', {'cities': citiesString}));
 }
 
 void getWeatherForCity(TelegramBot self, TeleDartMessage message) async {
   var city = getOneParameterFromMessage(message);
 
   if (city.isEmpty) {
-    await self.telegram.sendMessage(message.chat.id, 'Provide a city!');
+    await self.telegram.sendMessage(message.chat.id, self.sm.get('general.something_went_wrong'));
 
     return;
   }
@@ -51,9 +51,10 @@ void getWeatherForCity(TelegramBot self, TeleDartMessage message) async {
   var temperature = await self.weatherManager.getWeatherForCity(city);
 
   if (temperature != null) {
-    await self.telegram.sendMessage(message.chat.id, 'In city $city the temperature is $temperature°C');
+    await self.telegram
+        .sendMessage(message.chat.id, self.sm.get('weather.cities.temperature', {'city': city, 'temperature': temperature.toString()}));
   } else {
-    await self.telegram.sendMessage(message.chat.id, 'There was an error processing your request! Try again');
+    await self.telegram.sendMessage(message.chat.id, self.sm.get('general.something_went_wrong'));
   }
 }
 
@@ -63,32 +64,10 @@ void setNotificationHour(TelegramBot self, TeleDartMessage message) async {
   var result = await self.weatherManager.setNotificationHour(message.chat.id.toString(), int.parse(nextHour));
 
   if (result) {
-    await self.telegram.sendMessage(message.chat.id, 'Notification hour has been set to $nextHour');
+    await self.telegram.sendMessage(message.chat.id, self.sm.get('weather.other.notification_hour_set', {'hour': nextHour}));
   } else {
-    await self.telegram.sendMessage(message.chat.id, 'Error');
+    await self.telegram.sendMessage(message.chat.id, self.sm.get('general.something_went_wrong'));
   }
-}
-
-void getBullyWeatherForCity(TelegramBot self, TeleDartMessage message) async {
-  var messageWords = message.text?.split(RegExp(r'(,)|(\s{1,})')).where((item) => item.isNotEmpty).toList();
-
-  if (messageWords == null ||
-      messageWords.length != 3 ||
-      (messageWords[0] != self.sm.get('yo') && messageWords[1] != self.sm.get('dude'))) {
-    return;
-  }
-
-  var city = messageWords[2];
-
-  var temperature = await self.weatherManager.getWeatherForCity(city);
-
-  if (temperature == null) {
-    await self.telegram.sendMessage(message.chat.id, self.sm.get('error_occurred'));
-
-    return;
-  }
-
-  await self.telegram.sendMessage(message.chat.id, self.sm.get('weather_in_city', {'city': city, 'temp': temperature.toString()}));
 }
 
 void bullyTagUser(TelegramBot self, TeleDartMessage message) async {
@@ -412,7 +391,7 @@ Future<void> addUser(TelegramBot self, TeleDartMessage message) async {
   if (addResult) {
     await self.telegram.sendMessage(message.chat.id, self.sm.get('user.user_added'));
   } else {
-    await self.telegram.sendMessage(message.chat.id, self.sm.get('user.user_not_added'));
+    await self.telegram.sendMessage(message.chat.id, self.sm.get('general.something_went_wrong'));
   }
 }
 
@@ -432,7 +411,7 @@ Future<void> removeUser(TelegramBot self, TeleDartMessage message) async {
   if (removeResult) {
     await self.telegram.sendMessage(message.chat.id, self.sm.get('user.user_removed'));
   } else {
-    await self.telegram.sendMessage(message.chat.id, self.sm.get('user.user_not_removed'));
+    await self.telegram.sendMessage(message.chat.id, self.sm.get('general.something_went_wrong'));
   }
 }
 
@@ -446,7 +425,7 @@ Future<void> initChat(TelegramBot self, TeleDartMessage message) async {
   if (result) {
     await self.telegram.sendMessage(message.chat.id, self.sm.get('chat.initialization.success'));
   } else {
-    await self.telegram.sendMessage(message.chat.id, self.sm.get('chat.initialization.fail'));
+    await self.telegram.sendMessage(message.chat.id, self.sm.get('general.something_went_wrong'));
   }
 }
 

@@ -146,6 +146,7 @@ void postUpdateMessage(TelegramBot self) async {
 }
 
 Future<void> sendNewsToChat(TelegramBot self, [TeleDartMessage? message]) async {
+  // TODO: somehow this sends news to the chat even if ask in dm
   var instantViewUrl = 'a.devs.today/';
 
   if (message != null) {
@@ -255,23 +256,33 @@ Future<void> searchYoutubeTrackInline(TelegramBot self, TeleDartInlineQuery quer
   await self.bot.answerInlineQuery(query.id, [...inlineQueryResult], cacheTime: 10);
 }
 
-Future<void> updateReputation(TelegramBot self, TeleDartMessage message, ChangeOption change) async {
-  var fromUserId = message.from?.id;
-  var toUserId = message.replyToMessage?.from?.id;
+Future<void> updateReputation(TelegramBot self, TeleDartMessage message, ReputationChangeOption change) async {
+  var chatId = message.chat.id;
+  var fromUserId = message.from?.id.toString();
+  var toUserId = message.replyToMessage?.from?.id.toString();
 
-  if (fromUserId == null || toUserId == null) {
-    await self.telegram.sendMessage(message.chat.id, self.sm.get('error_occurred'));
+  var changeResult =
+      await self.reputation.updateReputation(chatId: chatId.toString(), fromUserId: fromUserId, toUserId: toUserId, change: change);
 
-    return;
-  }
-
-  var changeResult = await self.reputation.updateReputation(
-      chatId: message.chat.id.toString(), fromUserId: fromUserId.toString(), toUserId: toUserId.toString(), change: change);
-
-  if (changeResult) {
-    await self.telegram.sendMessage(message.chat.id, 'Success');
-  } else {
-    await self.telegram.sendMessage(message.chat.id, 'Failure');
+  switch (changeResult) {
+    case ReputationChangeResult.increaseSuccess:
+      await self.telegram.sendMessage(chatId, self.sm.get('reputation.change.increase_success'));
+      break;
+    case ReputationChangeResult.decreaseSuccess:
+      await self.telegram.sendMessage(chatId, self.sm.get('reputation.change.decrease_success'));
+      break;
+    case ReputationChangeResult.userNotFound:
+      await self.telegram.sendMessage(chatId, self.sm.get('reputation.change.user_not_found'));
+      break;
+    case ReputationChangeResult.selfUpdate:
+      await self.telegram.sendMessage(chatId, self.sm.get('reputation.change.self_update'));
+      break;
+    case ReputationChangeResult.notEnoughOptions:
+      await self.telegram.sendMessage(chatId, self.sm.get('reputation.change.not_enough_options'));
+      break;
+    case ReputationChangeResult.systemError:
+      await self.telegram.sendMessage(chatId, self.sm.get('general.something_went_wrong'));
+      break;
   }
 }
 
@@ -304,25 +315,26 @@ Future<void> startAccordionPoll(TelegramBot self, TeleDartMessage message) async
   var votedMessageAuthor = message.replyToMessage?.from;
 
   if (votedMessageAuthor == null) {
-    await self.telegram.sendMessage(message.chat.id, self.sm.get('accordion_message_not_chosen'));
+    await self.telegram.sendMessage(message.chat.id, self.sm.get('accordion.other.message_not_chosen'));
 
     return;
   } else if (votedMessageAuthor.isBot) {
-    await self.telegram.sendMessage(message.chat.id, self.sm.get('accordion_bot_message'));
+    await self.telegram.sendMessage(message.chat.id, self.sm.get('accordion.other.bot_vote_attempt'));
 
     return;
   }
 
+  var chatId = message.chat.id.toString();
   const pollTime = 180;
-  var pollOptions = [self.sm.get('accordion_option_yes'), self.sm.get('accordion_option_no'), self.sm.get('accordion_option_maybe')];
+  var pollOptions = [self.sm.get('accordion.options.yes'), self.sm.get('accordion.options.no'), self.sm.get('accordion.options.maybe')];
 
   self.accordionPoll.startPoll(votedMessageAuthor.id.toString());
 
   var createdPoll = await self.telegram.sendPoll(
-    message.chat.id,
-    self.sm.get('accordion_vote_title'),
+    chatId,
+    self.sm.get('accordion.other.title'),
     pollOptions,
-    explanation: self.sm.get('accordion_explanation'),
+    explanation: self.sm.get('accordion.other.explanation'),
     type: 'quiz',
     correctOptionId: Random().nextInt(pollOptions.length),
     openPeriod: pollTime,
@@ -336,9 +348,9 @@ Future<void> startAccordionPoll(TelegramBot self, TeleDartMessage message) async
     }
 
     var currentPollResults = {
-      VoteOption.yes: poll.options[0].voterCount,
-      VoteOption.no: poll.options[1].voterCount,
-      VoteOption.maybe: poll.options[2].voterCount
+      AccordionVoteOption.yes: poll.options[0].voterCount,
+      AccordionVoteOption.no: poll.options[1].voterCount,
+      AccordionVoteOption.maybe: poll.options[2].voterCount
     };
 
     self.accordionPoll.voteResult = currentPollResults;
@@ -348,7 +360,21 @@ Future<void> startAccordionPoll(TelegramBot self, TeleDartMessage message) async
 
   var voteResult = self.accordionPoll.endVoteAndGetResults();
 
-  await self.telegram.sendMessage(message.chat.id, voteResult);
+  switch (voteResult) {
+    case AccordionVoteResults.yes:
+      await self.telegram.sendMessage(chatId, self.sm.get('accordion.results.yes'));
+      break;
+    case AccordionVoteResults.no:
+      await self.telegram.sendMessage(chatId, self.sm.get('accordion.results.no'));
+      break;
+    case AccordionVoteResults.maybe:
+      await self.telegram.sendMessage(chatId, self.sm.get('accordion.results.maybe'));
+      break;
+    case AccordionVoteResults.noResults:
+      await self.telegram.sendMessage(chatId, self.sm.get('accordion.results.noResults'));
+      break;
+  }
+
   await pollSubscription.cancel();
 }
 

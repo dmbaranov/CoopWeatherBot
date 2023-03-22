@@ -81,7 +81,7 @@ class TelegramBot {
     weatherManager = WeatherManager(openweatherKey: openweatherKey, dbManager: dbManager);
     await weatherManager.initialize();
 
-    accordionPoll = AccordionPoll(sm: sm);
+    accordionPoll = AccordionPoll();
 
     _setupListeners();
 
@@ -138,8 +138,8 @@ class TelegramBot {
     bot.onCommand('sendnews').listen((event) => sendNewsToChat(this, event));
     bot.onCommand('sendjoke').listen((event) => sendJokeToChat(this, event));
     bot.onCommand('sendrealmusic').listen((event) => sendRealMusic(this, event));
-    bot.onCommand('increp').listen((event) => updateReputation(this, event, ChangeOption.increase));
-    bot.onCommand('decrep').listen((event) => updateReputation(this, event, ChangeOption.decrease));
+    bot.onCommand('increp').listen((event) => updateReputation(this, event, ReputationChangeOption.increase));
+    bot.onCommand('decrep').listen((event) => updateReputation(this, event, ReputationChangeOption.decrease));
     bot.onCommand('replist').listen((event) => sendReputationList(this, event));
     bot.onCommand('searchsong').listen((event) => searchYoutubeTrack(this, event));
     bot.onCommand('na').listen((event) => checkIfAlive(this, event));

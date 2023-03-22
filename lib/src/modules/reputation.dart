@@ -3,7 +3,9 @@ import 'package:cron/cron.dart';
 import 'database-manager/database_manager.dart';
 import 'database-manager/entities/reputation_entity.dart' show SingleReputationData, ChatReputationData;
 
-enum ChangeOption { increase, decrease }
+enum ReputationChangeOption { increase, decrease }
+
+enum ReputationChangeResult { increaseSuccess, decreaseSuccess, userNotFound, selfUpdate, notEnoughOptions, systemError }
 
 class Reputation {
   final DatabaseManager dbManager;
@@ -27,30 +29,30 @@ class Reputation {
     });
   }
 
-  Future<bool> updateReputation(
-      {required String chatId, required String fromUserId, required String toUserId, required ChangeOption change}) async {
-    var fromUser = await dbManager.reputation.getSingleReputationData(chatId, fromUserId);
-    var toUser = await dbManager.reputation.getSingleReputationData(chatId, toUserId);
+  Future<ReputationChangeResult> updateReputation(
+      {required String chatId, required ReputationChangeOption change, String? fromUserId, String? toUserId}) async {
+    var fromUser = await dbManager.reputation.getSingleReputationData(chatId, fromUserId ?? '');
+    var toUser = await dbManager.reputation.getSingleReputationData(chatId, toUserId ?? '');
 
     if (fromUser == null || toUser == null) {
-      return false;
+      return ReputationChangeResult.userNotFound;
     }
 
     if (fromUserId == toUserId) {
-      return false;
+      return ReputationChangeResult.selfUpdate;
     }
 
-    if (change == ChangeOption.increase && !_canIncreaseReputationCheck(fromUser)) {
-      return false;
-    } else if (change == ChangeOption.decrease && !_canDecreaseReputationCheck(fromUser)) {
-      return false;
+    if (change == ReputationChangeOption.increase && !_canIncreaseReputationCheck(fromUser)) {
+      return ReputationChangeResult.notEnoughOptions;
+    } else if (change == ReputationChangeOption.decrease && !_canDecreaseReputationCheck(fromUser)) {
+      return ReputationChangeResult.notEnoughOptions;
     }
 
     var reputationValue = toUser.reputation;
     var increaseOptions = fromUser.increaseOptionsLeft;
     var decreaseOptions = fromUser.decreaseOptionsLeft;
 
-    if (change == ChangeOption.increase) {
+    if (change == ReputationChangeOption.increase) {
       reputationValue += 1;
       increaseOptions -= 1;
     } else {
@@ -58,13 +60,19 @@ class Reputation {
       decreaseOptions -= 1;
     }
 
-    var optionsUpdated = await _updateChangeOptions(chatId, fromUserId, increaseOptions, decreaseOptions);
+    var optionsUpdated = await _updateChangeOptions(chatId, fromUserId!, increaseOptions, decreaseOptions);
 
     if (!optionsUpdated) {
-      return false;
+      return ReputationChangeResult.systemError;
     }
 
-    return _updateReputation(chatId, toUserId, reputationValue);
+    var reputationUpdated = await _updateReputation(chatId, toUserId!, reputationValue);
+
+    if (!reputationUpdated) {
+      return ReputationChangeResult.systemError;
+    }
+
+    return change == ReputationChangeOption.increase ? ReputationChangeResult.increaseSuccess : ReputationChangeResult.decreaseSuccess;
   }
 
   Future<bool> createReputationData(String chatId, String userId) async {

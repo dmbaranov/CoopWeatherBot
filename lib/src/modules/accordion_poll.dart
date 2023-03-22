@@ -1,19 +1,18 @@
 import 'swearwords_manager.dart';
 
-enum VoteOption { yes, no, maybe }
+enum AccordionVoteOption { yes, no, maybe }
+
+enum AccordionVoteResults { yes, no, maybe, noResults }
 
 // TODO: add voting duration as a parameter but not less than 180 sec
 class AccordionPoll {
-  final SwearwordsManager sm;
   bool _isVoteActive = false;
   String? _userId;
-  Map<VoteOption, int> _voteResult = {};
-
-  AccordionPoll({required this.sm});
+  Map<AccordionVoteOption, int> _voteResult = {};
 
   bool get isVoteActive => _isVoteActive;
 
-  set voteResult(Map<VoteOption, int> updatedVoteResult) {
+  set voteResult(Map<AccordionVoteOption, int> updatedVoteResult) {
     _voteResult = updatedVoteResult;
   }
 
@@ -32,7 +31,7 @@ class AccordionPoll {
     _voteResult = {};
   }
 
-  String endVoteAndGetResults() {
+  AccordionVoteResults endVoteAndGetResults() {
     var recordedOptions = _voteResult;
 
     _stopPoll();
@@ -40,13 +39,13 @@ class AccordionPoll {
     var voteResultKeys = recordedOptions.keys.toList();
 
     if (voteResultKeys.isEmpty) {
-      return sm.get('accordion_no_results');
+      return AccordionVoteResults.noResults;
     }
 
     var messages = {
-      VoteOption.yes: sm.get('accordion_yes_voted'),
-      VoteOption.no: sm.get('accordion_no_voted'),
-      VoteOption.maybe: sm.get('accordion_maybe_voted')
+      AccordionVoteOption.yes: AccordionVoteResults.yes,
+      AccordionVoteOption.no: AccordionVoteResults.no,
+      AccordionVoteOption.maybe: AccordionVoteResults.maybe
     };
 
     var winnerOption =

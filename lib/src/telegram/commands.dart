@@ -444,9 +444,9 @@ Future<void> initChat(TelegramBot self, TeleDartMessage message) async {
   var result = await self.chatManager.createChat(id: chatId, name: chatName);
 
   if (result) {
-    await self.telegram.sendMessage(message.chat.id, 'Chat initialized successfully');
+    await self.telegram.sendMessage(message.chat.id, self.sm.get('chat.initialization.success'));
   } else {
-    await self.telegram.sendMessage(message.chat.id, "Chat hasn't been initialized");
+    await self.telegram.sendMessage(message.chat.id, self.sm.get('chat.initialization.fail'));
   }
 }
 

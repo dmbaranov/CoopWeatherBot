@@ -151,7 +151,7 @@ class TelegramBot {
     bot.onCommand('createreputation').listen((event) => createReputation(this, event));
     bot.onCommand('createweather').listen((event) => createWeather(this, event));
 
-    var bullyTagUserRegexp = RegExp(sm.get('bully_tag_user_regexp'), caseSensitive: false);
+    var bullyTagUserRegexp = RegExp(sm.get('general.bully_tag_user_regexp'), caseSensitive: false);
     bot.onMessage(keyword: bullyTagUserRegexp).listen((event) => bullyTagUser(this, event));
 
     bot.onInlineQuery().listen((query) {

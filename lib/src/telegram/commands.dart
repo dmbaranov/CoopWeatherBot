@@ -410,9 +410,9 @@ Future<void> addUser(TelegramBot self, TeleDartMessage message) async {
       .addUser(id: userData.id.toString(), chatId: message.chat.id.toString(), name: fullUsername, isPremium: userData.isPremium ?? false);
 
   if (addResult) {
-    await self.telegram.sendMessage(message.chat.id, 'User added');
+    await self.telegram.sendMessage(message.chat.id, self.sm.get('user.user_added'));
   } else {
-    await self.telegram.sendMessage(message.chat.id, 'User not added');
+    await self.telegram.sendMessage(message.chat.id, self.sm.get('user.user_not_added'));
   }
 }
 
@@ -430,9 +430,9 @@ Future<void> removeUser(TelegramBot self, TeleDartMessage message) async {
   var removeResult = await self.userManager.removeUser(chatId, userId);
 
   if (removeResult) {
-    await self.telegram.sendMessage(message.chat.id, 'User removed');
+    await self.telegram.sendMessage(message.chat.id, self.sm.get('user.user_removed'));
   } else {
-    await self.telegram.sendMessage(message.chat.id, 'User not removed');
+    await self.telegram.sendMessage(message.chat.id, self.sm.get('user.user_not_removed'));
   }
 }
 

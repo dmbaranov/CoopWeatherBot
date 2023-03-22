@@ -56,12 +56,12 @@ class UserManager {
     var deletionResult = await dbManager.user.deleteUser(chatId, userId);
 
     if (deletionResult == 1) {
-      return false;
+      _userManagerStreamController.sink.add(0);
+      
+      return true;
     }
 
-    _userManagerStreamController.sink.add(0);
-
-    return true;
+    return false;
   }
 
   void _updateUserManagerStream() {

@@ -1,2 +1,3 @@
 SELECT id
-FROM chat;
+FROM chat
+WHERE platform = @platform;

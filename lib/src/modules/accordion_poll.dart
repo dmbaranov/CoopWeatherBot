@@ -1,5 +1,3 @@
-import 'swearwords_manager.dart';
-
 enum AccordionVoteOption { yes, no, maybe }
 
 enum AccordionVoteResults { yes, no, maybe, noResults }

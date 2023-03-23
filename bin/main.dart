@@ -39,7 +39,7 @@ Future<void> runMigrations(PostgreSQLConnection dbConnection) async {
   await migrationsManager.runMigrations();
 }
 
-void runDiscordBot(DotEnv env) {
+void runDiscordBot(DotEnv env, PostgreSQLConnection dbConnection) {
   final token = env['discordtoken']!;
   final adminId = env['discordadminid']!;
   final guildId = env['discordguildid']!;
@@ -53,7 +53,8 @@ void runDiscordBot(DotEnv env) {
           guildId: guildId,
           channelId: channelId,
           openweatherKey: openweatherKey,
-          conversatorKey: conversatorKey)
+          conversatorKey: conversatorKey,
+          dbConnection: dbConnection)
       .startBot();
 }
 
@@ -85,7 +86,7 @@ void main(List<String> args) async {
   await runMigrations(dbConnection);
 
   runZonedGuarded(() {
-    if (arguments['platform'] == 'discord') runDiscordBot(env);
+    if (arguments['platform'] == 'discord') runDiscordBot(env, dbConnection);
     if (arguments['platform'] == 'telegram') runTelegramBot(env, dbConnection);
   }, (error, stack) {
     var now = DateTime.now();

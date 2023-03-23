@@ -1,5 +1,14 @@
 import 'database-manager/database_manager.dart';
 
+enum ChatPlatform {
+  telegram('telegram'),
+  discord('discord');
+
+  final String value;
+
+  const ChatPlatform(this.value);
+}
+
 class ChatManager {
   final DatabaseManager dbManager;
 
@@ -11,7 +20,7 @@ class ChatManager {
     return creationResult == 1;
   }
 
-  Future<List<String>> getAllChatIds() {
-    return dbManager.chat.getAllChatIds();
+  Future<List<String>> getAllChatIds(ChatPlatform platform) {
+    return dbManager.chat.getAllChatIds(platform.value);
   }
 }

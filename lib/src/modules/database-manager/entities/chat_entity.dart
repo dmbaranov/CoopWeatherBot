@@ -7,8 +7,8 @@ class ChatEntity extends Entity {
     return executeTransaction(queriesMap['create_chat'], {'chatId': id, 'name': name});
   }
 
-  Future<List<String>> getAllChatIds() async {
-    var ids = await executeQuery(queriesMap['get_all_chat_ids']);
+  Future<List<String>> getAllChatIds(String platform) async {
+    var ids = await executeQuery(queriesMap['get_all_chat_ids'], {'platform': platform});
 
     if (ids == null) {
       return [];

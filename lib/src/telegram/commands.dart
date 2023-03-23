@@ -3,6 +3,7 @@ import 'dart:math';
 import 'dart:io' as io;
 import 'package:teledart/model.dart';
 import 'package:weather/src/modules/accordion_poll.dart';
+import 'package:weather/src/modules/chat_manager.dart';
 import 'package:weather/src/modules/reputation.dart';
 
 import './bot.dart';
@@ -117,7 +118,7 @@ void postUpdateMessage(TelegramBot self) async {
 
   var updateMessage = self.sm.get('general.update_completed', {'update': commitMessage});
 
-  var chatIds = await self.chatManager.getAllChatIds();
+  var chatIds = await self.chatManager.getAllChatIds(ChatPlatform.telegram);
 
   chatIds.forEach((chatId) {
     self.telegram.sendMessage(int.parse(chatId), updateMessage);
@@ -141,7 +142,7 @@ Future<void> sendNewsToChat(TelegramBot self, [TeleDartMessage? message]) async 
   }
 
   // TODO: move sendToAllChats to a separate function
-  var chatIds = await self.chatManager.getAllChatIds();
+  var chatIds = await self.chatManager.getAllChatIds(ChatPlatform.telegram);
 
   await Future.forEach(chatIds, (chatId) async {
     var news = await self.panoramaNews.getNews(chatId);
@@ -163,7 +164,7 @@ Future<void> sendJokeToChat(TelegramBot self, [TeleDartMessage? message]) async 
     return;
   }
 
-  var chatIds = await self.chatManager.getAllChatIds();
+  var chatIds = await self.chatManager.getAllChatIds(ChatPlatform.telegram);
 
   chatIds.forEach((chatId) {
     self.telegram.sendMessage(int.parse(chatId), joke.joke);

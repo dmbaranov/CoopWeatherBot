@@ -4,7 +4,8 @@
     "success": "Операция завершена успешно",
     "bot_is_alive": "Все системы функционируют исправно",
     "bully_tag_user_regexp": "эй\\,?\\s{0,}чувак",
-    "update_completed": "Обновление завершено!\n\nChangelog:\n$update"
+    "update_completed": "Обновление завершено!\n\nChangelog:\n$update",
+    "no_access": "Доступ запрещен"
   },
   "accordion": {
     "results": {
@@ -56,6 +57,12 @@
     },
     "other": {
       "notification_hour_set": "Время погодных напоминаний установлено на $hour:00"
+    }
+  },
+  "hero": {
+    "users_at_five": {
+      "no_users": "В 5:00 онлайн пользователи отсутствуют",
+      "list": "Эти пользователи были онлайн в 5:00"
     }
   }
 }

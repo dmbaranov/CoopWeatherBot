@@ -1,0 +1,2 @@
+ALTER TABLE chat
+    ADD COLUMN platform VARCHAR(255) DEFAULT 'telegram' NOT NULL;

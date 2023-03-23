@@ -42,19 +42,11 @@ Future<void> runMigrations(PostgreSQLConnection dbConnection) async {
 void runDiscordBot(DotEnv env, PostgreSQLConnection dbConnection) {
   final token = env['discordtoken']!;
   final adminId = env['discordadminid']!;
-  final guildId = env['discordguildid']!;
-  final channelId = env['discordchannelid']!;
   final openweatherKey = env['openweather']!;
   final conversatorKey = env['conversatorkey']!;
 
   weather.DiscordBot(
-          token: token,
-          adminId: adminId,
-          guildId: guildId,
-          channelId: channelId,
-          openweatherKey: openweatherKey,
-          conversatorKey: conversatorKey,
-          dbConnection: dbConnection)
+          token: token, adminId: adminId, openweatherKey: openweatherKey, conversatorKey: conversatorKey, dbConnection: dbConnection)
       .startBot();
 }
 

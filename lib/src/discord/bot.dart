@@ -19,8 +19,6 @@ import './commands.dart';
 
 class DiscordBot {
   final String token;
-  final String guildId;
-  final String channelId;
   final String adminId;
   final String openweatherKey;
   final String conversatorKey;
@@ -33,15 +31,10 @@ class DiscordBot {
   late WeatherManager weatherManager;
   late Conversator conversator;
   late ChatManager chatManager;
+  List<String> authorizedChats = [];
 
   DiscordBot(
-      {required this.token,
-      required this.adminId,
-      required this.guildId,
-      required this.channelId,
-      required this.openweatherKey,
-      required this.conversatorKey,
-      required this.dbConnection});
+      {required this.token, required this.adminId, required this.openweatherKey, required this.conversatorKey, required this.dbConnection});
 
   void startBot() async {
     bot = NyxxFactory.createNyxxWebsocket(token, GatewayIntents.all);
@@ -74,6 +67,9 @@ class DiscordBot {
     chatManager = ChatManager(dbManager: dbManager);
 
     _startHeroCheckJob();
+
+    // TODO: update this when new chat is initialized
+    authorizedChats = await chatManager.getAllChatIds(ChatPlatform.discord);
   }
 
   void _startHeroCheckJob() async {
@@ -84,9 +80,7 @@ class DiscordBot {
       var onlineFile = File('assets/online');
       var onlineUsers = await onlineFile.readAsLines();
 
-      var chats = await chatManager.getAllChatIds(ChatPlatform.discord);
-
-      await Future.forEach(chats, (chatId) async {
+      await Future.forEach(authorizedChats, (chatId) async {
         var guild = await bot.httpEndpoints.fetchGuild(Snowflake(chatId));
         var channelId = guild.systemChannel?.id.toString() ?? '';
 
@@ -117,7 +111,7 @@ class DiscordBot {
 
   // TODO: add command to move all from one channel to another
   CommandsPlugin _setupCommands() {
-    var commands = CommandsPlugin(prefix: (message) => '!', guild: Snowflake(guildId));
+    var commands = CommandsPlugin(prefix: (message) => '!');
 
     commands
       ..addCommand(increaseReputation(this))
@@ -151,7 +145,7 @@ class DiscordBot {
   }
 
   Check isVerifiedServerCheck() {
-    return Check((context) => context.channel.id == Snowflake(channelId));
+    return Check((context) => authorizedChats.contains(context.guild?.id.toString()));
   }
 
   Future<List<UMUser>> getChatUsers(String chatId) async {

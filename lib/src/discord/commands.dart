@@ -190,10 +190,12 @@ ChatCommand moveAllToDifferentChannel(DiscordBot self) {
     Map<String, dynamic> channelsWithUsers = jsonDecode(channelsWithUsersRaw[0]);
     List usersToMove = channelsWithUsers[fromChannel.toString()];
 
+    var chatId = context.guild?.id.toString() ?? '';
+
     usersToMove.forEach((user) {
       var builder = MemberBuilder()..channel = Snowflake(toChannel);
 
-      self.bot.httpEndpoints.editGuildMember(Snowflake(self.guildId), Snowflake(user), builder: builder);
+      self.bot.httpEndpoints.editGuildMember(Snowflake(chatId), Snowflake(user), builder: builder);
     });
 
     await channelUsersFile.delete();

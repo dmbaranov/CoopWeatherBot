@@ -1,2 +1,2 @@
 ALTER TABLE chat
-    ADD COLUMN platform VARCHAR(255) DEFAULT 'telegram' NOT NULL;
+    ADD COLUMN IF NOT EXISTS platform VARCHAR(255) DEFAULT 'telegram' NOT NULL;

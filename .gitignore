@@ -14,5 +14,5 @@ doc/api/
 .idea
 
 assets/swearwords/swearwords.*.json
-!assets/swearwords/swearwords.basic.json
+!assets/swearwords/swearwords.sample.json
 assets/online

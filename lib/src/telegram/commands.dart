@@ -271,7 +271,7 @@ Future<void> sendReputationList(TelegramBot self, TeleDartMessage message) async
   var reputationMessage = '';
 
   reputationData.forEach((reputation) {
-    reputationMessage += '${reputation.name}: ${reputation.reputation}\n';
+    reputationMessage += self.sm.get('reputation.other.line', {'name': reputation.name, 'reputation': reputation.reputation.toString()});
   });
 
   if (reputationMessage.isEmpty) {

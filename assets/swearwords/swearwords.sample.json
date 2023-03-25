@@ -41,7 +41,8 @@
       "not_enough_options": "Недостаточно очков для голосования"
     },
     "other": {
-      "list": "Репутация на данный момент:\n\n$reputation"
+      "list": "Репутация на данный момент:\n\n$reputation",
+      "line": "У $name репутация $reputation\n"
     }
   },
   "user": {

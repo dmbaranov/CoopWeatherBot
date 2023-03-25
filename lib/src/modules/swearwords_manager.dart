@@ -5,7 +5,7 @@ class SwearwordsManager {
   late Map<String, dynamic> _swearwords;
 
   Future<void> initialize() async {
-    var rawSwearwords = await File('assets/swearwords.json').readAsString();
+    var rawSwearwords = await File('assets/swearwords/swearwords.basic.json').readAsString();
 
     _swearwords = Map<String, dynamic>.from(json.decode(rawSwearwords));
   }

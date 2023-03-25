@@ -9,7 +9,9 @@ import './bot.dart';
 
 ChatCommand increaseReputation(DiscordBot self) {
   return ChatCommand('increp', 'Increase reputation for the user', (IChatContext context, IMember who) async {
-    await context.respond(MessageBuilder.empty());
+    var discordUser = await self.bot.fetchUser(who.id);
+
+    await context.respond(MessageBuilder.content(discordUser.username));
 
     var chatId = context.guild?.id.toString() ?? '';
     var fromUserId = context.user.id.toString();
@@ -43,7 +45,9 @@ ChatCommand increaseReputation(DiscordBot self) {
 
 ChatCommand decreaseReputation(DiscordBot self) {
   return ChatCommand('decrep', 'Increase reputation for the user', (IChatContext context, IMember who) async {
-    await context.respond(MessageBuilder.empty());
+    var discordUser = await self.bot.fetchUser(who.id);
+
+    await context.respond(MessageBuilder.content(discordUser.username));
 
     var chatId = context.guild?.id.toString() ?? '';
     var fromUserId = context.user.id.toString();

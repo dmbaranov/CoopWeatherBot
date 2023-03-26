@@ -74,7 +74,7 @@ class DiscordBot {
 
   void _startHeroCheckJob() async {
     // TODO: onlineUsers are returned for a single chat only. Fix this + make this job configurable per chat
-    Cron().schedule(Schedule.parse('0 4 * * 6,0'), () async {
+    Cron().schedule(Schedule.parse('0 5 * * 6,0'), () async {
       await Process.run('${Directory.current.path}/generate-online', []);
 
       var onlineFile = File('assets/online');
@@ -90,7 +90,7 @@ class DiscordBot {
           return bot.httpEndpoints.sendMessage(Snowflake(channelId), MessageBuilder.content(message));
         }
 
-        var heroesMessage = sm.get('hero.users.at_five.list');
+        var heroesMessage = sm.get('hero.users_at_five.list');
         var chatUsers = await userManager.getUsersForChat(chatId);
 
         onlineUsers.forEach((userId) {

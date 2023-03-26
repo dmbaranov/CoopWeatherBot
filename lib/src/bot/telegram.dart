@@ -39,24 +39,18 @@ class TelegramBot extends Bot {
   }
 
   @override
-  void setupCommands() {
-    bot.onCommand('addcity').listen(
-        (event) => commandsManager.userCommand(mapPlatformEventToMessageEvent(event), onSuccess: addCity, onFailure: sendNoAccessMessage));
+  setupCommands() {
+    bot
+        .onCommand('addcity')
+        .listen((event) => cm.userCommand(mapToMessageEvent(event), onSuccess: addCity, onFailure: sendNoAccessMessage));
   }
 
-  @override
-  MessageEvent mapPlatformEventToMessageEvent(rawEvent) {
-    TeleDartMessage event = rawEvent as TeleDartMessage;
-
+  MessageEvent mapToMessageEvent(TeleDartMessage event) {
     return MessageEvent(
         chatId: event.chat.id.toString(),
         userId: event.from?.id.toString(),
         isBot: event.from?.isBot,
         message: event.text,
         selectedUserId: event.replyToMessage?.from?.id.toString());
-  }
-
-  sendNoAccessMessage(MessageEvent event) {
-    sendMessage(event.chatId, 'No access');
   }
 }

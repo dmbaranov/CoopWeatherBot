@@ -33,7 +33,7 @@ abstract class Bot {
   late AccordionPoll accordionPoll;
   late Conversator conversator;
   late ChatManager chatManager;
-  late CommandsManager commandsManager;
+  late CommandsManager cm;
 
   Bot(
       {required this.botToken,
@@ -53,7 +53,7 @@ abstract class Bot {
     chatManager = ChatManager(dbManager: dbManager);
     panoramaNews = PanoramaNews(dbManager: dbManager);
     accordionPoll = AccordionPoll();
-    commandsManager = CommandsManager();
+    cm = CommandsManager();
 
     sm = SwearwordsManager();
     await sm.initialize();
@@ -69,13 +69,10 @@ abstract class Bot {
   }
 
   @protected
-  void setupCommands();
+  setupCommands();
 
   @protected
   Future<void> sendMessage(String chatId, String message);
-
-  @protected
-  MessageEvent mapPlatformEventToMessageEvent(rawEvent);
 
   @protected
   void subscribeToWeatherUpdates() {
@@ -104,5 +101,10 @@ abstract class Bot {
   @protected
   void addCity(MessageEvent event) {
     print('adding a city...');
+  }
+
+  @protected
+  sendNoAccessMessage(MessageEvent event) {
+    sendMessage(event.chatId, 'No access');
   }
 }

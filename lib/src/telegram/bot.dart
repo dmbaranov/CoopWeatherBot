@@ -40,7 +40,6 @@ class TelegramBot {
   late AccordionPoll accordionPoll;
   late Conversator conversator;
   late ChatManager chatManager;
-  late int notificationHour = 7;
   late Debouncer<TeleDartInlineQuery?> debouncer = Debouncer(Duration(seconds: 1), initialValue: null);
 
   TelegramBot(

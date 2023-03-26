@@ -59,14 +59,22 @@ void runTelegramBot(DotEnv env, PostgreSQLConnection dbConnection) {
   final conversatorKey = env['conversatorkey']!;
 
   weather.TelegramBot(
-          token: token,
+          botToken: token,
           repoUrl: repoUrl,
-          adminId: adminId,
-          youtubeKey: youtubeKey,
           openweatherKey: openweatherKey,
           conversatorKey: conversatorKey,
+          youtubeKey: youtubeKey,
           dbConnection: dbConnection)
       .startBot();
+  // weather.TelegramBot(
+  //         token: token,
+  //         repoUrl: repoUrl,
+  //         adminId: adminId,
+  //         youtubeKey: youtubeKey,
+  //         openweatherKey: openweatherKey,
+  //         conversatorKey: conversatorKey,
+  //         dbConnection: dbConnection)
+  //     .startBot();
 }
 
 void main(List<String> args) async {

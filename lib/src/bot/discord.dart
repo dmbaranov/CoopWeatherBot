@@ -26,18 +26,24 @@ class DiscordBot extends Bot {
       ..registerPlugin(setupCommands());
   }
 
-  MessageEvent mapToMessageEvent(IChatContext context) {
-    return MessageEvent(
-        chatId: context.guild?.id.toString() ?? '', userId: context.user.id.toString(), isBot: context.user.bot, message: 'TODO');
-  }
-
-  MessageEvent mapToMessageEventWithOneUser(IChatContext context, IMember anotherUser) {
+  MessageEvent mapToGeneralMessageEvent(IChatContext context) {
     return MessageEvent(
         chatId: context.guild?.id.toString() ?? '',
         userId: context.user.id.toString(),
-        selectedUserId: anotherUser.id.toString(),
+        otherUserIds: [],
         isBot: context.user.bot,
-        message: 'TODO');
+        message: 'TODO',
+        parameters: []);
+  }
+
+  MessageEvent mapToMoveAllMessageEvent(IChatContext context, IMember? anotherUser) {
+    return mapToGeneralMessageEvent(context);
+    // return MessageEvent(
+    //     chatId: context.guild?.id.toString() ?? '',
+    //     userId: context.user.id.toString(),
+    //     otherUserIds: [],
+    //     isBot: context.user.bot,
+    //     message: 'TODO');
   }
 
   @override
@@ -52,14 +58,17 @@ class DiscordBot extends Bot {
   CommandsPlugin setupCommands() {
     var commands = CommandsPlugin(prefix: (message) => '!');
 
-    commands.addCommand(ChatCommand('addcity', 'Add city to receive periodic updates about the weather',
-        (IChatContext context) => cm.userCommand(mapToMessageEvent(context), onSuccess: addCity, onFailure: sendNoAccessMessage)));
+    commands.addCommand(ChatCommand(
+        'addcity',
+        'Add city to receive periodic updates about the weather',
+        (IChatContext context) =>
+            cm.userCommand(mapToGeneralMessageEvent(context), onSuccess: addWeatherCity, onFailure: sendNoAccessMessage)));
 
     commands.addCommand(ChatCommand(
         'moveall',
         'Increase reputation for the user',
-        (IChatContext context, IChannel from, IChannel to) =>
-            cm.userCommand(mapToMessageEvent(context), onSuccess: () => moveAll(context, from, to), onFailure: sendNoAccessMessage)));
+        (IChatContext context, IChannel from, IChannel to) => cm.userCommand(mapToGeneralMessageEvent(context),
+            onSuccess: () => moveAll(context, from, to), onFailure: sendNoAccessMessage)));
 
     return commands;
   }

@@ -40,17 +40,43 @@ class TelegramBot extends Bot {
 
   @override
   setupCommands() {
+    bot.onCommand('addcity').listen(
+        (event) => cm.userCommand(mapToMessageEventWithParameters(event), onSuccess: addWeatherCity, onFailure: sendNoAccessMessage));
+    bot.onCommand('removecity').listen(
+        (event) => cm.userCommand(mapToMessageEventWithParameters(event), onSuccess: removeWeatherCity, onFailure: sendNoAccessMessage));
     bot
-        .onCommand('addcity')
-        .listen((event) => cm.userCommand(mapToMessageEvent(event), onSuccess: addCity, onFailure: sendNoAccessMessage));
+        .onCommand('watchlist')
+        .listen((event) => cm.userCommand(mapToGeneralMessageEvent(event), onSuccess: getWeatherWatchlist, onFailure: sendNoAccessMessage));
+    bot.onCommand('getweather').listen(
+        (event) => cm.userCommand(mapToMessageEventWithParameters(event), onSuccess: getWeatherForCity, onFailure: sendNoAccessMessage));
+    bot.onCommand('setnotificationhour').listen((event) =>
+        cm.moderatorCommand(mapToMessageEventWithParameters(event), onSuccess: setWeatherNotificationHour, onFailure: sendNoAccessMessage));
+    bot.onCommand('write').listen(
+        (event) => cm.moderatorCommand(mapToMessageEventWithParameters(event), onSuccess: writeToChat, onFailure: sendNoAccessMessage));
+    bot
+        .onCommand('updatemessage')
+        .listen((event) => cm.adminCommand(mapToGeneralMessageEvent(event), onSuccess: postUpdateMessage, onFailure: sendNoAccessMessage));
+    bot.onCommand('increp').listen(
+        (event) => cm.userCommand(mapToReputationMessageEvent(event), onSuccess: increaseReputation, onFailure: sendNoAccessMessage));
   }
 
-  MessageEvent mapToMessageEvent(TeleDartMessage event) {
+  MessageEvent mapToGeneralMessageEvent(TeleDartMessage event) {
     return MessageEvent(
         chatId: event.chat.id.toString(),
         userId: event.from?.id.toString(),
         isBot: event.from?.isBot,
         message: event.text,
-        selectedUserId: event.replyToMessage?.from?.id.toString());
+        otherUserIds: [],
+        parameters: []);
+  }
+
+  MessageEvent mapToMessageEventWithParameters(TeleDartMessage event) {
+    List<String> parameters = event.text?.split(' ').sublist(1).toList() ?? [];
+
+    return mapToGeneralMessageEvent(event)..parameters.addAll(parameters);
+  }
+
+  MessageEvent mapToReputationMessageEvent(TeleDartMessage event) {
+    return mapToGeneralMessageEvent(event)..otherUserIds.add(event.replyToMessage?.from?.id.toString() ?? '');
   }
 }

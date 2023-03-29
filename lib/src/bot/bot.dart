@@ -99,12 +99,58 @@ abstract class Bot {
   }
 
   @protected
-  void addCity(MessageEvent event) {
-    print('adding a city...');
+  sendNoAccessMessage(MessageEvent event) async {
+    await sendMessage(event.chatId, sm.get('general.no_access'));
   }
 
   @protected
-  sendNoAccessMessage(MessageEvent event) {
-    sendMessage(event.chatId, 'No access');
+  sendErrorMessage(MessageEvent event) async {
+    await sendMessage(event.chatId, sm.get('general.something_went_wrong'));
+  }
+
+  @protected
+  void addWeatherCity(MessageEvent event) async {
+    if (event.parameters.isEmpty) {
+      await sendErrorMessage(event);
+
+      return;
+    }
+
+    print('adding a city ${event.parameters[0]}');
+  }
+
+  @protected
+  void removeWeatherCity(MessageEvent event) {
+    print('removing a city, ${event.parameters[0]}');
+  }
+
+  @protected
+  void getWeatherWatchlist(MessageEvent event) {
+    print('get watchlist');
+  }
+
+  @protected
+  void getWeatherForCity(MessageEvent event) {
+    print('getting weather for the city');
+  }
+
+  @protected
+  void setWeatherNotificationHour(MessageEvent event) {
+    print('setting weather notification hour');
+  }
+
+  @protected
+  void writeToChat(MessageEvent event) {
+    print('writing to a chat');
+  }
+
+  @protected
+  void postUpdateMessage(MessageEvent event) {
+    print('posting an update message');
+  }
+
+  @protected
+  void increaseReputation(MessageEvent event) {
+    print('increasing reputation, ${event.userId}, ${event.otherUserIds[0]}');
   }
 }

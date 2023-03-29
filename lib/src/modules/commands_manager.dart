@@ -2,10 +2,17 @@ class MessageEvent {
   final String chatId;
   final String? userId;
   final String? message;
-  final String? selectedUserId;
+  final List<String> otherUserIds;
+  final List<String> parameters;
   final bool? isBot;
 
-  MessageEvent({required this.chatId, required this.userId, required this.isBot, required this.message, this.selectedUserId});
+  MessageEvent(
+      {required this.chatId,
+      required this.userId,
+      required this.isBot,
+      required this.message,
+      required this.otherUserIds,
+      required this.parameters});
 }
 
 class CommandsManager {

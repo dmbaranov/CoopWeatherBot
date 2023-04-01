@@ -22,7 +22,19 @@ class BotUserEntity extends Entity {
     return rawUsers.map((rawUser) => BotUserData(id: rawUser[0], name: rawUser[1], chatId: rawUser[2], isPremium: rawUser[3])).toList();
   }
 
-  Future<int> createUser({required String id, required String chatId, required String name, bool isPremium = false}) {
+  Future<BotUserData?> getSingleChatUser({required String chatId, required String userId}) async {
+    var user = await executeQuery(queriesMap['get_single_chat_user'], {'chatId': chatId, 'userId': userId});
+
+    if (user == null) {
+      return null;
+    }
+
+    var foundUser = user[0];
+
+    return BotUserData(id: foundUser[0], name: foundUser[1], chatId: foundUser[2], isPremium: foundUser[3]);
+  }
+
+  Future<int> createUser({required String chatId, required String id, required String name, bool isPremium = false}) {
     return executeTransaction(queriesMap['create_bot_user'], {'userId': id, 'chatId': chatId, 'name': name, 'isPremium': isPremium});
   }
 

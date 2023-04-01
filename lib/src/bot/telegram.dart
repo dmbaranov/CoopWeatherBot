@@ -1,6 +1,7 @@
 import 'package:teledart/teledart.dart';
 import 'package:teledart/telegram.dart';
 import 'package:teledart/model.dart';
+import 'package:weather/src/modules/chat_manager.dart' show ChatPlatform;
 
 import 'bot.dart';
 import 'package:weather/src/modules/commands_manager.dart';
@@ -41,6 +42,12 @@ class TelegramBot extends Bot {
 
   @override
   Future<void> sendMessage(String chatId, String message) async {
+    if (message.isEmpty) {
+      await telegram.sendMessage(chatId, sm.get('general.something_went_wrong'));
+
+      return;
+    }
+
     await telegram.sendMessage(chatId, message);
   }
 
@@ -98,7 +105,7 @@ class TelegramBot extends Bot {
         .listen((event) => cm.adminCommand(mapToGeneralMessageEvent(event), onSuccess: initializeChat, onFailure: sendNoAccessMessage));
     bot
         .onCommand('createreputation')
-        .listen((event) => cm.adminCommand(mapToGeneralMessageEvent(event), onSuccess: createReputation, onFailure: sendNoAccessMessage));
+        .listen((event) => cm.adminCommand(mapToEventWithOtherUserIds(event), onSuccess: createReputation, onFailure: sendNoAccessMessage));
     bot
         .onCommand('createweather')
         .listen((event) => cm.adminCommand(mapToGeneralMessageEvent(event), onSuccess: createWeather, onFailure: sendNoAccessMessage));
@@ -106,12 +113,14 @@ class TelegramBot extends Bot {
 
   MessageEvent mapToGeneralMessageEvent(TeleDartMessage event) {
     return MessageEvent(
+        platform: ChatPlatform.telegram,
         chatId: event.chat.id.toString(),
-        userId: event.from?.id.toString(),
-        isBot: event.from?.isBot,
-        message: event.text,
+        userId: event.from?.id.toString() ?? '',
+        isBot: event.replyToMessage?.from?.isBot ?? false,
+        message: event.text?.split(' ').sublist(1).join(' ') ?? '',
         otherUserIds: [],
-        parameters: []);
+        parameters: [],
+        rawMessage: event);
   }
 
   MessageEvent mapToMessageEventWithParameters(TeleDartMessage event) {

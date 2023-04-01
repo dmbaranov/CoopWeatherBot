@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:collection/collection.dart';
 import 'package:http/http.dart' as http;
 import 'package:meta/meta.dart';
 import 'package:postgres/postgres.dart';
@@ -17,6 +18,7 @@ import 'package:weather/src/modules/chat_manager.dart';
 import 'package:weather/src/modules/commands_manager.dart';
 
 // TODO: add stream for Panorama news
+// TODO: move part of the logic to utils using self
 abstract class Bot {
   final String botToken;
   final String repoUrl;
@@ -89,8 +91,8 @@ abstract class Bot {
   @protected
   Future<void> sendMessage(String chatId, String message);
 
-  bool _parametersCheck(MessageEvent event) {
-    if (event.parameters.isEmpty) {
+  bool _parametersCheck(MessageEvent event, [int numberOfParameters = 1]) {
+    if (event.parameters.whereNot((parameter) => parameter.isEmpty).length < numberOfParameters) {
       sendMessage(event.chatId, sm.get('general.something_went_wrong'));
 
       return false;
@@ -99,14 +101,55 @@ abstract class Bot {
     return true;
   }
 
-  bool _userIdsCheck(MessageEvent event) {
-    if (event.otherUserIds.isEmpty) {
+  bool _userIdsCheck(MessageEvent event, [int numberOfIds = 1]) {
+    if (event.otherUserIds.whereNot((id) => id.isEmpty).length < numberOfIds) {
       sendMessage(event.chatId, sm.get('general.something_went_wrong'));
 
       return false;
     }
 
     return true;
+  }
+
+  bool _messageCheck(MessageEvent event) {
+    if (event.message.isEmpty) {
+      sendMessage(event.chatId, sm.get('general.something_went_wrong'));
+
+      return false;
+    }
+
+    return true;
+  }
+
+  void _sendOperationMessage(String chatId, bool operationResult, String successfulMessage) {
+    if (operationResult) {
+      sendMessage(chatId, successfulMessage);
+    } else {
+      sendMessage(chatId, sm.get('general.something_went_wrong'));
+    }
+  }
+
+  void _handleReputationChange(MessageEvent event, ReputationChangeResult result) async {
+    switch (result) {
+      case ReputationChangeResult.increaseSuccess:
+        await sendMessage(event.chatId, sm.get('reputation.change.increase_success'));
+        break;
+      case ReputationChangeResult.decreaseSuccess:
+        await sendMessage(event.chatId, sm.get('reputation.change.decrease_success'));
+        break;
+      case ReputationChangeResult.userNotFound:
+        await sendMessage(event.chatId, sm.get('reputation.change.user_not_found'));
+        break;
+      case ReputationChangeResult.selfUpdate:
+        await sendMessage(event.chatId, sm.get('reputation.change.self_update'));
+        break;
+      case ReputationChangeResult.notEnoughOptions:
+        await sendMessage(event.chatId, sm.get('reputation.change.not_enough_options'));
+        break;
+      case ReputationChangeResult.systemError:
+        await sendMessage(event.chatId, sm.get('general.something_went_wrong'));
+        break;
+    }
   }
 
   @protected
@@ -150,11 +193,7 @@ abstract class Bot {
     var cityToAdd = event.parameters[0];
     var result = await weatherManager.addCity(event.chatId, cityToAdd);
 
-    if (result) {
-      await sendMessage(event.chatId, sm.get('weather.cities.added', {'city': cityToAdd}));
-    } else {
-      await sendMessage(event.chatId, sm.get('general.something_went_wrong'));
-    }
+    _sendOperationMessage(event.chatId, result, sm.get('weather.cities.added', {'city': cityToAdd}));
   }
 
   @protected
@@ -164,11 +203,7 @@ abstract class Bot {
     var cityToRemove = event.parameters[0];
     var result = await weatherManager.removeCity(event.chatId, event.parameters[0]);
 
-    if (result) {
-      await sendMessage(event.chatId, sm.get('weather.cities.removed', {'city': cityToRemove}));
-    } else {
-      await sendMessage(event.chatId, sm.get('general.something_went_wrong'));
-    }
+    _sendOperationMessage(event.chatId, result, sm.get('weather.cities.removed', {'city': cityToRemove}));
   }
 
   @protected
@@ -186,11 +221,8 @@ abstract class Bot {
     var city = event.parameters[0];
     var temperature = await weatherManager.getWeatherForCity(city);
 
-    if (temperature != null) {
-      await sendMessage(event.chatId, sm.get('weather.cities.temperature', {'city': city, 'temperature': temperature.toString()}));
-    } else {
-      await sendMessage(event.chatId, sm.get('general.something_went_wrong'));
-    }
+    _sendOperationMessage(
+        event.chatId, temperature != null, sm.get('weather.cities.temperature', {'city': city, 'temperature': temperature.toString()}));
   }
 
   @protected
@@ -200,11 +232,7 @@ abstract class Bot {
     var nextHour = event.parameters[0];
     var result = await weatherManager.setNotificationHour(event.chatId, int.parse(nextHour));
 
-    if (result) {
-      await sendMessage(event.chatId, sm.get('weather.other.notification_hour_set', {'hour': nextHour}));
-    } else {
-      await sendMessage(event.chatId, sm.get('general.something_went_wrong'));
-    }
+    _sendOperationMessage(event.chatId, result, sm.get('weather.other.notification_hour_set', {'hour': nextHour}));
   }
 
   @protected
@@ -243,67 +271,144 @@ abstract class Bot {
   }
 
   @protected
-  void sendRealMusicToChat(MessageEvent event) {
-    print('send real music to chat');
+  void sendRealMusicToChat(MessageEvent event) async {
+    if (!_parametersCheck(event)) return;
+
+    var formattedLink = event.parameters[0].replaceAll('music.', '');
+
+    await sendMessage(event.chatId, formattedLink);
   }
 
   @protected
-  void increaseReputation(MessageEvent event) {
-    print('increasing reputation, ${event.userId}, ${event.otherUserIds[0]}');
+  void increaseReputation(MessageEvent event) async {
+    if (!_userIdsCheck(event)) return;
+
+    var fromUserId = event.userId;
+    var toUserId = event.otherUserIds[0];
+
+    var result = await reputation.updateReputation(
+        chatId: event.chatId, fromUserId: fromUserId, toUserId: toUserId, change: ReputationChangeOption.increase);
+
+    _handleReputationChange(event, result);
   }
 
   @protected
-  void decreaseReputation(MessageEvent event) {
-    print('decreasing reputation');
+  void decreaseReputation(MessageEvent event) async {
+    if (!_userIdsCheck(event)) return;
+
+    var fromUserId = event.userId;
+    var toUserId = event.otherUserIds[0];
+
+    var result = await reputation.updateReputation(
+        chatId: event.chatId, fromUserId: fromUserId, toUserId: toUserId, change: ReputationChangeOption.decrease);
+
+    _handleReputationChange(event, result);
   }
 
   @protected
-  void sendReputationList(MessageEvent event) {
-    print('sending a reputation list');
+  void sendReputationList(MessageEvent event) async {
+    var reputationData = await reputation.getReputationMessage(event.chatId);
+    var reputationMessage = '';
+
+    reputationData.forEach((reputation) {
+      reputationMessage += sm.get('reputation.other.line', {'name': reputation.name, 'reputation': reputation.reputation.toString()});
+    });
+
+    _sendOperationMessage(event.chatId, reputationMessage.isNotEmpty, sm.get('reputation.other.list', {'reputation': reputationMessage}));
   }
 
   @protected
-  void searchYoutubeTrack(MessageEvent event) {
-    print('searching youtube track');
+  void searchYoutubeTrack(MessageEvent event) async {
+    if (!_messageCheck(event)) return;
+
+    var videoUrl = await youtube.getYoutubeVideoUrl(event.message);
+
+    _sendOperationMessage(event.chatId, videoUrl.isNotEmpty, videoUrl);
   }
 
   @protected
-  void healthCheck(MessageEvent event) {
-    print('check if bot is working');
+  void healthCheck(MessageEvent event) async {
+    await sendMessage(event.chatId, sm.get('general.bot_is_alive'));
   }
 
   @protected
-  void startAccordionPoll(MessageEvent event) {
-    print('start accordion poll');
+  void startAccordionPoll(MessageEvent event) async {
+    await sendMessage(event.chatId, 'Currently not supported');
   }
 
   @protected
-  void askConversator(MessageEvent event) {
-    print('asking a question');
+  void askConversator(MessageEvent event) async {
+    if (!_messageCheck(event)) return;
+
+    var reply = await conversator.getConversationReply(event.message);
+
+    await sendMessage(event.chatId, reply);
   }
 
   @protected
-  void addUser(MessageEvent event) {
-    print('adding a user');
+  void addUser(MessageEvent event) async {
+    if (!_userIdsCheck(event)) return;
+
+    var fullUsername = '';
+    var isPremium = false;
+
+    // TODO: move to utils
+    if (event.platform == ChatPlatform.telegram) {
+      var repliedUser = event.rawMessage.replyToMessage.from;
+
+      fullUsername += repliedUser.firstName;
+
+      if (repliedUser.username != null) {
+        fullUsername += ' <${repliedUser.username}> ';
+      }
+
+      if (repliedUser.lastName != null) {
+        fullUsername += repliedUser.lastName;
+      }
+
+      isPremium = repliedUser.isPremium ?? false;
+    }
+
+    var addResult = await userManager.addUser(id: event.otherUserIds[0], chatId: event.chatId, name: fullUsername, isPremium: isPremium);
+
+    _sendOperationMessage(event.chatId, addResult, sm.get('user.user_added'));
   }
 
   @protected
-  void removeUser(MessageEvent event) {
-    print('removing a user');
+  void removeUser(MessageEvent event) async {
+    if (!_userIdsCheck(event)) return;
+
+    var removeResult = await userManager.removeUser(event.chatId, event.otherUserIds[0]);
+
+    _sendOperationMessage(event.chatId, removeResult, sm.get('user.user_removed'));
   }
 
   @protected
-  void initializeChat(MessageEvent event) {
-    print('initializing a chat');
+  void initializeChat(MessageEvent event) async {
+    var chatName = 'Unknown';
+
+    if (event.platform == ChatPlatform.telegram) {
+      chatName = event.rawMessage.chat.title.toString();
+    }
+
+    var result = await chatManager.createChat(id: event.chatId, name: chatName);
+
+    _sendOperationMessage(event.chatId, result, sm.get('chat.initialization.success'));
   }
 
   @protected
-  void createReputation(MessageEvent event) {
-    print('creating a reputation');
+  void createReputation(MessageEvent event) async {
+    if (!_userIdsCheck(event)) return;
+
+    var result = await reputation.createReputationData(event.chatId, event.otherUserIds[0]);
+
+    _sendOperationMessage(event.chatId, result, sm.get('general.success'));
   }
 
   @protected
-  void createWeather(MessageEvent event) {
-    print('creating a weather');
+  void createWeather(MessageEvent event) async {
+    var result = await weatherManager.createWeatherData(event.chatId);
+
+    _sendOperationMessage(event.chatId, result, sm.get('general.success'));
   }
 }

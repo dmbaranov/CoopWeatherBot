@@ -1,18 +1,24 @@
+import 'chat_manager.dart' show ChatPlatform;
+
 class MessageEvent {
+  final ChatPlatform platform;
   final String chatId;
-  final String? userId;
-  final String? message;
+  final String userId;
+  final String message;
   final List<String> otherUserIds;
   final List<String> parameters;
-  final bool? isBot;
+  final bool isBot;
+  final dynamic rawMessage;
 
   MessageEvent(
-      {required this.chatId,
+      {required this.platform,
+      required this.chatId,
       required this.userId,
       required this.isBot,
       required this.message,
       required this.otherUserIds,
-      required this.parameters});
+      required this.parameters,
+      required this.rawMessage});
 }
 
 class CommandsManager {

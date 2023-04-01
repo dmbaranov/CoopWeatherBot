@@ -40,6 +40,12 @@ class UserManager {
     return users.map((dbUser) => UMUser(id: dbUser.id, name: dbUser.name, chatId: dbUser.chatId, isPremium: dbUser.isPremium)).toList();
   }
 
+  Future<bool> isValidUser(String chatId, String userId) async {
+    var user = await dbManager.user.getSingleChatUser(chatId: chatId, userId: userId);
+
+    return user != null;
+  }
+
   Future<bool> addUser({required String id, required String chatId, required String name, bool isPremium = false}) async {
     var creationResult = await dbManager.user.createUser(id: id, chatId: chatId, name: name, isPremium: isPremium);
 
@@ -57,7 +63,7 @@ class UserManager {
 
     if (deletionResult == 1) {
       _userManagerStreamController.sink.add(0);
-      
+
       return true;
     }
 

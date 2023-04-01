@@ -2,6 +2,7 @@ import 'package:nyxx/nyxx.dart';
 import 'package:nyxx_commands/nyxx_commands.dart';
 
 import 'package:weather/src/bot/bot.dart';
+import 'package:weather/src/modules/chat_manager.dart';
 import 'package:weather/src/modules/commands_manager.dart';
 
 class DiscordBot extends Bot {
@@ -28,12 +29,14 @@ class DiscordBot extends Bot {
 
   MessageEvent mapToGeneralMessageEvent(IChatContext context) {
     return MessageEvent(
+        platform: ChatPlatform.discord,
         chatId: context.guild?.id.toString() ?? '',
         userId: context.user.id.toString(),
         otherUserIds: [],
         isBot: context.user.bot,
         message: 'TODO',
-        parameters: []);
+        parameters: [],
+        rawMessage: context);
   }
 
   MessageEvent mapToMoveAllMessageEvent(IChatContext context, IMember? anotherUser) {

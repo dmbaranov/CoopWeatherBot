@@ -56,8 +56,45 @@ class TelegramBot extends Bot {
     bot
         .onCommand('updatemessage')
         .listen((event) => cm.adminCommand(mapToGeneralMessageEvent(event), onSuccess: postUpdateMessage, onFailure: sendNoAccessMessage));
+    bot
+        .onCommand('sendnews')
+        .listen((event) => cm.userCommand(mapToGeneralMessageEvent(event), onSuccess: sendNewsToChat, onFailure: sendNoAccessMessage));
+    bot
+        .onCommand('sendjoke')
+        .listen((event) => cm.userCommand(mapToGeneralMessageEvent(event), onSuccess: sendJokeToChat, onFailure: sendNoAccessMessage));
+    bot.onCommand('sendrealmusic').listen(
+        (event) => cm.userCommand(mapToMessageEventWithParameters(event), onSuccess: sendRealMusicToChat, onFailure: sendNoAccessMessage));
     bot.onCommand('increp').listen(
-        (event) => cm.userCommand(mapToReputationMessageEvent(event), onSuccess: increaseReputation, onFailure: sendNoAccessMessage));
+        (event) => cm.userCommand(mapToEventWithOtherUserIds(event), onSuccess: increaseReputation, onFailure: sendNoAccessMessage));
+    bot.onCommand('decrep').listen(
+        (event) => cm.userCommand(mapToEventWithOtherUserIds(event), onSuccess: decreaseReputation, onFailure: sendNoAccessMessage));
+    bot
+        .onCommand('replist')
+        .listen((event) => cm.userCommand(mapToGeneralMessageEvent(event), onSuccess: sendReputationList, onFailure: sendNoAccessMessage));
+    bot.onCommand('searchsong').listen(
+        (event) => cm.userCommand(mapToMessageEventWithParameters(event), onSuccess: searchYoutubeTrack, onFailure: sendNoAccessMessage));
+    bot
+        .onCommand('na')
+        .listen((event) => cm.userCommand(mapToGeneralMessageEvent(event), onSuccess: healthCheck, onFailure: sendNoAccessMessage));
+    bot.onCommand('accordion').listen(
+        (event) => cm.userCommand(mapToAccordionMessageEvent(event), onSuccess: startAccordionPoll, onFailure: sendNoAccessMessage));
+    bot.onCommand('ask').listen(
+        (event) => cm.userCommand(mapToMessageEventWithParameters(event), onSuccess: askConversator, onFailure: sendNoAccessMessage));
+    bot
+        .onCommand('adduser')
+        .listen((event) => cm.moderatorCommand(mapToEventWithOtherUserIds(event), onSuccess: addUser, onFailure: sendNoAccessMessage));
+    bot
+        .onCommand('removeuser')
+        .listen((event) => cm.moderatorCommand(mapToEventWithOtherUserIds(event), onSuccess: removeUser, onFailure: sendNoAccessMessage));
+    bot
+        .onCommand('initialize')
+        .listen((event) => cm.adminCommand(mapToGeneralMessageEvent(event), onSuccess: initializeChat, onFailure: sendNoAccessMessage));
+    bot
+        .onCommand('createreputation')
+        .listen((event) => cm.adminCommand(mapToGeneralMessageEvent(event), onSuccess: createReputation, onFailure: sendNoAccessMessage));
+    bot
+        .onCommand('createweather')
+        .listen((event) => cm.adminCommand(mapToGeneralMessageEvent(event), onSuccess: createWeather, onFailure: sendNoAccessMessage));
   }
 
   MessageEvent mapToGeneralMessageEvent(TeleDartMessage event) {
@@ -76,7 +113,11 @@ class TelegramBot extends Bot {
     return mapToGeneralMessageEvent(event)..parameters.addAll(parameters);
   }
 
-  MessageEvent mapToReputationMessageEvent(TeleDartMessage event) {
+  MessageEvent mapToEventWithOtherUserIds(TeleDartMessage event) {
     return mapToGeneralMessageEvent(event)..otherUserIds.add(event.replyToMessage?.from?.id.toString() ?? '');
+  }
+
+  MessageEvent mapToAccordionMessageEvent(TeleDartMessage event) {
+    return mapToGeneralMessageEvent(event)..parameters.add(event.replyToMessage?.from?.id.toString() ?? '');
   }
 }

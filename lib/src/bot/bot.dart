@@ -22,17 +22,29 @@ abstract class Bot {
   final String conversatorKey;
   final PostgreSQLConnection dbConnection;
 
+  @protected
   late DatabaseManager dbManager;
+  @protected
   late SwearwordsManager sm;
+  @protected
   late UserManager userManager;
+  @protected
   late WeatherManager weatherManager;
+  @protected
   late DadJokes dadJokes;
+  @protected
   late PanoramaNews panoramaNews;
+  @protected
   late Reputation reputation;
+  @protected
   late Youtube youtube;
+  @protected
   late AccordionPoll accordionPoll;
+  @protected
   late Conversator conversator;
+  @protected
   late ChatManager chatManager;
+  @protected
   late CommandsManager cm;
 
   Bot(
@@ -150,7 +162,77 @@ abstract class Bot {
   }
 
   @protected
+  void sendNewsToChat(MessageEvent event) {
+    print('sending news to the chat');
+  }
+
+  @protected
+  void sendJokeToChat(MessageEvent event) {
+    print('send joke to chat');
+  }
+
+  @protected
+  void sendRealMusicToChat(MessageEvent event) {
+    print('send real music to chat');
+  }
+
+  @protected
   void increaseReputation(MessageEvent event) {
     print('increasing reputation, ${event.userId}, ${event.otherUserIds[0]}');
+  }
+
+  @protected
+  void decreaseReputation(MessageEvent event) {
+    print('decreasing reputation');
+  }
+
+  @protected
+  void sendReputationList(MessageEvent event) {
+    print('sending a reputation list');
+  }
+
+  @protected
+  void searchYoutubeTrack(MessageEvent event) {
+    print('searching youtube track');
+  }
+
+  @protected
+  void healthCheck(MessageEvent event) {
+    print('check if bot is working');
+  }
+
+  @protected
+  void startAccordionPoll(MessageEvent event) {
+    print('start accordion poll');
+  }
+
+  @protected
+  void askConversator(MessageEvent event) {
+    print('asking a question');
+  }
+
+  @protected
+  void addUser(MessageEvent event) {
+    print('adding a user');
+  }
+
+  @protected
+  void removeUser(MessageEvent event) {
+    print('removing a user');
+  }
+
+  @protected
+  void initializeChat(MessageEvent event) {
+    print('initializing a chat');
+  }
+
+  @protected
+  void createReputation(MessageEvent event) {
+    print('creating a reputation');
+  }
+
+  @protected
+  void createWeather(MessageEvent event) {
+    print('creating a weather');
   }
 }

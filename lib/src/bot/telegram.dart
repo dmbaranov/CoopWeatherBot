@@ -5,6 +5,12 @@ import 'package:teledart/model.dart';
 import 'bot.dart';
 import 'package:weather/src/modules/commands_manager.dart';
 
+// TODO: remove all the logic from Bot class and put it to the modules itself like invokeIncrease, invokeDecrease, invokeAdd, etc.
+// this methods would accept MessageEvent and the Bot class will have something like sendMessage(reputation.invokeIncrease());
+// TODO: Update MessageEvent interface. Make the mapper accept a list of arguments, iterate through each item and check its' type
+// e.g. if it's IMember, then push userId to otherUsers list. If it's IChannel, then push it to otherServers or whatever list.
+// then the logic method (e.g. moveAll) will expect that otherServers[0] is from and otherServers[1] is to. Same for reputation
+// TODO: try to extract commands to a separate class and make setupCommands a part of abstract class
 class TelegramBot extends Bot {
   late TeleDart bot;
   late Telegram telegram;
@@ -38,6 +44,7 @@ class TelegramBot extends Bot {
     await telegram.sendMessage(chatId, message);
   }
 
+  // TODO: make a map in Bot class like {'addcity': addCity} and use it instead of manually adding all the commands
   @override
   setupCommands() {
     bot.onCommand('addcity').listen(

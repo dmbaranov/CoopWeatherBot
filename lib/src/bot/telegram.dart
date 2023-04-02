@@ -38,6 +38,10 @@ class TelegramBot extends Bot {
 
     setupCommands();
 
+    _subscribeToPanoramaNews();
+    _subscribeToWeather();
+    _subscribeToUsersUpdate();
+
     bot.start();
 
     print('Telegram bot has been started!');
@@ -136,6 +140,53 @@ class TelegramBot extends Bot {
 
   MessageEvent _mapToAccordionMessageEvent(TeleDartMessage event) {
     return _mapToGeneralMessageEvent(event)..parameters.add(event.replyToMessage?.from?.id.toString() ?? '');
+  }
+
+  void _subscribeToPanoramaNews() {
+    var panoramaStream = panoramaNews.panoramaStream;
+
+    panoramaStream.listen((event) async {
+      var allChats = await chatManager.getAllChatIds(ChatPlatform.telegram);
+
+      allChats.forEach((chatId) {
+        var fakeEvent = MessageEvent(
+            platform: ChatPlatform.telegram,
+            chatId: chatId,
+            userId: '',
+            isBot: false,
+            message: '',
+            otherUserIds: [],
+            parameters: [],
+            rawMessage: '');
+
+        sendNewsToChat(fakeEvent);
+      });
+    });
+  }
+
+  void _subscribeToWeather() async {
+    var telegramChats = await chatManager.getAllChatIds(ChatPlatform.telegram);
+    var weatherStream = weatherManager.weatherStream;
+
+    weatherStream.listen((weatherData) {
+      var message = '';
+
+      weatherData.weatherData.forEach((weatherData) {
+        message += 'In city: ${weatherData.city} the temperature is ${weatherData.temp}\n\n';
+      });
+
+      if (telegramChats.contains(weatherData.chatId)) {
+        sendMessage(weatherData.chatId, message);
+      }
+    });
+  }
+
+  void _subscribeToUsersUpdate() {
+    var userManagerStream = userManager.userManagerStream;
+
+    userManagerStream.listen((_) {
+      print('TODO: update users premium status');
+    });
   }
 
   void _startTelegramAccordionPoll(TeleDartMessage message) async {

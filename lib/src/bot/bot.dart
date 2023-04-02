@@ -17,7 +17,6 @@ import 'package:weather/src/modules/conversator.dart';
 import 'package:weather/src/modules/chat_manager.dart';
 import 'package:weather/src/modules/commands_manager.dart';
 
-// TODO: add stream for Panorama news
 // TODO: move part of the logic to utils using self
 abstract class Bot {
   final String botToken;
@@ -68,12 +67,14 @@ abstract class Bot {
     youtube = Youtube(youtubeKey);
     conversator = Conversator(conversatorKey);
     chatManager = ChatManager(dbManager: dbManager);
-    panoramaNews = PanoramaNews(dbManager: dbManager);
     accordionPoll = AccordionPoll();
     cm = CommandsManager();
 
     sm = SwearwordsManager();
     await sm.initialize();
+
+    panoramaNews = PanoramaNews(dbManager: dbManager);
+    panoramaNews.initialize();
 
     userManager = UserManager(dbManager: dbManager);
     userManager.initialize();

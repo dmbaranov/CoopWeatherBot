@@ -41,30 +41,34 @@ Future<void> runMigrations(PostgreSQLConnection dbConnection) async {
 
 void runDiscordBot(DotEnv env, PostgreSQLConnection dbConnection) {
   final token = env['discordtoken']!;
-  final adminId = env['discordadminid']!;
+  final repoUrl = env['githubrepo']!;
   final openweatherKey = env['openweather']!;
+  final youtubeKey = env['youtube']!;
   final conversatorKey = env['conversatorkey']!;
 
   weather.DiscordBot(
-          token: token, adminId: adminId, openweatherKey: openweatherKey, conversatorKey: conversatorKey, dbConnection: dbConnection)
-      .startBot();
+    botToken: token,
+    repoUrl: repoUrl,
+    openweatherKey: openweatherKey,
+    youtubeKey: youtubeKey,
+    conversatorKey: conversatorKey,
+    dbConnection: dbConnection,
+  ).startBot();
 }
 
 void runTelegramBot(DotEnv env, PostgreSQLConnection dbConnection) {
   final token = env['telegramtoken']!;
   final repoUrl = env['githubrepo']!;
-  final adminId = int.parse(env['telegramadminid']!);
   final youtubeKey = env['youtube']!;
   final openweatherKey = env['openweather']!;
   final conversatorKey = env['conversatorkey']!;
 
   weather.TelegramBot(
-          token: token,
+          botToken: token,
           repoUrl: repoUrl,
-          adminId: adminId,
-          youtubeKey: youtubeKey,
           openweatherKey: openweatherKey,
           conversatorKey: conversatorKey,
+          youtubeKey: youtubeKey,
           dbConnection: dbConnection)
       .startBot();
 }

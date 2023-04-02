@@ -9,12 +9,10 @@ import 'package:weather/src/modules/chat_manager.dart' show ChatPlatform;
 import 'package:weather/src/modules/accordion_poll.dart' show AccordionVoteOption, AccordionVoteResults;
 import 'package:weather/src/modules/commands_manager.dart';
 
-// TODO: remove all the logic from Bot class and put it to the modules itself like invokeIncrease, invokeDecrease, invokeAdd, etc.
-// this methods would accept MessageEvent and the Bot class will have something like sendMessage(reputation.invokeIncrease());
-// TODO: Update MessageEvent interface. Make the mapper accept a list of arguments, iterate through each item and check its' type
-// e.g. if it's IMember, then push userId to otherUsers list. If it's IChannel, then push it to otherServers or whatever list.
-// then the logic method (e.g. moveAll) will expect that otherServers[0] is from and otherServers[1] is to. Same for reputation
-// TODO: try to extract commands to a separate class and make setupCommands a part of abstract class
+// TODO: maybe remove all the logic from Bot class and put it to the modules itself like invokeIncrease, invokeDecrease, invokeAdd, etc.
+// this methods would accept MessageEvent and the Bot class will have something like sendMessage(reputation.invokeIncrease());n
+// TODO: maybe try to extract commands to a separate class and make setupCommands a part of abstract class
+// TODO: make permissions identical between different platforms
 class TelegramBot extends Bot {
   late TeleDart bot;
   late Telegram telegram;

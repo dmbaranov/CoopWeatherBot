@@ -34,6 +34,8 @@ class DiscordBot extends Bot {
     setupCommands();
 
     await bot.connect();
+
+    print('Discord bot has been started!');
   }
 
   @override

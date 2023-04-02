@@ -332,11 +332,6 @@ abstract class Bot {
   }
 
   @protected
-  void startAccordionPoll(MessageEvent event) async {
-    await sendMessage(event.chatId, 'Currently not supported');
-  }
-
-  @protected
   void askConversator(MessageEvent event) async {
     if (!_messageCheck(event)) return;
 

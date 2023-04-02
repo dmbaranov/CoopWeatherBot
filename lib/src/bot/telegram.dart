@@ -1,9 +1,12 @@
+import 'dart:math';
+
 import 'package:teledart/teledart.dart';
 import 'package:teledart/telegram.dart';
 import 'package:teledart/model.dart';
-import 'package:weather/src/modules/chat_manager.dart' show ChatPlatform;
 
 import 'bot.dart';
+import 'package:weather/src/modules/chat_manager.dart' show ChatPlatform;
+import 'package:weather/src/modules/accordion_poll.dart' show AccordionVoteOption, AccordionVoteResults;
 import 'package:weather/src/modules/commands_manager.dart';
 
 // TODO: remove all the logic from Bot class and put it to the modules itself like invokeIncrease, invokeDecrease, invokeAdd, etc.
@@ -55,63 +58,61 @@ class TelegramBot extends Bot {
   @override
   setupCommands() {
     bot.onCommand('addcity').listen(
-        (event) => cm.userCommand(mapToMessageEventWithParameters(event), onSuccess: addWeatherCity, onFailure: sendNoAccessMessage));
+        (event) => cm.userCommand(_mapToMessageEventWithParameters(event), onSuccess: addWeatherCity, onFailure: sendNoAccessMessage));
     bot.onCommand('removecity').listen(
-        (event) => cm.userCommand(mapToMessageEventWithParameters(event), onSuccess: removeWeatherCity, onFailure: sendNoAccessMessage));
-    bot
-        .onCommand('watchlist')
-        .listen((event) => cm.userCommand(mapToGeneralMessageEvent(event), onSuccess: getWeatherWatchlist, onFailure: sendNoAccessMessage));
+        (event) => cm.userCommand(_mapToMessageEventWithParameters(event), onSuccess: removeWeatherCity, onFailure: sendNoAccessMessage));
+    bot.onCommand('watchlist').listen(
+        (event) => cm.userCommand(_mapToGeneralMessageEvent(event), onSuccess: getWeatherWatchlist, onFailure: sendNoAccessMessage));
     bot.onCommand('getweather').listen(
-        (event) => cm.userCommand(mapToMessageEventWithParameters(event), onSuccess: getWeatherForCity, onFailure: sendNoAccessMessage));
-    bot.onCommand('setnotificationhour').listen((event) =>
-        cm.moderatorCommand(mapToMessageEventWithParameters(event), onSuccess: setWeatherNotificationHour, onFailure: sendNoAccessMessage));
+        (event) => cm.userCommand(_mapToMessageEventWithParameters(event), onSuccess: getWeatherForCity, onFailure: sendNoAccessMessage));
+    bot.onCommand('setnotificationhour').listen((event) => cm.moderatorCommand(_mapToMessageEventWithParameters(event),
+        onSuccess: setWeatherNotificationHour, onFailure: sendNoAccessMessage));
     bot.onCommand('write').listen(
-        (event) => cm.moderatorCommand(mapToMessageEventWithParameters(event), onSuccess: writeToChat, onFailure: sendNoAccessMessage));
+        (event) => cm.moderatorCommand(_mapToMessageEventWithParameters(event), onSuccess: writeToChat, onFailure: sendNoAccessMessage));
     bot
         .onCommand('updatemessage')
-        .listen((event) => cm.adminCommand(mapToGeneralMessageEvent(event), onSuccess: postUpdateMessage, onFailure: sendNoAccessMessage));
+        .listen((event) => cm.adminCommand(_mapToGeneralMessageEvent(event), onSuccess: postUpdateMessage, onFailure: sendNoAccessMessage));
     bot
         .onCommand('sendnews')
-        .listen((event) => cm.userCommand(mapToGeneralMessageEvent(event), onSuccess: sendNewsToChat, onFailure: sendNoAccessMessage));
+        .listen((event) => cm.userCommand(_mapToGeneralMessageEvent(event), onSuccess: sendNewsToChat, onFailure: sendNoAccessMessage));
     bot
         .onCommand('sendjoke')
-        .listen((event) => cm.userCommand(mapToGeneralMessageEvent(event), onSuccess: sendJokeToChat, onFailure: sendNoAccessMessage));
+        .listen((event) => cm.userCommand(_mapToGeneralMessageEvent(event), onSuccess: sendJokeToChat, onFailure: sendNoAccessMessage));
     bot.onCommand('sendrealmusic').listen(
-        (event) => cm.userCommand(mapToMessageEventWithParameters(event), onSuccess: sendRealMusicToChat, onFailure: sendNoAccessMessage));
+        (event) => cm.userCommand(_mapToMessageEventWithParameters(event), onSuccess: sendRealMusicToChat, onFailure: sendNoAccessMessage));
     bot.onCommand('increp').listen(
-        (event) => cm.userCommand(mapToEventWithOtherUserIds(event), onSuccess: increaseReputation, onFailure: sendNoAccessMessage));
+        (event) => cm.userCommand(_mapToEventWithOtherUserIds(event), onSuccess: increaseReputation, onFailure: sendNoAccessMessage));
     bot.onCommand('decrep').listen(
-        (event) => cm.userCommand(mapToEventWithOtherUserIds(event), onSuccess: decreaseReputation, onFailure: sendNoAccessMessage));
+        (event) => cm.userCommand(_mapToEventWithOtherUserIds(event), onSuccess: decreaseReputation, onFailure: sendNoAccessMessage));
     bot
         .onCommand('replist')
-        .listen((event) => cm.userCommand(mapToGeneralMessageEvent(event), onSuccess: sendReputationList, onFailure: sendNoAccessMessage));
+        .listen((event) => cm.userCommand(_mapToGeneralMessageEvent(event), onSuccess: sendReputationList, onFailure: sendNoAccessMessage));
     bot.onCommand('searchsong').listen(
-        (event) => cm.userCommand(mapToMessageEventWithParameters(event), onSuccess: searchYoutubeTrack, onFailure: sendNoAccessMessage));
+        (event) => cm.userCommand(_mapToMessageEventWithParameters(event), onSuccess: searchYoutubeTrack, onFailure: sendNoAccessMessage));
     bot
         .onCommand('na')
-        .listen((event) => cm.userCommand(mapToGeneralMessageEvent(event), onSuccess: healthCheck, onFailure: sendNoAccessMessage));
-    bot.onCommand('accordion').listen(
-        (event) => cm.userCommand(mapToAccordionMessageEvent(event), onSuccess: startAccordionPoll, onFailure: sendNoAccessMessage));
+        .listen((event) => cm.userCommand(_mapToGeneralMessageEvent(event), onSuccess: healthCheck, onFailure: sendNoAccessMessage));
+    bot.onCommand('accordion').listen((event) => cm.userCommand(_mapToAccordionMessageEvent(event),
+        onSuccessCustom: () => _startTelegramAccordionPoll(event), onFailure: sendNoAccessMessage));
     bot.onCommand('ask').listen(
-        (event) => cm.userCommand(mapToMessageEventWithParameters(event), onSuccess: askConversator, onFailure: sendNoAccessMessage));
+        (event) => cm.userCommand(_mapToMessageEventWithParameters(event), onSuccess: askConversator, onFailure: sendNoAccessMessage));
     bot
         .onCommand('adduser')
-        .listen((event) => cm.moderatorCommand(mapToEventWithOtherUserIds(event), onSuccess: addUser, onFailure: sendNoAccessMessage));
+        .listen((event) => cm.moderatorCommand(_mapToEventWithOtherUserIds(event), onSuccess: addUser, onFailure: sendNoAccessMessage));
     bot
         .onCommand('removeuser')
-        .listen((event) => cm.moderatorCommand(mapToEventWithOtherUserIds(event), onSuccess: removeUser, onFailure: sendNoAccessMessage));
+        .listen((event) => cm.moderatorCommand(_mapToEventWithOtherUserIds(event), onSuccess: removeUser, onFailure: sendNoAccessMessage));
     bot
         .onCommand('initialize')
-        .listen((event) => cm.adminCommand(mapToGeneralMessageEvent(event), onSuccess: initializeChat, onFailure: sendNoAccessMessage));
-    bot
-        .onCommand('createreputation')
-        .listen((event) => cm.adminCommand(mapToEventWithOtherUserIds(event), onSuccess: createReputation, onFailure: sendNoAccessMessage));
+        .listen((event) => cm.adminCommand(_mapToGeneralMessageEvent(event), onSuccess: initializeChat, onFailure: sendNoAccessMessage));
+    bot.onCommand('createreputation').listen(
+        (event) => cm.adminCommand(_mapToEventWithOtherUserIds(event), onSuccess: createReputation, onFailure: sendNoAccessMessage));
     bot
         .onCommand('createweather')
-        .listen((event) => cm.adminCommand(mapToGeneralMessageEvent(event), onSuccess: createWeather, onFailure: sendNoAccessMessage));
+        .listen((event) => cm.adminCommand(_mapToGeneralMessageEvent(event), onSuccess: createWeather, onFailure: sendNoAccessMessage));
   }
 
-  MessageEvent mapToGeneralMessageEvent(TeleDartMessage event) {
+  MessageEvent _mapToGeneralMessageEvent(TeleDartMessage event) {
     return MessageEvent(
         platform: ChatPlatform.telegram,
         chatId: event.chat.id.toString(),
@@ -123,17 +124,90 @@ class TelegramBot extends Bot {
         rawMessage: event);
   }
 
-  MessageEvent mapToMessageEventWithParameters(TeleDartMessage event) {
+  MessageEvent _mapToMessageEventWithParameters(TeleDartMessage event) {
     List<String> parameters = event.text?.split(' ').sublist(1).toList() ?? [];
 
-    return mapToGeneralMessageEvent(event)..parameters.addAll(parameters);
+    return _mapToGeneralMessageEvent(event)..parameters.addAll(parameters);
   }
 
-  MessageEvent mapToEventWithOtherUserIds(TeleDartMessage event) {
-    return mapToGeneralMessageEvent(event)..otherUserIds.add(event.replyToMessage?.from?.id.toString() ?? '');
+  MessageEvent _mapToEventWithOtherUserIds(TeleDartMessage event) {
+    return _mapToGeneralMessageEvent(event)..otherUserIds.add(event.replyToMessage?.from?.id.toString() ?? '');
   }
 
-  MessageEvent mapToAccordionMessageEvent(TeleDartMessage event) {
-    return mapToGeneralMessageEvent(event)..parameters.add(event.replyToMessage?.from?.id.toString() ?? '');
+  MessageEvent _mapToAccordionMessageEvent(TeleDartMessage event) {
+    return _mapToGeneralMessageEvent(event)..parameters.add(event.replyToMessage?.from?.id.toString() ?? '');
+  }
+
+  void _startTelegramAccordionPoll(TeleDartMessage message) async {
+    var chatId = message.chat.id.toString();
+    const pollTime = 15;
+    var pollOptions = [sm.get('accordion.options.yes'), sm.get('accordion.options.no'), sm.get('accordion.options.maybe')];
+
+    if (accordionPoll.isVoteActive) {
+      await sendMessage(chatId, sm.get('accordion.other.accordion_vote_in_progress'));
+
+      return;
+    }
+
+    var votedMessageAuthor = message.replyToMessage?.from;
+
+    if (votedMessageAuthor == null) {
+      await sendMessage(chatId, sm.get('accordion.other.message_not_chosen'));
+
+      return;
+    } else if (votedMessageAuthor.isBot) {
+      await sendMessage(chatId, sm.get('accordion.other.bot_vote_attempt'));
+
+      return;
+    }
+
+    accordionPoll.startPoll(votedMessageAuthor.id.toString());
+
+    var createdPoll = await telegram.sendPoll(
+      chatId,
+      sm.get('accordion.other.title'),
+      pollOptions,
+      explanation: sm.get('accordion.other.explanation'),
+      type: 'quiz',
+      correctOptionId: Random().nextInt(pollOptions.length),
+      openPeriod: pollTime,
+    );
+
+    var pollSubscription = bot.onPoll().listen((poll) {
+      if (createdPoll.poll?.id != poll.id) {
+        print('Wrong poll');
+
+        return;
+      }
+
+      var currentPollResults = {
+        AccordionVoteOption.yes: poll.options[0].voterCount,
+        AccordionVoteOption.no: poll.options[1].voterCount,
+        AccordionVoteOption.maybe: poll.options[2].voterCount
+      };
+
+      accordionPoll.voteResult = currentPollResults;
+    });
+
+    await Future.delayed(Duration(seconds: pollTime));
+
+    var voteResult = accordionPoll.endVoteAndGetResults();
+
+    switch (voteResult) {
+      case AccordionVoteResults.yes:
+        await sendMessage(chatId, sm.get('accordion.results.yes'));
+        break;
+      case AccordionVoteResults.no:
+        await sendMessage(chatId, sm.get('accordion.results.no'));
+        break;
+      case AccordionVoteResults.maybe:
+        await sendMessage(chatId, sm.get('accordion.results.maybe'));
+        break;
+      case AccordionVoteResults.noResults:
+        await sendMessage(chatId, sm.get('accordion.results.noResults'));
+        break;
+    }
+
+    await pollSubscription.cancel();
   }
 }

@@ -22,9 +22,17 @@ class MessageEvent {
 }
 
 class CommandsManager {
-  void userCommand(MessageEvent event, {required Function onSuccess, required Function onFailure}) {
+  void userCommand(MessageEvent event, {required Function onFailure, Function? onSuccess, Function? onSuccessCustom}) {
     // check permission
-    if (true) {
+    if (false) {
+      onFailure(event);
+
+      return;
+    }
+
+    if (onSuccessCustom != null) {
+      onSuccessCustom();
+    } else if (onSuccess != null) {
       onSuccess(event);
     } else {
       onFailure(event);

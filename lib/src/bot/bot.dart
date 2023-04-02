@@ -243,6 +243,7 @@ abstract class Bot {
 
   @protected
   void postUpdateMessage(MessageEvent event) async {
+    // TODO: add support for Discord
     var commitApiUrl = Uri.https('api.github.com', '/repos$repoUrl/commits');
     var response = await http.read(commitApiUrl).then(json.decode);
     var updateMessage = response[0]['commit']['message'];

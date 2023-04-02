@@ -96,7 +96,7 @@ class TelegramBot extends Bot {
     bot
         .onCommand('na')
         .listen((event) => cm.userCommand(_mapToGeneralMessageEvent(event), onSuccess: healthCheck, onFailure: sendNoAccessMessage));
-    bot.onCommand('accordion').listen((event) => cm.userCommand(_mapToAccordionMessageEvent(event),
+    bot.onCommand('accordion').listen((event) => cm.userCommand(_mapToGeneralMessageEvent(event),
         onSuccessCustom: () => _startTelegramAccordionPoll(event), onFailure: sendNoAccessMessage));
     bot.onCommand('ask').listen(
         (event) => cm.userCommand(_mapToMessageEventWithParameters(event), onSuccess: askConversator, onFailure: sendNoAccessMessage));
@@ -136,10 +136,6 @@ class TelegramBot extends Bot {
 
   MessageEvent _mapToEventWithOtherUserIds(TeleDartMessage event) {
     return _mapToGeneralMessageEvent(event)..otherUserIds.add(event.replyToMessage?.from?.id.toString() ?? '');
-  }
-
-  MessageEvent _mapToAccordionMessageEvent(TeleDartMessage event) {
-    return _mapToGeneralMessageEvent(event)..parameters.add(event.replyToMessage?.from?.id.toString() ?? '');
   }
 
   void _subscribeToPanoramaNews() {

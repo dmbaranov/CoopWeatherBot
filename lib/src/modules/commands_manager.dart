@@ -39,16 +39,34 @@ class CommandsManager {
     }
   }
 
-  void moderatorCommand(MessageEvent event, {required Function onSuccess, required Function onFailure}) {
-    if (true) {
+  void moderatorCommand(MessageEvent event, {required Function onFailure, Function? onSuccess, Function? onSuccessCustom}) {
+    // check permission
+    if (false) {
+      onFailure(event);
+
+      return;
+    }
+
+    if (onSuccessCustom != null) {
+      onSuccessCustom();
+    } else if (onSuccess != null) {
       onSuccess(event);
     } else {
       onFailure(event);
     }
   }
 
-  void adminCommand(MessageEvent event, {required Function onSuccess, required Function onFailure}) {
-    if (true) {
+  void adminCommand(MessageEvent event, {required Function onFailure, Function? onSuccess, Function? onSuccessCustom}) {
+    // check permission
+    if (false) {
+      onFailure(event);
+
+      return;
+    }
+
+    if (onSuccessCustom != null) {
+      onSuccessCustom();
+    } else if (onSuccess != null) {
       onSuccess(event);
     } else {
       onFailure(event);

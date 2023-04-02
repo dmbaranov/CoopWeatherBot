@@ -53,7 +53,7 @@ void runDiscordBot(DotEnv env, PostgreSQLConnection dbConnection) {
     youtubeKey: youtubeKey,
     conversatorKey: conversatorKey,
     dbConnection: dbConnection,
-  );
+  ).startBot();
 }
 
 void runTelegramBot(DotEnv env, PostgreSQLConnection dbConnection) {

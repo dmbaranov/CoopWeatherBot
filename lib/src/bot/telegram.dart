@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:teledart/teledart.dart';
 import 'package:teledart/telegram.dart';
 import 'package:teledart/model.dart';
+import 'package:debounce_throttle/debounce_throttle.dart';
 
 import 'bot.dart';
 import 'package:weather/src/modules/chat_manager.dart' show ChatPlatform;
@@ -16,9 +17,11 @@ import 'package:weather/src/modules/commands_manager.dart';
 class TelegramBot extends Bot {
   late TeleDart bot;
   late Telegram telegram;
+  late Debouncer<TeleDartInlineQuery?> debouncer = Debouncer(Duration(seconds: 1), initialValue: null);
 
   TelegramBot(
       {required super.botToken,
+      required super.adminId,
       required super.repoUrl,
       required super.openweatherKey,
       required super.conversatorKey,
@@ -112,6 +115,16 @@ class TelegramBot extends Bot {
     bot
         .onCommand('createweather')
         .listen((event) => cm.adminCommand(_mapToGeneralMessageEvent(event), onSuccess: createWeather, onFailure: sendNoAccessMessage));
+
+    var bullyTagUserRegexp = RegExp(sm.get('general.bully_tag_user_regexp'), caseSensitive: false);
+    bot.onMessage(keyword: bullyTagUserRegexp).listen((event) => _bullyTagUser(event));
+
+    bot.onInlineQuery().listen((query) {
+      debouncer.value = query;
+    });
+    debouncer.values.listen((query) {
+      _searchYoutubeTrackInline(query as TeleDartInlineQuery);
+    });
   }
 
   MessageEvent _mapToGeneralMessageEvent(TeleDartMessage event) {
@@ -254,5 +267,41 @@ class TelegramBot extends Bot {
     }
 
     await pollSubscription.cancel();
+  }
+
+  void _bullyTagUser(TeleDartMessage message) async {
+    // just an original feature of this bot that will stay here forever
+    var denisId = '354903232';
+    var messageAuthorId = message.from?.id.toString();
+    var chatId = message.chat.id.toString();
+
+    if (messageAuthorId == adminId) {
+      await sendMessage(chatId, '@daimonil');
+    } else if (messageAuthorId == denisId) {
+      await sendMessage(chatId, '@dmbaranov_io');
+    }
+  }
+
+  Future<void> _searchYoutubeTrackInline(TeleDartInlineQuery query) async {
+    var searchResults = await youtube.getYoutubeSearchResults(query.query);
+    List items = searchResults['items'];
+    var inlineQueryResult = [];
+
+    items.forEach((searchResult) {
+      var videoId = searchResult['id']['videoId'];
+      var videoData = searchResult['snippet'];
+      var videoUrl = 'https://www.youtube.com/watch?v=$videoId';
+
+      inlineQueryResult.add(InlineQueryResultVideo(
+          id: videoId,
+          title: videoData['title'],
+          thumbUrl: videoData['thumbnails']['high']['url'],
+          mimeType: 'video/mp4',
+          videoDuration: 600,
+          videoUrl: videoUrl,
+          inputMessageContent: InputTextMessageContent(messageText: videoUrl, disableWebPagePreview: false)));
+    });
+
+    await bot.answerInlineQuery(query.id, [...inlineQueryResult], cacheTime: 10);
   }
 }

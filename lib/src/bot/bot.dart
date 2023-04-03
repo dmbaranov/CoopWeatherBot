@@ -20,6 +20,7 @@ import 'package:weather/src/modules/commands_manager.dart';
 // TODO: move part of the logic to utils using self
 abstract class Bot {
   final String botToken;
+  final String adminId;
   final String repoUrl;
   final String openweatherKey;
   final String youtubeKey;
@@ -53,6 +54,7 @@ abstract class Bot {
 
   Bot(
       {required this.botToken,
+      required this.adminId,
       required this.repoUrl,
       required this.openweatherKey,
       required this.youtubeKey,

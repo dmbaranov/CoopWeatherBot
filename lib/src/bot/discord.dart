@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:nyxx/nyxx.dart';
 import 'package:nyxx_commands/nyxx_commands.dart';
+import 'package:cron/cron.dart';
 
 import 'package:weather/src/bot/bot.dart';
 import 'package:weather/src/modules/chat_manager.dart';
@@ -13,6 +15,7 @@ class DiscordBot extends Bot {
 
   DiscordBot(
       {required super.botToken,
+      required super.adminId,
       required super.repoUrl,
       required super.openweatherKey,
       required super.conversatorKey,
@@ -32,6 +35,7 @@ class DiscordBot extends Bot {
       ..registerPlugin(setupCommands());
 
     setupCommands();
+    _startHeroCheckJob();
 
     await bot.connect();
 
@@ -215,6 +219,43 @@ class DiscordBot extends Bot {
 
   MessageEvent _mapToEventWithOtherUserIds(IChatContext context, List<String> otherUserIds) {
     return _mapToGeneralMessageEvent(context)..otherUserIds.addAll(otherUserIds);
+  }
+
+  void _startHeroCheckJob() async {
+    // TODO: onlineUsers are returned for a single chat only. Fix this + make this job configurable per chat
+    Cron().schedule(Schedule.parse('0 5 * * 6,0'), () async {
+      var authorizedChats = await chatManager.getAllChatIds(ChatPlatform.discord);
+
+      await Process.run('${Directory.current.path}/generate-online', []);
+
+      var onlineFile = File('assets/online');
+      var onlineUsers = await onlineFile.readAsLines();
+
+      await Future.forEach(authorizedChats, (chatId) async {
+        var guild = await bot.httpEndpoints.fetchGuild(Snowflake(chatId));
+        var channelId = guild.systemChannel?.id.toString() ?? '';
+
+        if (onlineUsers.isEmpty) {
+          return sendMessage(channelId, sm.get('hero.users_at_five.no_users'));
+        }
+
+        var heroesMessage = sm.get('hero.users_at_five.list');
+        var chatUsers = await userManager.getUsersForChat(chatId);
+
+        onlineUsers.forEach((userId) {
+          var onlineUser = chatUsers.firstWhereOrNull((user) => user.id == userId);
+
+          if (onlineUser != null) {
+            heroesMessage += onlineUser.name;
+            heroesMessage += '\n';
+          }
+        });
+
+        await sendMessage(channelId, heroesMessage);
+      });
+
+      await onlineFile.delete();
+    });
   }
 
   void _moveAll(IContext context, IChannel fromChannel, IChannel toChannel) async {

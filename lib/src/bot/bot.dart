@@ -390,7 +390,7 @@ abstract class Bot {
       chatName = event.rawMessage.chat.title.toString();
     }
 
-    var result = await chatManager.createChat(id: event.chatId, name: chatName);
+    var result = await chatManager.createChat(id: event.chatId, name: chatName, platform: event.platform);
 
     _sendOperationMessage(event.chatId, result, sm.get('chat.initialization.success'));
   }

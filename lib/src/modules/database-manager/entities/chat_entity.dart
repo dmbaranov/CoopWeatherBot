@@ -3,8 +3,8 @@ import 'entity.dart';
 class ChatEntity extends Entity {
   ChatEntity({required super.dbConnection}) : super(entityName: 'chat');
 
-  Future<int> createChat(String id, String name) {
-    return executeTransaction(queriesMap['create_chat'], {'chatId': id, 'name': name});
+  Future<int> createChat(String id, String name, String platform) {
+    return executeTransaction(queriesMap['create_chat'], {'chatId': id, 'name': name, 'platform': platform});
   }
 
   Future<List<String>> getAllChatIds(String platform) async {

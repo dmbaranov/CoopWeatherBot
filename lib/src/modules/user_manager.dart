@@ -5,10 +5,19 @@ import 'database-manager/database_manager.dart';
 class UMUser {
   final String id;
   final bool isPremium;
-  final String chatId;
+  final bool deleted;
+  final bool banned;
+  final bool moderator;
+
   String name;
 
-  UMUser({required this.id, required this.name, required this.chatId, this.isPremium = false}) {
+  UMUser(
+      {required this.id,
+      required this.name,
+      required this.isPremium,
+      required this.deleted,
+      required this.banned,
+      required this.moderator}) {
     var markedAsPremium = name.contains('⭐');
 
     if (isPremium && !markedAsPremium) {
@@ -37,19 +46,21 @@ class UserManager {
   Future<List<UMUser>> getUsersForChat(String chatId) async {
     var users = await dbManager.user.getAllUsersForChat(chatId);
 
-    return users.map((dbUser) => UMUser(id: dbUser.id, name: dbUser.name, chatId: dbUser.chatId, isPremium: dbUser.isPremium)).toList();
+    return users
+        .map((dbUser) => UMUser(
+            id: dbUser.id,
+            name: dbUser.name,
+            isPremium: dbUser.isPremium,
+            deleted: dbUser.deleted,
+            banned: dbUser.banned,
+            moderator: dbUser.moderator))
+        .toList();
   }
 
-  Future<bool> isValidUser(String chatId, String userId) async {
-    var user = await dbManager.user.getSingleChatUser(chatId: chatId, userId: userId);
+  Future<bool> addUser({required String userId, required String chatId, required String name, bool isPremium = false}) async {
+    var creationResult = await dbManager.user.createUser(userId: userId, chatId: chatId, name: name, isPremium: isPremium);
 
-    return user != null;
-  }
-
-  Future<bool> addUser({required String id, required String chatId, required String name, bool isPremium = false}) async {
-    var creationResult = await dbManager.user.createUser(id: id, chatId: chatId, name: name, isPremium: isPremium);
-
-    if (creationResult == 1) {
+    if (creationResult >= 1) {
       _userManagerStreamController.sink.add(0);
 
       return true;

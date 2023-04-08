@@ -1,12 +1,22 @@
+import 'package:postgres/postgres.dart';
+
 import 'entity.dart';
 
 class BotUserData {
   final String id;
   final String name;
-  final String chatId;
   final bool isPremium;
+  final bool deleted;
+  final bool banned;
+  final bool moderator;
 
-  BotUserData({required this.id, required this.name, required this.chatId, required this.isPremium});
+  BotUserData(
+      {required this.id,
+      required this.name,
+      required this.isPremium,
+      required this.deleted,
+      required this.banned,
+      required this.moderator});
 }
 
 class BotUserEntity extends Entity {
@@ -19,30 +29,34 @@ class BotUserEntity extends Entity {
       return [];
     }
 
-    return rawUsers.map((rawUser) => BotUserData(id: rawUser[0], name: rawUser[1], chatId: rawUser[2], isPremium: rawUser[3])).toList();
+    return rawUsers.map(_mapUser).toList();
   }
 
-  Future<BotUserData?> getSingleChatUser({required String chatId, required String userId}) async {
-    var user = await executeQuery(queriesMap['get_single_chat_user'], {'chatId': chatId, 'userId': userId});
+  Future<int> createUser({required String chatId, required String userId, required String name, bool isPremium = false}) async {
+    // TODO: add support to execute multiple queries in a single transaction
+    var createUserResult =
+        await executeTransaction(queriesMap['create_bot_user'], {'userId': userId, 'chatId': chatId, 'name': name, 'isPremium': isPremium});
 
-    if (user == null) {
-      return null;
-    }
+    var createChatMemberResult = await executeTransaction(queriesMap['create_chat_member'], {'userId': userId, 'chatId': chatId});
 
-    var foundUser = user[0];
-
-    return BotUserData(id: foundUser[0], name: foundUser[1], chatId: foundUser[2], isPremium: foundUser[3]);
+    return createUserResult + createChatMemberResult;
   }
 
-  Future<int> createUser({required String chatId, required String id, required String name, bool isPremium = false}) {
-    return executeTransaction(queriesMap['create_bot_user'], {'userId': id, 'chatId': chatId, 'name': name, 'isPremium': isPremium});
+  Future<int> deleteUser(String chatId, String userId) {
+    return executeTransaction(queriesMap['delete_bot_user'], {'chatId': chatId, 'userId': userId});
   }
 
-  Future<int> deleteUser(String chatId, String id) {
-    return executeTransaction(queriesMap['delete_bot_user'], {'chatId': chatId, 'userId': id});
+  Future<int> updatePremiumStatus(String userId, bool isPremium) {
+    return executeTransaction(queriesMap['update_premium_status'], {'userId': userId, 'isPremium': isPremium});
   }
 
-  Future<int> updatePremiumStatus(String chatId, String id, bool isPremium) {
-    return executeTransaction(queriesMap['update_premium_status'], {'chatId': chatId, 'userId': id, 'isPremium': isPremium});
+  BotUserData _mapUser(PostgreSQLResultRow foundUser) {
+    return BotUserData(
+        id: foundUser[0],
+        name: foundUser[1],
+        isPremium: foundUser[2],
+        deleted: foundUser[3],
+        banned: foundUser[4],
+        moderator: foundUser[5]);
   }
 }

@@ -1,4 +1,4 @@
-UPDATE bot_user
+UPDATE chat_member
 SET deleted = TRUE
-WHERE id = @userId
-  and chat_id = @chatId;
+WHERE bot_user_id = @userId
+  AND chat_id = @chatId;

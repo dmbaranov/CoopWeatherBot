@@ -368,7 +368,8 @@ abstract class Bot {
       isPremium = repliedUser.isPremium ?? false;
     }
 
-    var addResult = await userManager.addUser(id: event.otherUserIds[0], chatId: event.chatId, name: fullUsername, isPremium: isPremium);
+    var addResult =
+        await userManager.addUser(userId: event.otherUserIds[0], chatId: event.chatId, name: fullUsername, isPremium: isPremium);
 
     _sendOperationMessage(event.chatId, addResult, sm.get('user.user_added'));
   }
@@ -390,7 +391,7 @@ abstract class Bot {
       chatName = event.rawMessage.chat.title.toString();
     }
 
-    var result = await chatManager.createChat(id: event.chatId, name: chatName);
+    var result = await chatManager.createChat(id: event.chatId, name: chatName, platform: event.platform);
 
     _sendOperationMessage(event.chatId, result, sm.get('chat.initialization.success'));
   }

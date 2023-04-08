@@ -5,10 +5,19 @@ import 'database-manager/database_manager.dart';
 class UMUser {
   final String id;
   final bool isPremium;
+  final bool deleted;
+  final bool banned;
+  final bool moderator;
 
   String name;
 
-  UMUser({required this.id, required this.name, this.isPremium = false}) {
+  UMUser(
+      {required this.id,
+      required this.name,
+      required this.isPremium,
+      required this.deleted,
+      required this.banned,
+      required this.moderator}) {
     var markedAsPremium = name.contains('⭐');
 
     if (isPremium && !markedAsPremium) {
@@ -37,7 +46,15 @@ class UserManager {
   Future<List<UMUser>> getUsersForChat(String chatId) async {
     var users = await dbManager.user.getAllUsersForChat(chatId);
 
-    return users.map((dbUser) => UMUser(id: dbUser.id, name: dbUser.name, isPremium: dbUser.isPremium)).toList();
+    return users
+        .map((dbUser) => UMUser(
+            id: dbUser.id,
+            name: dbUser.name,
+            isPremium: dbUser.isPremium,
+            deleted: dbUser.deleted,
+            banned: dbUser.banned,
+            moderator: dbUser.moderator))
+        .toList();
   }
 
   Future<bool> isValidUser(String chatId, String userId) async {

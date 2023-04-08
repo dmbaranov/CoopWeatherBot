@@ -1,12 +1,22 @@
+import 'package:postgres/postgres.dart';
+
 import 'entity.dart';
 
 class BotUserData {
   final String id;
   final String name;
-  final String chatId;
   final bool isPremium;
+  final bool deleted;
+  final bool banned;
+  final bool moderator;
 
-  BotUserData({required this.id, required this.name, required this.chatId, required this.isPremium});
+  BotUserData(
+      {required this.id,
+      required this.name,
+      required this.isPremium,
+      required this.deleted,
+      required this.banned,
+      required this.moderator});
 }
 
 class BotUserEntity extends Entity {
@@ -19,7 +29,7 @@ class BotUserEntity extends Entity {
       return [];
     }
 
-    return rawUsers.map((rawUser) => BotUserData(id: rawUser[0], name: rawUser[1], chatId: rawUser[2], isPremium: rawUser[3])).toList();
+    return rawUsers.map(_mapUser).toList();
   }
 
   Future<BotUserData?> getSingleChatUser({required String chatId, required String userId}) async {
@@ -29,9 +39,7 @@ class BotUserEntity extends Entity {
       return null;
     }
 
-    var foundUser = user[0];
-
-    return BotUserData(id: foundUser[0], name: foundUser[1], chatId: foundUser[2], isPremium: foundUser[3]);
+    return _mapUser(user[0]);
   }
 
   Future<int> createUser({required String chatId, required String userId, required String name, bool isPremium = false}) async {
@@ -50,5 +58,15 @@ class BotUserEntity extends Entity {
 
   Future<int> updatePremiumStatus(String chatId, String userId, bool isPremium) {
     return executeTransaction(queriesMap['update_premium_status'], {'chatId': chatId, 'userId': userId, 'isPremium': isPremium});
+  }
+
+  BotUserData _mapUser(PostgreSQLResultRow foundUser) {
+    return BotUserData(
+        id: foundUser[0],
+        name: foundUser[1],
+        isPremium: foundUser[2],
+        deleted: foundUser[3],
+        banned: foundUser[4],
+        moderator: foundUser[5]);
   }
 }

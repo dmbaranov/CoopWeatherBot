@@ -32,16 +32,6 @@ class BotUserEntity extends Entity {
     return rawUsers.map(_mapUser).toList();
   }
 
-  Future<BotUserData?> getSingleChatUser({required String chatId, required String userId}) async {
-    var user = await executeQuery(queriesMap['get_single_chat_user'], {'chatId': chatId, 'userId': userId});
-
-    if (user == null) {
-      return null;
-    }
-
-    return _mapUser(user[0]);
-  }
-
   Future<int> createUser({required String chatId, required String userId, required String name, bool isPremium = false}) async {
     // TODO: add support to execute multiple queries in a single transaction
     var createUserResult =
@@ -56,8 +46,8 @@ class BotUserEntity extends Entity {
     return executeTransaction(queriesMap['delete_bot_user'], {'chatId': chatId, 'userId': userId});
   }
 
-  Future<int> updatePremiumStatus(String chatId, String userId, bool isPremium) {
-    return executeTransaction(queriesMap['update_premium_status'], {'chatId': chatId, 'userId': userId, 'isPremium': isPremium});
+  Future<int> updatePremiumStatus(String userId, bool isPremium) {
+    return executeTransaction(queriesMap['update_premium_status'], {'userId': userId, 'isPremium': isPremium});
   }
 
   BotUserData _mapUser(PostgreSQLResultRow foundUser) {

@@ -57,12 +57,6 @@ class UserManager {
         .toList();
   }
 
-  Future<bool> isValidUser(String chatId, String userId) async {
-    var user = await dbManager.user.getSingleChatUser(chatId: chatId, userId: userId);
-
-    return user != null;
-  }
-
   Future<bool> addUser({required String userId, required String chatId, required String name, bool isPremium = false}) async {
     var creationResult = await dbManager.user.createUser(userId: userId, chatId: chatId, name: name, isPremium: isPremium);
 

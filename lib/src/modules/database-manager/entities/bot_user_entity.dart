@@ -35,7 +35,7 @@ class BotUserEntity extends Entity {
   Future<int> createUser({required String chatId, required String userId, required String name, bool isPremium = false}) async {
     // TODO: add support to execute multiple queries in a single transaction
     var createUserResult =
-        await executeTransaction(queriesMap['create_bot_user'], {'userId': userId, 'chatId': chatId, 'name': name, 'isPremium': isPremium});
+        await executeTransaction(queriesMap['create_bot_user'], {'userId': userId, 'name': name, 'isPremium': isPremium});
 
     var createChatMemberResult = await executeTransaction(queriesMap['create_chat_member'], {'userId': userId, 'chatId': chatId});
 

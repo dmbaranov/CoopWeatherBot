@@ -50,6 +50,11 @@ class Entity {
       var queryResult = await ctx.query(query, substitutionValues: substitutionValues);
 
       return queryResult.affectedRowCount;
+    }).catchError((error) {
+      print('DB transaction error');
+      print(error);
+      
+      return 0;
     });
 
     return result;

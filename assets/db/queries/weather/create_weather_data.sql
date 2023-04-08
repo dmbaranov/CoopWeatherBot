@@ -1,4 +1,3 @@
 INSERT INTO weather(chat_id, notification_hour)
-SELECT @chatId, @notificationHour
-WHERE EXISTS(SELECT * FROM chat WHERE chat.id = @chatId)
+VALUES (@chatId, @notificationHour)
 ON CONFLICT DO NOTHING;

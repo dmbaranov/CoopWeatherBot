@@ -34,15 +34,21 @@ class BotUserEntity extends Entity {
     return BotUserData(id: foundUser[0], name: foundUser[1], chatId: foundUser[2], isPremium: foundUser[3]);
   }
 
-  Future<int> createUser({required String chatId, required String id, required String name, bool isPremium = false}) {
-    return executeTransaction(queriesMap['create_bot_user'], {'userId': id, 'chatId': chatId, 'name': name, 'isPremium': isPremium});
+  Future<int> createUser({required String chatId, required String userId, required String name, bool isPremium = false}) async {
+    // TODO: add support to execute multiple queries in a single transaction
+    var createUserResult =
+        await executeTransaction(queriesMap['create_bot_user'], {'userId': userId, 'chatId': chatId, 'name': name, 'isPremium': isPremium});
+
+    var createChatMemberResult = await executeTransaction(queriesMap['create_chat_member'], {'userId': userId, 'chatId': chatId});
+
+    return createUserResult + createChatMemberResult;
   }
 
-  Future<int> deleteUser(String chatId, String id) {
-    return executeTransaction(queriesMap['delete_bot_user'], {'chatId': chatId, 'userId': id});
+  Future<int> deleteUser(String chatId, String userId) {
+    return executeTransaction(queriesMap['delete_bot_user'], {'chatId': chatId, 'userId': userId});
   }
 
-  Future<int> updatePremiumStatus(String chatId, String id, bool isPremium) {
-    return executeTransaction(queriesMap['update_premium_status'], {'chatId': chatId, 'userId': id, 'isPremium': isPremium});
+  Future<int> updatePremiumStatus(String chatId, String userId, bool isPremium) {
+    return executeTransaction(queriesMap['update_premium_status'], {'chatId': chatId, 'userId': userId, 'isPremium': isPremium});
   }
 }

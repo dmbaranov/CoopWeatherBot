@@ -17,8 +17,10 @@ import 'package:weather/src/modules/conversator.dart';
 import 'package:weather/src/modules/chat_manager.dart';
 import 'package:weather/src/modules/commands_manager.dart';
 
+typedef MessageEventMapper<T> = MessageEvent Function(T event);
+
 // TODO: move part of the logic to utils using self
-abstract class Bot {
+abstract class Bot<T> {
   final String botToken;
   final String adminId;
   final String repoUrl;
@@ -86,13 +88,33 @@ abstract class Bot {
 
     weatherManager = WeatherManager(dbManager: dbManager, openweatherKey: openweatherKey);
     await weatherManager.initialize();
+
+    _setupCommands();
   }
 
   @protected
-  setupCommands();
+  void setupCommand(
+      String command, CommandsWrapper cmCommandWrapper, MessageEventMapper<T> mapToMessageEvent, OnSuccessCallback onSuccessCallback,
+      [String? description]);
+
+  @protected
+  MessageEvent mapToGeneralMessageEvent(T event);
+
+  @protected
+  MessageEvent mapToMessageEventWithParameters(T event, [List? otherParameters]);
+
+  @protected
+  MessageEvent mapToMessageEventWithOtherUserIds(T event, [List? otherUserIds]);
 
   @protected
   Future<void> sendMessage(String chatId, String message);
+
+  void _setupCommands() {
+    setupCommand('watchlist', cm.userCommand, mapToGeneralMessageEvent, getWeatherWatchlist, 'Get weather watchlist');
+    setupCommand('addcity', cm.userCommand, mapToMessageEventWithParameters, addWeatherCity,
+        'Add city to receive periodic updates about the weather');
+    setupCommand('increp', cm.userCommand, mapToMessageEventWithOtherUserIds, increaseReputation, 'Increase reputation for the user');
+  }
 
   bool _parametersCheck(MessageEvent event, [int numberOfParameters = 1]) {
     if (event.parameters.whereNot((parameter) => parameter.isEmpty).length < numberOfParameters) {

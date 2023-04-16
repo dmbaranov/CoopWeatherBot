@@ -1,6 +1,9 @@
 import 'chat_manager.dart' show ChatPlatform;
 
-class MessageEvent {
+typedef CommandsWrapper = void Function(MessageEvent event, {required Function onFailure, Function? onSuccess, Function? onSuccessCustom});
+typedef OnSuccessCallback = void Function(MessageEvent event);
+
+class MessageEvent<T> {
   final ChatPlatform platform;
   final String chatId;
   final String userId;
@@ -8,7 +11,7 @@ class MessageEvent {
   final List<String> otherUserIds;
   final List<String> parameters;
   final bool isBot;
-  final dynamic rawMessage;
+  final T rawMessage;
 
   MessageEvent(
       {required this.platform,

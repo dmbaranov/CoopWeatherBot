@@ -140,7 +140,7 @@ class TelegramBot extends Bot<TeleDartMessage> {
   // }
 
   @override
-  MessageEvent mapToGeneralMessageEvent(TeleDartMessage event) {
+  MessageEvent mapToGeneralMessageEvent(TeleDartMessage event, [List? params]) {
     return MessageEvent(
         platform: ChatPlatform.telegram,
         chatId: event.chat.id.toString(),

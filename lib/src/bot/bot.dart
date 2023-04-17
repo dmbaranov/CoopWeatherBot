@@ -17,7 +17,7 @@ import 'package:weather/src/modules/conversator.dart';
 import 'package:weather/src/modules/chat_manager.dart';
 import 'package:weather/src/modules/commands_manager.dart';
 
-typedef MessageEventMapper<T> = MessageEvent Function(T event);
+typedef MessageEventMapper<T> = MessageEvent Function(T event, [List? params]);
 
 // TODO: move part of the logic to utils using self
 abstract class Bot<T> {
@@ -98,7 +98,7 @@ abstract class Bot<T> {
       [String? description]);
 
   @protected
-  MessageEvent mapToGeneralMessageEvent(T event);
+  MessageEvent mapToGeneralMessageEvent(T event, [List? otherParameters]);
 
   @protected
   MessageEvent mapToMessageEventWithParameters(T event, [List? otherParameters]);

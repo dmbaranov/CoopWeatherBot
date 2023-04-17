@@ -10,6 +10,9 @@ import 'package:weather/src/bot/bot.dart';
 import 'package:weather/src/modules/chat_manager.dart';
 import 'package:weather/src/modules/commands_manager.dart';
 
+const _commandsWithParameter = ['addcity'];
+const _commandsWithUser = ['increp'];
+
 class DiscordBot extends Bot<IChatContext> {
   final List<ChatCommand> _commands = [];
   late INyxxWebsocket bot;
@@ -54,11 +57,28 @@ class DiscordBot extends Bot<IChatContext> {
   void setupCommand(String command, CommandsWrapper cmCommandWrapper, MessageEventMapper<IChatContext> mapToMessageEvent,
       OnSuccessCallback onSuccessCallback,
       [String? description]) {
-    _commands.add(ChatCommand(command, description!, (IChatContext context) async {
-      await context.respond(MessageBuilder.empty());
-
-      cmCommandWrapper(mapToMessageEvent(context), onSuccess: onSuccessCallback, onFailure: sendNoAccessMessage);
-    }));
+    if (_commandsWithParameter.contains(command)) {
+      _setupCommandWithParameters(
+          command: command,
+          description: description!,
+          cmCommandWrapper: cmCommandWrapper,
+          mapToMessageEvent: mapToMessageEvent,
+          onSuccessCallback: onSuccessCallback);
+    } else if (_commandsWithUser.contains(command)) {
+      _setupCommandWithOtherUserIds(
+          command: command,
+          description: description!,
+          cmCommandWrapper: cmCommandWrapper,
+          mapToMessageEvent: mapToMessageEvent,
+          onSuccessCallback: onSuccessCallback);
+    } else {
+      _setupSimpleCommand(
+          command: command,
+          description: description!,
+          cmCommandWrapper: cmCommandWrapper,
+          mapToMessageEvent: mapToMessageEvent,
+          onSuccessCallback: onSuccessCallback);
+    }
   }
 
   CommandsPlugin _setupDiscordCommands() {
@@ -67,6 +87,45 @@ class DiscordBot extends Bot<IChatContext> {
     _commands.forEach((command) => commands.addCommand(command));
 
     return commands;
+  }
+
+  ChatCommand _setupSimpleCommand(
+      {required String command,
+      required String description,
+      required CommandsWrapper cmCommandWrapper,
+      required MessageEventMapper<IChatContext> mapToMessageEvent,
+      required OnSuccessCallback onSuccessCallback}) {
+    return ChatCommand(command, description, (IChatContext context) async {
+      await context.respond(MessageBuilder.empty());
+
+      cmCommandWrapper(mapToMessageEvent(context), onSuccess: onSuccessCallback, onFailure: sendNoAccessMessage);
+    });
+  }
+
+  ChatCommand _setupCommandWithParameters(
+      {required String command,
+      required String description,
+      required CommandsWrapper cmCommandWrapper,
+      required MessageEventMapper<IChatContext> mapToMessageEvent,
+      required OnSuccessCallback onSuccessCallback}) {
+    return ChatCommand(command, description, (IChatContext context, String param) async {
+      await context.respond(MessageBuilder.content(param));
+
+      cmCommandWrapper(mapToMessageEvent(context, [param]), onSuccess: onSuccessCallback, onFailure: sendNoAccessMessage);
+    });
+  }
+
+  ChatCommand _setupCommandWithOtherUserIds(
+      {required String command,
+      required String description,
+      required CommandsWrapper cmCommandWrapper,
+      required MessageEventMapper<IChatContext> mapToMessageEvent,
+      required OnSuccessCallback onSuccessCallback}) {
+    return ChatCommand(command, description, (IChatContext context, IMember who) async {
+      await context.respond(MessageBuilder.content(who.user.getFromCache()?.username ?? 'Unknown user'));
+
+      cmCommandWrapper(mapToMessageEvent(context, [who.user.id.toString()]), onSuccess: onSuccessCallback, onFailure: sendNoAccessMessage);
+    });
   }
 
   // CommandsPlugin setupCommands() {
@@ -220,7 +279,7 @@ class DiscordBot extends Bot<IChatContext> {
   // }
 
   @override
-  MessageEvent mapToGeneralMessageEvent(IChatContext event) {
+  MessageEvent mapToGeneralMessageEvent(IChatContext event, [List? params]) {
     return MessageEvent(
         platform: ChatPlatform.discord,
         chatId: event.guild?.id.toString() ?? '',
@@ -234,12 +293,12 @@ class DiscordBot extends Bot<IChatContext> {
 
   @override
   MessageEvent mapToMessageEventWithParameters(IChatContext event, [List? otherParameters]) {
-    return mapToGeneralMessageEvent(event)..parameters.addAll(otherParameters as List<String>);
+    return mapToGeneralMessageEvent(event)..parameters.addAll(otherParameters?.map((param) => param.toString()).toList() ?? []);
   }
 
   @override
   MessageEvent mapToMessageEventWithOtherUserIds(IChatContext event, [List? otherUserIds]) {
-    return mapToGeneralMessageEvent(event)..otherUserIds.addAll(otherUserIds as List<String>);
+    return mapToGeneralMessageEvent(event)..otherUserIds.addAll(otherUserIds?.map((param) => param.toString()).toList() ?? []);
   }
 
   void _startHeroCheckJob() async {

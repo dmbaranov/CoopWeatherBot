@@ -12,8 +12,6 @@ import 'package:weather/src/modules/commands_manager.dart';
 
 // TODO: maybe remove all the logic from Bot class and put it to the modules itself like invokeIncrease, invokeDecrease, invokeAdd, etc.
 // this methods would accept MessageEvent and the Bot class will have something like sendMessage(reputation.invokeIncrease());n
-// TODO: maybe try to extract commands to a separate class and make setupCommands a part of abstract class
-// TODO: make permissions identical between different platforms
 class TelegramBot extends Bot<TeleDartMessage> {
   late TeleDart bot;
   late Telegram telegram;
@@ -57,74 +55,6 @@ class TelegramBot extends Bot<TeleDartMessage> {
     await telegram.sendMessage(chatId, message);
   }
 
-  // // TODO: make a map in Bot class like {'addcity': addCity} and use it instead of manually adding all the commands
-  // @override
-  // void setupCommands() {
-  //   bot.onCommand('addcity').listen(
-  //       (event) => cm.userCommand(_mapToMessageEventWithParameters(event), onSuccess: addWeatherCity, onFailure: sendNoAccessMessage));
-  //   bot.onCommand('removecity').listen(
-  //       (event) => cm.userCommand(_mapToMessageEventWithParameters(event), onSuccess: removeWeatherCity, onFailure: sendNoAccessMessage));
-  //   bot.onCommand('watchlist').listen(
-  //       (event) => cm.userCommand(_mapToGeneralMessageEvent(event), onSuccess: getWeatherWatchlist, onFailure: sendNoAccessMessage));
-  //   bot.onCommand('getweather').listen(
-  //       (event) => cm.userCommand(_mapToMessageEventWithParameters(event), onSuccess: getWeatherForCity, onFailure: sendNoAccessMessage));
-  //   bot.onCommand('setnotificationhour').listen((event) => cm.moderatorCommand(_mapToMessageEventWithParameters(event),
-  //       onSuccess: setWeatherNotificationHour, onFailure: sendNoAccessMessage));
-  //   bot.onCommand('write').listen(
-  //       (event) => cm.moderatorCommand(_mapToMessageEventWithParameters(event), onSuccess: writeToChat, onFailure: sendNoAccessMessage));
-  //   bot
-  //       .onCommand('updatemessage')
-  //       .listen((event) => cm.adminCommand(_mapToGeneralMessageEvent(event), onSuccess: postUpdateMessage, onFailure: sendNoAccessMessage));
-  //   bot
-  //       .onCommand('sendnews')
-  //       .listen((event) => cm.userCommand(_mapToGeneralMessageEvent(event), onSuccess: sendNewsToChat, onFailure: sendNoAccessMessage));
-  //   bot
-  //       .onCommand('sendjoke')
-  //       .listen((event) => cm.userCommand(_mapToGeneralMessageEvent(event), onSuccess: sendJokeToChat, onFailure: sendNoAccessMessage));
-  //   bot.onCommand('sendrealmusic').listen(
-  //       (event) => cm.userCommand(_mapToMessageEventWithParameters(event), onSuccess: sendRealMusicToChat, onFailure: sendNoAccessMessage));
-  //   bot.onCommand('increp').listen(
-  //       (event) => cm.userCommand(_mapToEventWithOtherUserIds(event), onSuccess: increaseReputation, onFailure: sendNoAccessMessage));
-  //   bot.onCommand('decrep').listen(
-  //       (event) => cm.userCommand(_mapToEventWithOtherUserIds(event), onSuccess: decreaseReputation, onFailure: sendNoAccessMessage));
-  //   bot
-  //       .onCommand('replist')
-  //       .listen((event) => cm.userCommand(_mapToGeneralMessageEvent(event), onSuccess: sendReputationList, onFailure: sendNoAccessMessage));
-  //   bot.onCommand('searchsong').listen(
-  //       (event) => cm.userCommand(_mapToMessageEventWithParameters(event), onSuccess: searchYoutubeTrack, onFailure: sendNoAccessMessage));
-  //   bot
-  //       .onCommand('na')
-  //       .listen((event) => cm.userCommand(_mapToGeneralMessageEvent(event), onSuccess: healthCheck, onFailure: sendNoAccessMessage));
-  //   bot.onCommand('accordion').listen((event) => cm.userCommand(_mapToGeneralMessageEvent(event),
-  //       onSuccessCustom: () => _startTelegramAccordionPoll(event), onFailure: sendNoAccessMessage));
-  //   bot.onCommand('ask').listen(
-  //       (event) => cm.userCommand(_mapToMessageEventWithParameters(event), onSuccess: askConversator, onFailure: sendNoAccessMessage));
-  //   bot
-  //       .onCommand('adduser')
-  //       .listen((event) => cm.moderatorCommand(_mapToEventWithOtherUserIds(event), onSuccess: addUser, onFailure: sendNoAccessMessage));
-  //   bot
-  //       .onCommand('removeuser')
-  //       .listen((event) => cm.moderatorCommand(_mapToEventWithOtherUserIds(event), onSuccess: removeUser, onFailure: sendNoAccessMessage));
-  //   bot
-  //       .onCommand('initialize')
-  //       .listen((event) => cm.adminCommand(_mapToGeneralMessageEvent(event), onSuccess: initializeChat, onFailure: sendNoAccessMessage));
-  //   bot.onCommand('createreputation').listen(
-  //       (event) => cm.adminCommand(_mapToEventWithOtherUserIds(event), onSuccess: createReputation, onFailure: sendNoAccessMessage));
-  //   bot
-  //       .onCommand('createweather')
-  //       .listen((event) => cm.adminCommand(_mapToGeneralMessageEvent(event), onSuccess: createWeather, onFailure: sendNoAccessMessage));
-  //
-  //   var bullyTagUserRegexp = RegExp(sm.get('general.bully_tag_user_regexp'), caseSensitive: false);
-  //   bot.onMessage(keyword: bullyTagUserRegexp).listen((event) => _bullyTagUser(event));
-  //
-  //   bot.onInlineQuery().listen((query) {
-  //     debouncer.value = query;
-  //   });
-  //   debouncer.values.listen((query) {
-  //     _searchYoutubeTrackInline(query as TeleDartInlineQuery);
-  //   });
-  // }
-
   @override
   void setupCommand(String command, CommandsWrapper cmCommandWrapper, MessageEventMapper<TeleDartMessage> mapToMessageEvent,
       OnSuccessCallback onSuccessCallback,
@@ -135,7 +65,20 @@ class TelegramBot extends Bot<TeleDartMessage> {
   }
 
   @override
-  void setupPlatformSpecificCommands() {}
+  void setupPlatformSpecificCommands() {
+    bot.onCommand('accordion').listen((event) => cm.userCommand(mapToGeneralMessageEvent(event),
+        onSuccessCustom: () => _startTelegramAccordionPoll(event), onFailure: sendNoAccessMessage));
+
+    var bullyTagUserRegexp = RegExp(sm.get('general.bully_tag_user_regexp'), caseSensitive: false);
+    bot.onMessage(keyword: bullyTagUserRegexp).listen((event) => _bullyTagUser(event));
+
+    bot.onInlineQuery().listen((query) {
+      debouncer.value = query;
+    });
+    debouncer.values.listen((query) {
+      _searchYoutubeTrackInline(query as TeleDartInlineQuery);
+    });
+  }
 
   @override
   MessageEvent mapToGeneralMessageEvent(TeleDartMessage event, [List? params]) {

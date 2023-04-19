@@ -90,6 +90,7 @@ abstract class Bot<T> {
     await weatherManager.initialize();
 
     _setupCommands();
+    setupPlatformSpecificCommands();
   }
 
   @protected
@@ -109,11 +110,36 @@ abstract class Bot<T> {
   @protected
   Future<void> sendMessage(String chatId, String message);
 
+  @protected
+  void setupPlatformSpecificCommands();
+
   void _setupCommands() {
+    setupCommand('addcity', cm.userCommand, mapToMessageEventWithParameters, addWeatherCity, 'Add city to the watchlist');
+    setupCommand('removecity', cm.userCommand, mapToMessageEventWithParameters, removeWeatherCity, 'Remove city from the watchlist');
     setupCommand('watchlist', cm.userCommand, mapToGeneralMessageEvent, getWeatherWatchlist, 'Get weather watchlist');
-    setupCommand('addcity', cm.userCommand, mapToMessageEventWithParameters, addWeatherCity,
-        'Add city to receive periodic updates about the weather');
+    setupCommand('getweather', cm.userCommand, mapToMessageEventWithParameters, getWeatherForCity, 'Get weather for city');
+    setupCommand('setnotificationhour', cm.moderatorCommand, mapToMessageEventWithParameters, setWeatherNotificationHour,
+        'Set time for weather notifications');
+    setupCommand(
+        'write', cm.moderatorCommand, mapToMessageEventWithParameters, writeToChat, 'Write message to the chat on behalf of the bot');
+    setupCommand('updatemessage', cm.adminCommand, mapToGeneralMessageEvent, postUpdateMessage, 'Post update message');
+    setupCommand('sendnews', cm.userCommand, mapToGeneralMessageEvent, sendNewsToChat, 'Send news to the chat');
+    setupCommand('sendjoke', cm.userCommand, mapToGeneralMessageEvent, sendJokeToChat, 'Send joke to the chat');
+    setupCommand('sendrealmusic', cm.userCommand, mapToMessageEventWithParameters, sendRealMusicToChat,
+        'Convert link from YouTube Music to YouTube');
     setupCommand('increp', cm.userCommand, mapToMessageEventWithOtherUserIds, increaseReputation, 'Increase reputation for the user');
+    setupCommand('decrep', cm.userCommand, mapToMessageEventWithOtherUserIds, decreaseReputation, 'Decrease reputation for the user');
+    setupCommand('replist', cm.userCommand, mapToGeneralMessageEvent, sendReputationList, 'Send reputation list to the chat');
+    setupCommand('searchsong', cm.userCommand, mapToMessageEventWithParameters, searchYoutubeTrack, 'Search song on YouTube');
+    setupCommand('na', cm.userCommand, mapToGeneralMessageEvent, healthCheck, 'Check if bot is alive');
+    setupCommand(
+        'ask', cm.userCommand, mapToMessageEventWithParameters, askConversator, 'Ask for advice or anything else from the Conversator');
+    setupCommand('initialize', cm.adminCommand, mapToGeneralMessageEvent, initializeChat, 'Initialize new chat');
+    setupCommand('adduser', cm.moderatorCommand, mapToMessageEventWithOtherUserIds, addUser, 'Add new user to the bot');
+    setupCommand('removeuser', cm.moderatorCommand, mapToMessageEventWithOtherUserIds, removeUser, 'Remove user from the bot');
+    setupCommand(
+        'createreputation', cm.adminCommand, mapToMessageEventWithOtherUserIds, createReputation, 'Create reputation for the user');
+    setupCommand('createweather', cm.adminCommand, mapToGeneralMessageEvent, createWeather, 'Activate weather module for the chat');
   }
 
   bool _parametersCheck(MessageEvent event, [int numberOfParameters = 1]) {

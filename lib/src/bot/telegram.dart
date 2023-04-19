@@ -134,10 +134,8 @@ class TelegramBot extends Bot<TeleDartMessage> {
         .listen((event) => cmCommandWrapper(mapToMessageEvent(event), onSuccess: onSuccessCallback, onFailure: sendNoAccessMessage));
   }
 
-  // @override
-  // void setupCommand(String command, CommandsWrapper cmCommandWrapper, EventMapper eventMapper, OnSuccessCallback onSuccess) {
-  //   bot.onCommand(command).listen((event) => cmCommandWrapper(eventMapper(event), onSuccess: onSuccess, onFailure: sendNoAccessMessage));
-  // }
+  @override
+  void setupPlatformSpecificCommands() {}
 
   @override
   MessageEvent mapToGeneralMessageEvent(TeleDartMessage event, [List? params]) {

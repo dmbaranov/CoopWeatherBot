@@ -81,6 +81,9 @@ class DiscordBot extends Bot<IChatContext> {
     }
   }
 
+  @override
+  void setupPlatformSpecificCommands() {}
+
   CommandsPlugin _setupDiscordCommands() {
     var commands = CommandsPlugin(prefix: (message) => '!');
 

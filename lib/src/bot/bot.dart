@@ -449,7 +449,7 @@ abstract class Bot<T> {
   void searchYoutubeTrack(MessageEvent event) async {
     if (!_parametersCheck(event)) return;
 
-    var videoUrl = await youtube.getYoutubeVideoUrl(event.parameters[0]);
+    var videoUrl = await youtube.getYoutubeVideoUrl(event.parameters.join(' '));
 
     _sendOperationMessage(event.chatId, videoUrl.isNotEmpty, videoUrl);
   }
@@ -463,7 +463,7 @@ abstract class Bot<T> {
   void askConversator(MessageEvent event) async {
     if (!_parametersCheck(event)) return;
 
-    var reply = await conversator.getConversationReply(event.parameters[0]);
+    var reply = await conversator.getConversationReply(event.parameters.join(' '));
 
     await sendMessage(event.chatId, reply);
   }

@@ -53,10 +53,12 @@ class CommandsManager {
   void userCommand(MessageEvent event, {required Function onFailure, Function? onSuccess, Function? onSuccessCustom}) async {
     var user = await dbManager.user.getSingleUserForChat(event.chatId, event.userId);
 
-    if (user == null) {
-      onFailure(event);
+    if (event.userId != adminId) {
+      if (user == null) {
+        onFailure(event);
 
-      return;
+        return;
+      }
     }
 
     if (onSuccessCustom != null) {
@@ -71,10 +73,12 @@ class CommandsManager {
   void moderatorCommand(MessageEvent event, {required Function onFailure, Function? onSuccess, Function? onSuccessCustom}) async {
     var user = await dbManager.user.getSingleUserForChat(event.chatId, event.userId);
 
-    if (user == null || (!user.moderator && user.id != adminId)) {
-      onFailure(event);
+    if (event.userId != adminId) {
+      if (user == null || (!user.moderator && user.id != adminId)) {
+        onFailure(event);
 
-      return;
+        return;
+      }
     }
 
     if (onSuccessCustom != null) {
@@ -87,9 +91,7 @@ class CommandsManager {
   }
 
   void adminCommand(MessageEvent event, {required Function onFailure, Function? onSuccess, Function? onSuccessCustom}) async {
-    var user = await dbManager.user.getSingleUserForChat(event.chatId, event.userId);
-
-    if (user == null || user.id != adminId) {
+    if (event.userId != adminId) {
       onFailure(event);
 
       return;

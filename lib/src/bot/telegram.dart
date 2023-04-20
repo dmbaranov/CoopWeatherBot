@@ -35,6 +35,9 @@ class TelegramBot extends Bot<TeleDartMessage> {
     telegram = Telegram(botToken);
     bot = TeleDart(botToken, Event(botName!), fetcher: LongPolling(Telegram(botToken), limit: 100, timeout: 50));
 
+    setupCommands();
+    setupPlatformSpecificCommands();
+
     _subscribeToPanoramaNews();
     _subscribeToWeather();
     _subscribeToUsersUpdate();
@@ -56,12 +59,12 @@ class TelegramBot extends Bot<TeleDartMessage> {
   }
 
   @override
-  void setupCommand(String command, CommandsWrapper cmCommandWrapper, MessageEventMapper<TeleDartMessage> mapToMessageEvent,
-      OnSuccessCallback onSuccessCallback,
-      [String? description]) {
+  void setupCommand(Command<TeleDartMessage> command) {
+    var messageMapper = _getEventMapper(command);
+
     bot
-        .onCommand(command)
-        .listen((event) => cmCommandWrapper(mapToMessageEvent(event), onSuccess: onSuccessCallback, onFailure: sendNoAccessMessage));
+        .onCommand(command.command)
+        .listen((event) => command.wrapper(messageMapper(event), onSuccess: command.successCallback, onFailure: sendNoAccessMessage));
   }
 
   @override
@@ -81,7 +84,7 @@ class TelegramBot extends Bot<TeleDartMessage> {
   }
 
   @override
-  MessageEvent mapToGeneralMessageEvent(TeleDartMessage event, [List? params]) {
+  MessageEvent mapToGeneralMessageEvent(TeleDartMessage event) {
     return MessageEvent(
         platform: ChatPlatform.telegram,
         chatId: event.chat.id.toString(),
@@ -103,6 +106,16 @@ class TelegramBot extends Bot<TeleDartMessage> {
   @override
   MessageEvent mapToMessageEventWithOtherUserIds(TeleDartMessage event, [List? otherUserIds]) {
     return mapToGeneralMessageEvent(event)..otherUserIds.add(event.replyToMessage?.from?.id.toString() ?? '');
+  }
+
+  Function _getEventMapper(Command command) {
+    if (command.withParameters) {
+      return mapToMessageEventWithParameters;
+    } else if (command.withOtherUserIds) {
+      return mapToMessageEventWithOtherUserIds;
+    }
+
+    return mapToGeneralMessageEvent;
   }
 
   void _subscribeToPanoramaNews() {

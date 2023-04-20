@@ -24,6 +24,23 @@ class MessageEvent<T> {
       required this.rawMessage});
 }
 
+class Command<T> {
+  final String command;
+  final String description;
+  final CommandsWrapper wrapper;
+  final bool withParameters;
+  final bool withOtherUserIds;
+  final OnSuccessCallback successCallback;
+
+  Command(
+      {required this.command,
+      required this.description,
+      required this.wrapper,
+      required this.successCallback,
+      this.withParameters = false,
+      this.withOtherUserIds = false});
+}
+
 class CommandsManager {
   void userCommand(MessageEvent event, {required Function onFailure, Function? onSuccess, Function? onSuccessCustom}) {
     // check permission

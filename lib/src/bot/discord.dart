@@ -10,9 +10,6 @@ import 'package:weather/src/bot/bot.dart';
 import 'package:weather/src/modules/chat_manager.dart';
 import 'package:weather/src/modules/commands_manager.dart';
 
-const _commandsWithParameter = ['addcity'];
-const _commandsWithUser = ['increp'];
-
 class DiscordBot extends Bot<IChatContext> {
   final List<ChatCommand> _commands = [];
   late INyxxWebsocket bot;
@@ -31,6 +28,9 @@ class DiscordBot extends Bot<IChatContext> {
     await super.startBot();
 
     bot = NyxxFactory.createNyxxWebsocket(botToken, GatewayIntents.all);
+
+    setupCommands();
+    setupPlatformSpecificCommands();
 
     bot
       ..registerPlugin(Logging())
@@ -54,30 +54,13 @@ class DiscordBot extends Bot<IChatContext> {
   }
 
   @override
-  void setupCommand(String command, CommandsWrapper cmCommandWrapper, MessageEventMapper<IChatContext> mapToMessageEvent,
-      OnSuccessCallback onSuccessCallback,
-      [String? description]) {
-    if (_commandsWithParameter.contains(command)) {
-      _commands.add(_setupCommandWithParameters(
-          command: command,
-          description: description!,
-          cmCommandWrapper: cmCommandWrapper,
-          mapToMessageEvent: mapToMessageEvent,
-          onSuccessCallback: onSuccessCallback));
-    } else if (_commandsWithUser.contains(command)) {
-      _commands.add(_setupCommandWithOtherUserIds(
-          command: command,
-          description: description!,
-          cmCommandWrapper: cmCommandWrapper,
-          mapToMessageEvent: mapToMessageEvent,
-          onSuccessCallback: onSuccessCallback));
+  void setupCommand(Command command) {
+    if (command.withParameters) {
+      _setupCommandWithParameters(command);
+    } else if (command.withOtherUserIds) {
+      _setupCommandWithOtherUserIds(command);
     } else {
-      _commands.add(_setupSimpleCommand(
-          command: command,
-          description: description!,
-          cmCommandWrapper: cmCommandWrapper,
-          mapToMessageEvent: mapToMessageEvent,
-          onSuccessCallback: onSuccessCallback));
+      _setupSimpleCommand(command);
     }
   }
 
@@ -93,7 +76,7 @@ class DiscordBot extends Bot<IChatContext> {
   }
 
   @override
-  MessageEvent mapToGeneralMessageEvent(IChatContext event, [List? params]) {
+  MessageEvent mapToGeneralMessageEvent(IChatContext event) {
     return MessageEvent(
         platform: ChatPlatform.discord,
         chatId: event.guild?.id.toString() ?? '',
@@ -123,43 +106,29 @@ class DiscordBot extends Bot<IChatContext> {
     return commands;
   }
 
-  ChatCommand _setupSimpleCommand(
-      {required String command,
-      required String description,
-      required CommandsWrapper cmCommandWrapper,
-      required MessageEventMapper<IChatContext> mapToMessageEvent,
-      required OnSuccessCallback onSuccessCallback}) {
-    return ChatCommand(command, description, (IChatContext context) async {
+  void _setupSimpleCommand(Command command) {
+    _commands.add(ChatCommand(command.command, command.description, (IChatContext context) async {
       await context.respond(MessageBuilder.empty());
 
-      cmCommandWrapper(mapToMessageEvent(context), onSuccess: onSuccessCallback, onFailure: sendNoAccessMessage);
-    });
+      command.wrapper(mapToGeneralMessageEvent(context), onSuccess: command.successCallback, onFailure: sendNoAccessMessage);
+    }));
   }
 
-  ChatCommand _setupCommandWithParameters(
-      {required String command,
-      required String description,
-      required CommandsWrapper cmCommandWrapper,
-      required MessageEventMapper<IChatContext> mapToMessageEvent,
-      required OnSuccessCallback onSuccessCallback}) {
-    return ChatCommand(command, description, (IChatContext context, String param) async {
-      await context.respond(MessageBuilder.content(param));
+  void _setupCommandWithParameters(Command command) {
+    _commands.add(ChatCommand(command.command, command.description, (IChatContext context, String what) async {
+      await context.respond(MessageBuilder.content(what));
 
-      cmCommandWrapper(mapToMessageEvent(context, [param]), onSuccess: onSuccessCallback, onFailure: sendNoAccessMessage);
-    });
+      command.wrapper(mapToMessageEventWithParameters(context, [what]), onSuccess: command.successCallback, onFailure: sendNoAccessMessage);
+    }));
   }
 
-  ChatCommand _setupCommandWithOtherUserIds(
-      {required String command,
-      required String description,
-      required CommandsWrapper cmCommandWrapper,
-      required MessageEventMapper<IChatContext> mapToMessageEvent,
-      required OnSuccessCallback onSuccessCallback}) {
-    return ChatCommand(command, description, (IChatContext context, IMember who) async {
+  void _setupCommandWithOtherUserIds(Command command) {
+    _commands.add(ChatCommand(command.command, command.description, (IChatContext context, IMember who) async {
       await context.respond(MessageBuilder.content(who.user.getFromCache()?.username ?? 'Unknown user'));
 
-      cmCommandWrapper(mapToMessageEvent(context, [who.user.id.toString()]), onSuccess: onSuccessCallback, onFailure: sendNoAccessMessage);
-    });
+      command.wrapper(mapToMessageEventWithOtherUserIds(context, [who.user.id.toString()]),
+          onSuccess: command.successCallback, onFailure: sendNoAccessMessage);
+    }));
   }
 
   void _startHeroCheckJob() async {

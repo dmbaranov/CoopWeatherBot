@@ -17,8 +17,6 @@ import 'package:weather/src/modules/conversator.dart';
 import 'package:weather/src/modules/chat_manager.dart';
 import 'package:weather/src/modules/commands_manager.dart';
 
-typedef MessageEventMapper<T> = MessageEvent Function(T event, [List? params]);
-
 // TODO: move part of the logic to utils using self
 abstract class Bot<T> {
   final String botToken;
@@ -88,18 +86,13 @@ abstract class Bot<T> {
 
     weatherManager = WeatherManager(dbManager: dbManager, openweatherKey: openweatherKey);
     await weatherManager.initialize();
-
-    _setupCommands();
-    setupPlatformSpecificCommands();
   }
 
   @protected
-  void setupCommand(
-      String command, CommandsWrapper cmCommandWrapper, MessageEventMapper<T> mapToMessageEvent, OnSuccessCallback onSuccessCallback,
-      [String? description]);
+  void setupCommand(Command<T> command);
 
   @protected
-  MessageEvent mapToGeneralMessageEvent(T event, [List? otherParameters]);
+  MessageEvent mapToGeneralMessageEvent(T event);
 
   @protected
   MessageEvent mapToMessageEventWithParameters(T event, [List? otherParameters]);
@@ -113,33 +106,126 @@ abstract class Bot<T> {
   @protected
   void setupPlatformSpecificCommands();
 
-  void _setupCommands() {
-    setupCommand('addcity', cm.userCommand, mapToMessageEventWithParameters, addWeatherCity, 'Add city to the watchlist');
-    setupCommand('removecity', cm.userCommand, mapToMessageEventWithParameters, removeWeatherCity, 'Remove city from the watchlist');
-    setupCommand('watchlist', cm.userCommand, mapToGeneralMessageEvent, getWeatherWatchlist, 'Get weather watchlist');
-    setupCommand('getweather', cm.userCommand, mapToMessageEventWithParameters, getWeatherForCity, 'Get weather for city');
-    setupCommand('setnotificationhour', cm.moderatorCommand, mapToMessageEventWithParameters, setWeatherNotificationHour,
-        'Set time for weather notifications');
+  void setupCommands() {
+    setupCommand(Command(
+        command: 'addcity',
+        description: '[U] Add city to the watchlist',
+        wrapper: cm.userCommand,
+        withParameters: true,
+        successCallback: addWeatherCity));
+
+    setupCommand(Command(
+        command: 'removecity',
+        description: '[U] Remove city from the watchlist',
+        wrapper: cm.userCommand,
+        withParameters: true,
+        successCallback: removeWeatherCity));
+
+    setupCommand(Command(
+        command: 'watchlist', description: '[U] Get weather watchlist', wrapper: cm.userCommand, successCallback: getWeatherWatchlist));
+
+    setupCommand(Command(
+        command: 'getweather',
+        description: '[U] Get weather for city',
+        wrapper: cm.userCommand,
+        withParameters: true,
+        successCallback: getWeatherForCity));
+
+    setupCommand(Command(
+        command: 'setnotificationhour',
+        description: '[M] Set time for weather notifications',
+        wrapper: cm.moderatorCommand,
+        withParameters: true,
+        successCallback: setWeatherNotificationHour));
+
+    setupCommand(Command(
+        command: 'write',
+        description: '[M] Write message to the chat on behalf of the bot',
+        wrapper: cm.moderatorCommand,
+        withParameters: true,
+        successCallback: writeToChat));
+
+    setupCommand(Command(
+        command: 'updatemessage', description: '[A] Post update message', wrapper: cm.adminCommand, successCallback: postUpdateMessage));
+
     setupCommand(
-        'write', cm.moderatorCommand, mapToMessageEventWithParameters, writeToChat, 'Write message to the chat on behalf of the bot');
-    setupCommand('updatemessage', cm.adminCommand, mapToGeneralMessageEvent, postUpdateMessage, 'Post update message');
-    setupCommand('sendnews', cm.userCommand, mapToGeneralMessageEvent, sendNewsToChat, 'Send news to the chat');
-    setupCommand('sendjoke', cm.userCommand, mapToGeneralMessageEvent, sendJokeToChat, 'Send joke to the chat');
-    setupCommand('sendrealmusic', cm.userCommand, mapToMessageEventWithParameters, sendRealMusicToChat,
-        'Convert link from YouTube Music to YouTube');
-    setupCommand('increp', cm.userCommand, mapToMessageEventWithOtherUserIds, increaseReputation, 'Increase reputation for the user');
-    setupCommand('decrep', cm.userCommand, mapToMessageEventWithOtherUserIds, decreaseReputation, 'Decrease reputation for the user');
-    setupCommand('replist', cm.userCommand, mapToGeneralMessageEvent, sendReputationList, 'Send reputation list to the chat');
-    setupCommand('searchsong', cm.userCommand, mapToMessageEventWithParameters, searchYoutubeTrack, 'Search song on YouTube');
-    setupCommand('na', cm.userCommand, mapToGeneralMessageEvent, healthCheck, 'Check if bot is alive');
+        Command(command: 'sendnews', description: '[U] Send news to the chat', wrapper: cm.userCommand, successCallback: sendNewsToChat));
+
     setupCommand(
-        'ask', cm.userCommand, mapToMessageEventWithParameters, askConversator, 'Ask for advice or anything else from the Conversator');
-    setupCommand('initialize', cm.adminCommand, mapToGeneralMessageEvent, initializeChat, 'Initialize new chat');
-    setupCommand('adduser', cm.moderatorCommand, mapToMessageEventWithOtherUserIds, addUser, 'Add new user to the bot');
-    setupCommand('removeuser', cm.moderatorCommand, mapToMessageEventWithOtherUserIds, removeUser, 'Remove user from the bot');
+        Command(command: 'sendjoke', description: '[U] Send joke to the chat', wrapper: cm.userCommand, successCallback: sendJokeToChat));
+
+    setupCommand(Command(
+        command: 'sendrealmusic',
+        description: '[U] Convert link from YouTube Music to YouTube',
+        wrapper: cm.userCommand,
+        withParameters: true,
+        successCallback: sendRealMusicToChat));
+
+    setupCommand(Command(
+        command: 'increp',
+        description: '[U] Increase reputation for the user',
+        wrapper: cm.userCommand,
+        withOtherUserIds: true,
+        successCallback: increaseReputation));
+
+    setupCommand(Command(
+        command: 'decrep',
+        description: '[U] Decrease reputation for the user',
+        wrapper: cm.userCommand,
+        withOtherUserIds: true,
+        successCallback: decreaseReputation));
+
+    setupCommand(Command(
+        command: 'replist',
+        description: '[U] Send reputation list to the chat',
+        wrapper: cm.userCommand,
+        successCallback: sendReputationList));
+
+    setupCommand(Command(
+        command: 'searchsong',
+        description: '[U] Search song on YouTube',
+        wrapper: cm.userCommand,
+        withParameters: true,
+        successCallback: searchYoutubeTrack));
+
+    setupCommand(Command(command: 'na', description: '[U] Check if bot is alive', wrapper: cm.userCommand, successCallback: healthCheck));
+
+    setupCommand(Command(
+        command: 'ask',
+        description: '[U] Ask for advice or anything else from the Conversator',
+        wrapper: cm.userCommand,
+        withParameters: true,
+        successCallback: askConversator));
+
     setupCommand(
-        'createreputation', cm.adminCommand, mapToMessageEventWithOtherUserIds, createReputation, 'Create reputation for the user');
-    setupCommand('createweather', cm.adminCommand, mapToGeneralMessageEvent, createWeather, 'Activate weather module for the chat');
+        Command(command: 'initialize', description: '[A] Initialize new chat', wrapper: cm.adminCommand, successCallback: initializeChat));
+
+    setupCommand(Command(
+        command: 'adduser',
+        description: '[M] Add new user to the bot',
+        wrapper: cm.moderatorCommand,
+        withOtherUserIds: true,
+        successCallback: addUser));
+
+    setupCommand(Command(
+        command: 'removeuser',
+        description: '[M] Remove user from the bot',
+        wrapper: cm.moderatorCommand,
+        withOtherUserIds: true,
+        successCallback: removeUser));
+
+    setupCommand(Command(
+        command: 'createreputation',
+        description: '[A] Create reputation for the user',
+        wrapper: cm.adminCommand,
+        withOtherUserIds: true,
+        successCallback: createReputation));
+
+    setupCommand(Command(
+        command: 'createweather',
+        description: '[A] Activate weather module for the chat',
+        wrapper: cm.adminCommand,
+        successCallback: createWeather));
   }
 
   bool _parametersCheck(MessageEvent event, [int numberOfParameters = 1]) {
@@ -154,16 +240,6 @@ abstract class Bot<T> {
 
   bool _userIdsCheck(MessageEvent event, [int numberOfIds = 1]) {
     if (event.otherUserIds.whereNot((id) => id.isEmpty).length < numberOfIds) {
-      sendMessage(event.chatId, sm.get('general.something_went_wrong'));
-
-      return false;
-    }
-
-    return true;
-  }
-
-  bool _messageCheck(MessageEvent event) {
-    if (event.message.isEmpty) {
       sendMessage(event.chatId, sm.get('general.something_went_wrong'));
 
       return false;
@@ -371,9 +447,9 @@ abstract class Bot<T> {
 
   @protected
   void searchYoutubeTrack(MessageEvent event) async {
-    if (!_messageCheck(event)) return;
+    if (!_parametersCheck(event)) return;
 
-    var videoUrl = await youtube.getYoutubeVideoUrl(event.message);
+    var videoUrl = await youtube.getYoutubeVideoUrl(event.parameters[0]);
 
     _sendOperationMessage(event.chatId, videoUrl.isNotEmpty, videoUrl);
   }
@@ -385,9 +461,9 @@ abstract class Bot<T> {
 
   @protected
   void askConversator(MessageEvent event) async {
-    if (!_messageCheck(event)) return;
+    if (!_parametersCheck(event)) return;
 
-    var reply = await conversator.getConversationReply(event.message);
+    var reply = await conversator.getConversationReply(event.parameters[0]);
 
     await sendMessage(event.chatId, reply);
   }

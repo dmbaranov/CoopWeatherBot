@@ -22,7 +22,7 @@ class ReputationEntity extends Entity {
   Future<List<ChatReputationData>> getReputationForChat(String chatId) async {
     var rawReputation = await executeQuery(queriesMap['get_reputation_for_chat'], {'chatId': chatId});
 
-    if (rawReputation == null) {
+    if (rawReputation == null || rawReputation.isEmpty) {
       return [];
     }
 
@@ -32,7 +32,7 @@ class ReputationEntity extends Entity {
   Future<SingleReputationData?> getSingleReputationData(String chatId, String userId) async {
     var data = await executeQuery(queriesMap['get_single_reputation_data'], {'chatId': chatId, 'userId': userId});
 
-    if (data == null) {
+    if (data == null || data.isEmpty) {
       return null;
     }
 

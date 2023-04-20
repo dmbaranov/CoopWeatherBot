@@ -18,7 +18,7 @@ import 'package:weather/src/modules/chat_manager.dart';
 import 'package:weather/src/modules/commands_manager.dart';
 
 // TODO: move part of the logic to utils using self
-abstract class Bot {
+abstract class Bot<T> {
   final String botToken;
   final String adminId;
   final String repoUrl;
@@ -70,7 +70,7 @@ abstract class Bot {
     conversator = Conversator(conversatorKey);
     chatManager = ChatManager(dbManager: dbManager);
     accordionPoll = AccordionPoll();
-    cm = CommandsManager();
+    cm = CommandsManager(adminId: adminId, dbManager: dbManager);
 
     sm = SwearwordsManager();
     await sm.initialize();
@@ -89,10 +89,144 @@ abstract class Bot {
   }
 
   @protected
-  setupCommands();
+  void setupCommand(Command<T> command);
+
+  @protected
+  MessageEvent mapToGeneralMessageEvent(T event);
+
+  @protected
+  MessageEvent mapToMessageEventWithParameters(T event, [List? otherParameters]);
+
+  @protected
+  MessageEvent mapToMessageEventWithOtherUserIds(T event, [List? otherUserIds]);
 
   @protected
   Future<void> sendMessage(String chatId, String message);
+
+  @protected
+  void setupPlatformSpecificCommands();
+
+  void setupCommands() {
+    setupCommand(Command(
+        command: 'addcity',
+        description: '[U] Add city to the watchlist',
+        wrapper: cm.userCommand,
+        withParameters: true,
+        successCallback: addWeatherCity));
+
+    setupCommand(Command(
+        command: 'removecity',
+        description: '[U] Remove city from the watchlist',
+        wrapper: cm.userCommand,
+        withParameters: true,
+        successCallback: removeWeatherCity));
+
+    setupCommand(Command(
+        command: 'watchlist', description: '[U] Get weather watchlist', wrapper: cm.userCommand, successCallback: getWeatherWatchlist));
+
+    setupCommand(Command(
+        command: 'getweather',
+        description: '[U] Get weather for city',
+        wrapper: cm.userCommand,
+        withParameters: true,
+        successCallback: getWeatherForCity));
+
+    setupCommand(Command(
+        command: 'setnotificationhour',
+        description: '[M] Set time for weather notifications',
+        wrapper: cm.moderatorCommand,
+        withParameters: true,
+        successCallback: setWeatherNotificationHour));
+
+    setupCommand(Command(
+        command: 'write',
+        description: '[M] Write message to the chat on behalf of the bot',
+        wrapper: cm.moderatorCommand,
+        withParameters: true,
+        successCallback: writeToChat));
+
+    setupCommand(Command(
+        command: 'updatemessage', description: '[A] Post update message', wrapper: cm.adminCommand, successCallback: postUpdateMessage));
+
+    setupCommand(
+        Command(command: 'sendnews', description: '[U] Send news to the chat', wrapper: cm.userCommand, successCallback: sendNewsToChat));
+
+    setupCommand(
+        Command(command: 'sendjoke', description: '[U] Send joke to the chat', wrapper: cm.userCommand, successCallback: sendJokeToChat));
+
+    setupCommand(Command(
+        command: 'sendrealmusic',
+        description: '[U] Convert link from YouTube Music to YouTube',
+        wrapper: cm.userCommand,
+        withParameters: true,
+        successCallback: sendRealMusicToChat));
+
+    setupCommand(Command(
+        command: 'increp',
+        description: '[U] Increase reputation for the user',
+        wrapper: cm.userCommand,
+        withOtherUserIds: true,
+        successCallback: increaseReputation));
+
+    setupCommand(Command(
+        command: 'decrep',
+        description: '[U] Decrease reputation for the user',
+        wrapper: cm.userCommand,
+        withOtherUserIds: true,
+        successCallback: decreaseReputation));
+
+    setupCommand(Command(
+        command: 'replist',
+        description: '[U] Send reputation list to the chat',
+        wrapper: cm.userCommand,
+        successCallback: sendReputationList));
+
+    setupCommand(Command(
+        command: 'searchsong',
+        description: '[U] Search song on YouTube',
+        wrapper: cm.userCommand,
+        withParameters: true,
+        successCallback: searchYoutubeTrack));
+
+    setupCommand(Command(command: 'na', description: '[U] Check if bot is alive', wrapper: cm.userCommand, successCallback: healthCheck));
+
+    setupCommand(Command(
+        command: 'ask',
+        description: '[U] Ask for advice or anything else from the Conversator',
+        wrapper: cm.userCommand,
+        withParameters: true,
+        successCallback: askConversator));
+
+    setupCommand(
+        Command(command: 'initialize', description: '[A] Initialize new chat', wrapper: cm.adminCommand, successCallback: initializeChat));
+
+    setupCommand(Command(
+        command: 'adduser',
+        description: '[M] Add new user to the bot',
+        wrapper: cm.moderatorCommand,
+        withOtherUserIds: true,
+        successCallback: addUser));
+
+    setupCommand(Command(
+        command: 'removeuser',
+        description: '[M] Remove user from the bot',
+        wrapper: cm.moderatorCommand,
+        withOtherUserIds: true,
+        successCallback: removeUser));
+
+    setupCommand(Command(
+        command: 'createreputation',
+        description: '[A] Create reputation for the user',
+        wrapper: cm.adminCommand,
+        withOtherUserIds: true,
+        successCallback: createReputation));
+
+    setupCommand(Command(
+        command: 'createweather',
+        description: '[A] Activate weather module for the chat',
+        wrapper: cm.adminCommand,
+        successCallback: createWeather));
+  }
 
   bool _parametersCheck(MessageEvent event, [int numberOfParameters = 1]) {
     if (event.parameters.whereNot((parameter) => parameter.isEmpty).length < numberOfParameters) {
@@ -106,16 +240,6 @@ abstract class Bot {
 
   bool _userIdsCheck(MessageEvent event, [int numberOfIds = 1]) {
     if (event.otherUserIds.whereNot((id) => id.isEmpty).length < numberOfIds) {
-      sendMessage(event.chatId, sm.get('general.something_went_wrong'));
-
-      return false;
-    }
-
-    return true;
-  }
-
-  bool _messageCheck(MessageEvent event) {
-    if (event.message.isEmpty) {
       sendMessage(event.chatId, sm.get('general.something_went_wrong'));
 
       return false;
@@ -323,9 +447,9 @@ abstract class Bot {
 
   @protected
   void searchYoutubeTrack(MessageEvent event) async {
-    if (!_messageCheck(event)) return;
+    if (!_parametersCheck(event)) return;
 
-    var videoUrl = await youtube.getYoutubeVideoUrl(event.message);
+    var videoUrl = await youtube.getYoutubeVideoUrl(event.parameters.join(' '));
 
     _sendOperationMessage(event.chatId, videoUrl.isNotEmpty, videoUrl);
   }
@@ -337,9 +461,9 @@ abstract class Bot {
 
   @protected
   void askConversator(MessageEvent event) async {
-    if (!_messageCheck(event)) return;
+    if (!_parametersCheck(event)) return;
 
-    var reply = await conversator.getConversationReply(event.message);
+    var reply = await conversator.getConversationReply(event.parameters.join(' '));
 
     await sendMessage(event.chatId, reply);
   }

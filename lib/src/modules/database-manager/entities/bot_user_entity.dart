@@ -25,11 +25,21 @@ class BotUserEntity extends Entity {
   Future<List<BotUserData>> getAllUsersForChat(String chatId) async {
     var rawUsers = await executeQuery(queriesMap['get_all_bot_users_for_chat'], {'chatId': chatId});
 
-    if (rawUsers == null) {
+    if (rawUsers == null || rawUsers.isEmpty) {
       return [];
     }
 
     return rawUsers.map(_mapUser).toList();
+  }
+
+  Future<BotUserData?> getSingleUserForChat(String chatId, String userId) async {
+    var rawUser = await executeQuery(queriesMap['get_single_user_for_chat'], {'chatId': chatId, 'userId': userId});
+
+    if (rawUser == null || rawUser.isEmpty) {
+      return null;
+    }
+
+    return _mapUser(rawUser[0]);
   }
 
   Future<int> createUser({required String chatId, required String userId, required String name, bool isPremium = false}) async {

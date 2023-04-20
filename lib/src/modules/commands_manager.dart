@@ -1,3 +1,5 @@
+import 'package:weather/src/modules/database-manager/database_manager.dart';
+
 import 'chat_manager.dart' show ChatPlatform;
 
 typedef CommandsWrapper = void Function(MessageEvent event, {required Function onFailure, Function? onSuccess, Function? onSuccessCustom});
@@ -41,10 +43,17 @@ class Command<T> {
       this.withOtherUserIds = false});
 }
 
+// TODO: instead of querying database every time, use a cache
 class CommandsManager {
-  void userCommand(MessageEvent event, {required Function onFailure, Function? onSuccess, Function? onSuccessCustom}) {
-    // check permission
-    if (false) {
+  final String adminId;
+  final DatabaseManager dbManager;
+
+  CommandsManager({required this.adminId, required this.dbManager});
+
+  void userCommand(MessageEvent event, {required Function onFailure, Function? onSuccess, Function? onSuccessCustom}) async {
+    var user = await dbManager.user.getSingleUserForChat(event.chatId, event.userId);
+
+    if (user == null) {
       onFailure(event);
 
       return;
@@ -59,9 +68,10 @@ class CommandsManager {
     }
   }
 
-  void moderatorCommand(MessageEvent event, {required Function onFailure, Function? onSuccess, Function? onSuccessCustom}) {
-    // check permission
-    if (false) {
+  void moderatorCommand(MessageEvent event, {required Function onFailure, Function? onSuccess, Function? onSuccessCustom}) async {
+    var user = await dbManager.user.getSingleUserForChat(event.chatId, event.userId);
+
+    if (user == null || (!user.moderator && user.id != adminId)) {
       onFailure(event);
 
       return;
@@ -76,9 +86,10 @@ class CommandsManager {
     }
   }
 
-  void adminCommand(MessageEvent event, {required Function onFailure, Function? onSuccess, Function? onSuccessCustom}) {
-    // check permission
-    if (false) {
+  void adminCommand(MessageEvent event, {required Function onFailure, Function? onSuccess, Function? onSuccessCustom}) async {
+    var user = await dbManager.user.getSingleUserForChat(event.chatId, event.userId);
+
+    if (user == null || user.id != adminId) {
       onFailure(event);
 
       return;

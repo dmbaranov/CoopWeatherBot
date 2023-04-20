@@ -27,7 +27,7 @@ class WeatherEntity extends Entity {
   Future<List<ChatNotificationHour>> getNotificationHours() async {
     var hoursForChats = await executeQuery(queriesMap['get_notification_hours']);
 
-    if (hoursForChats == null) {
+    if (hoursForChats == null || hoursForChats.isEmpty) {
       return [];
     }
 
@@ -37,7 +37,7 @@ class WeatherEntity extends Entity {
   Future<List<String>?> getCities(String chatId) async {
     var data = await executeQuery(queriesMap['get_cities'], {'chatId': chatId});
 
-    if (data == null) {
+    if (data == null || data.isEmpty) {
       return [];
     }
 

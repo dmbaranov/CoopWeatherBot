@@ -10,7 +10,7 @@ class ChatEntity extends Entity {
   Future<List<String>> getAllChatIds(String platform) async {
     var ids = await executeQuery(queriesMap['get_all_chat_ids'], {'platform': platform});
 
-    if (ids == null) {
+    if (ids == null || ids.isEmpty) {
       return [];
     }
 

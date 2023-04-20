@@ -70,7 +70,7 @@ abstract class Bot<T> {
     conversator = Conversator(conversatorKey);
     chatManager = ChatManager(dbManager: dbManager);
     accordionPoll = AccordionPoll();
-    cm = CommandsManager();
+    cm = CommandsManager(adminId: adminId, dbManager: dbManager);
 
     sm = SwearwordsManager();
     await sm.initialize();

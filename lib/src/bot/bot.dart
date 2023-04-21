@@ -67,7 +67,7 @@ abstract class Bot<T> {
 
     dadJokes = DadJokes();
     youtube = Youtube(youtubeKey);
-    conversator = Conversator(conversatorKey);
+    conversator = Conversator(dbManager: dbManager, conversatorApiKey: conversatorKey);
     chatManager = ChatManager(dbManager: dbManager);
     accordionPoll = AccordionPoll();
     cm = CommandsManager(adminId: adminId, dbManager: dbManager);
@@ -101,7 +101,7 @@ abstract class Bot<T> {
   MessageEvent mapToMessageEventWithOtherUserIds(T event, [List? otherUserIds]);
 
   @protected
-  Future<void> sendMessage(String chatId, String message);
+  Future<dynamic> sendMessage(String chatId, String message);
 
   @protected
   void setupPlatformSpecificCommands();
@@ -189,13 +189,6 @@ abstract class Bot<T> {
         successCallback: searchYoutubeTrack));
 
     setupCommand(Command(command: 'na', description: '[U] Check if bot is alive', wrapper: cm.userCommand, successCallback: healthCheck));
-
-    setupCommand(Command(
-        command: 'ask',
-        description: '[U] Ask for advice or anything else from the Conversator',
-        wrapper: cm.userCommand,
-        withParameters: true,
-        successCallback: askConversator));
 
     setupCommand(
         Command(command: 'initialize', description: '[A] Initialize new chat', wrapper: cm.adminCommand, successCallback: initializeChat));
@@ -457,15 +450,6 @@ abstract class Bot<T> {
   @protected
   void healthCheck(MessageEvent event) async {
     await sendMessage(event.chatId, sm.get('general.bot_is_alive'));
-  }
-
-  @protected
-  void askConversator(MessageEvent event) async {
-    if (!_parametersCheck(event)) return;
-
-    var reply = await conversator.getConversationReply(event.parameters.join(' '));
-
-    await sendMessage(event.chatId, reply);
   }
 
   @protected

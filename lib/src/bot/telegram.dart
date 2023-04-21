@@ -48,14 +48,12 @@ class TelegramBot extends Bot<TeleDartMessage> {
   }
 
   @override
-  Future<void> sendMessage(String chatId, String message) async {
+  Future<Message> sendMessage(String chatId, String message) async {
     if (message.isEmpty) {
-      await telegram.sendMessage(chatId, sm.get('general.something_went_wrong'));
-
-      return;
+      return telegram.sendMessage(chatId, sm.get('general.something_went_wrong'));
     }
 
-    await telegram.sendMessage(chatId, message);
+    return telegram.sendMessage(chatId, message);
   }
 
   @override
@@ -71,6 +69,9 @@ class TelegramBot extends Bot<TeleDartMessage> {
   void setupPlatformSpecificCommands() {
     bot.onCommand('accordion').listen((event) => cm.userCommand(mapToGeneralMessageEvent(event),
         onSuccessCustom: () => _startTelegramAccordionPoll(event), onFailure: sendNoAccessMessage));
+
+    bot.onCommand('ask').listen((event) =>
+        cm.userCommand(mapToGeneralMessageEvent(event), onSuccessCustom: () => _askConversator(event), onFailure: sendNoAccessMessage));
 
     var bullyTagUserRegexp = RegExp(sm.get('general.bully_tag_user_regexp'), caseSensitive: false);
     bot.onMessage(keyword: bullyTagUserRegexp).listen((event) => _bullyTagUser(event));
@@ -90,7 +91,6 @@ class TelegramBot extends Bot<TeleDartMessage> {
         chatId: event.chat.id.toString(),
         userId: event.from?.id.toString() ?? '',
         isBot: event.replyToMessage?.from?.isBot ?? false,
-        message: event.text?.split(' ').sublist(1).join(' ') ?? '',
         otherUserIds: [],
         parameters: [],
         rawMessage: event);
@@ -126,14 +126,7 @@ class TelegramBot extends Bot<TeleDartMessage> {
 
       allChats.forEach((chatId) {
         var fakeEvent = MessageEvent(
-            platform: ChatPlatform.telegram,
-            chatId: chatId,
-            userId: '',
-            isBot: false,
-            message: '',
-            otherUserIds: [],
-            parameters: [],
-            rawMessage: '');
+            platform: ChatPlatform.telegram, chatId: chatId, userId: '', isBot: false, otherUserIds: [], parameters: [], rawMessage: '');
 
         sendNewsToChat(fakeEvent);
       });
@@ -272,5 +265,25 @@ class TelegramBot extends Bot<TeleDartMessage> {
     });
 
     await bot.answerInlineQuery(query.id, [...inlineQueryResult], cacheTime: 10);
+  }
+
+  void _askConversator(TeleDartMessage event) async {
+    var chatId = event.chat.id.toString();
+    var currentMessageId = event.messageId.toString();
+    var parentMessageId = event.replyToMessage?.messageId.toString() ?? currentMessageId;
+    var message = event.text?.split(' ').sublist(1).join(' ') ?? '';
+
+    var response = await conversator.getConversationReply(
+        chatId: chatId, parentMessageId: parentMessageId, currentMessageId: currentMessageId, message: message);
+
+    var conversatorResponseMessage = await sendMessage(chatId, response);
+    var conversationId = await conversator.getConversationId(chatId, parentMessageId);
+
+    await conversator.saveConversationMessage(
+        chatId: chatId,
+        conversationId: conversationId,
+        currentMessageId: conversatorResponseMessage.messageId.toString(),
+        message: response,
+        fromUser: false);
   }
 }

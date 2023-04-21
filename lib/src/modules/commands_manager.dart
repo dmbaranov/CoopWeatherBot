@@ -5,11 +5,11 @@ import 'chat_manager.dart' show ChatPlatform;
 typedef CommandsWrapper = void Function(MessageEvent event, {required Function onFailure, Function? onSuccess, Function? onSuccessCustom});
 typedef OnSuccessCallback = void Function(MessageEvent event);
 
+// TODO: remove rawMessage?
 class MessageEvent<T> {
   final ChatPlatform platform;
   final String chatId;
   final String userId;
-  final String message;
   final List<String> otherUserIds;
   final List<String> parameters;
   final bool isBot;
@@ -20,7 +20,6 @@ class MessageEvent<T> {
       required this.chatId,
       required this.userId,
       required this.isBot,
-      required this.message,
       required this.otherUserIds,
       required this.parameters,
       required this.rawMessage});

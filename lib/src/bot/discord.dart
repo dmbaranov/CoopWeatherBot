@@ -83,7 +83,6 @@ class DiscordBot extends Bot<IChatContext> {
         userId: event.user.id.toString(),
         otherUserIds: [],
         isBot: event.user.bot,
-        message: '',
         parameters: [],
         rawMessage: event);
   }

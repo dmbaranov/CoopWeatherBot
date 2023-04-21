@@ -1,21 +1,41 @@
 import 'dart:convert';
 import 'package:http/http.dart';
+import 'package:weather/src/modules/database-manager/database_manager.dart';
 
 const String _converstorApiURL = 'https://api.openai.com/v1/chat/completions';
 const String _conversatorModel = 'gpt-3.5-turbo-0301';
 
 class Conversator {
+  final DatabaseManager dbManager;
   final String conversatorApiKey;
   final String _apiBaseUrl = _converstorApiURL;
   final String _model = _conversatorModel;
 
-  Conversator(this.conversatorApiKey);
+  Conversator({required this.dbManager, required this.conversatorApiKey});
 
-  Future<String> getConversationReply(String question) async {
-    var response = await _getConversatorResponse(question);
-    var questionReply = response['choices']?[0]?['message']?['content'] ?? 'No response';
+  Future<String> getConversationReply(
+      {required String chatId, required String parentMessageId, required String currentMessageId, required String message}) async {
+    var conversationId = await getConversationId(chatId, parentMessageId);
+    await saveConversationMessage(
+        chatId: chatId, conversationId: conversationId, currentMessageId: currentMessageId, message: message, fromUser: true);
 
-    return questionReply;
+    var response = 'hardcoded response';
+    return response;
+  }
+
+  Future<void> saveConversationMessage(
+      {required String chatId,
+      required String conversationId,
+      required String currentMessageId,
+      required String message,
+      required bool fromUser}) async {
+    await dbManager.conversatorChat.createMessage(chatId, conversationId, currentMessageId, message, fromUser);
+  }
+
+  Future<String> getConversationId(String chatId, String messageId) async {
+    var conversationId = await dbManager.conversatorChat.findConversationById(chatId, messageId) ?? messageId;
+
+    return conversationId;
   }
 
   Future<Map<String, dynamic>> _getConversatorResponse(String question) async {

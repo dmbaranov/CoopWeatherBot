@@ -12,7 +12,7 @@ import 'package:weather/src/modules/commands_manager.dart';
 
 // TODO: maybe remove all the logic from Bot class and put it to the modules itself like invokeIncrease, invokeDecrease, invokeAdd, etc.
 // this methods would accept MessageEvent and the Bot class will have something like sendMessage(reputation.invokeIncrease());n
-class TelegramBot extends Bot<TeleDartMessage> {
+class TelegramBot extends Bot<TeleDartMessage, Message> {
   late TeleDart bot;
   late Telegram telegram;
   late Debouncer<TeleDartInlineQuery?> debouncer = Debouncer(Duration(seconds: 1), initialValue: null);
@@ -70,9 +70,6 @@ class TelegramBot extends Bot<TeleDartMessage> {
     bot.onCommand('accordion').listen((event) => cm.userCommand(mapToGeneralMessageEvent(event),
         onSuccessCustom: () => _startTelegramAccordionPoll(event), onFailure: sendNoAccessMessage));
 
-    bot.onCommand('ask').listen((event) =>
-        cm.userCommand(mapToGeneralMessageEvent(event), onSuccessCustom: () => _askConversator(event), onFailure: sendNoAccessMessage));
-
     var bullyTagUserRegexp = RegExp(sm.get('general.bully_tag_user_regexp'), caseSensitive: false);
     bot.onMessage(keyword: bullyTagUserRegexp).listen((event) => _bullyTagUser(event));
 
@@ -108,11 +105,27 @@ class TelegramBot extends Bot<TeleDartMessage> {
     return mapToGeneralMessageEvent(event)..otherUserIds.add(event.replyToMessage?.from?.id.toString() ?? '');
   }
 
+  @override
+  MessageEvent mapToConversatorMessageEvent(TeleDartMessage event) {
+    var currentMessageId = event.messageId.toString();
+    var parentMessageId = event.replyToMessage?.messageId.toString() ?? currentMessageId;
+    var message = event.text?.split(' ').sublist(1).join(' ') ?? '';
+
+    return mapToGeneralMessageEvent(event)..parameters.addAll([parentMessageId, currentMessageId, message]);
+  }
+
+  @override
+  String getMessageId(Message message) {
+    return message.messageId.toString();
+  }
+
   Function _getEventMapper(Command command) {
     if (command.withParameters) {
       return mapToMessageEventWithParameters;
     } else if (command.withOtherUserIds) {
       return mapToMessageEventWithOtherUserIds;
+    } else if (command.conversatorCommand) {
+      return mapToConversatorMessageEvent;
     }
 
     return mapToGeneralMessageEvent;
@@ -265,25 +278,5 @@ class TelegramBot extends Bot<TeleDartMessage> {
     });
 
     await bot.answerInlineQuery(query.id, [...inlineQueryResult], cacheTime: 10);
-  }
-
-  void _askConversator(TeleDartMessage event) async {
-    var chatId = event.chat.id.toString();
-    var currentMessageId = event.messageId.toString();
-    var parentMessageId = event.replyToMessage?.messageId.toString() ?? currentMessageId;
-    var message = event.text?.split(' ').sublist(1).join(' ') ?? '';
-
-    var response = await conversator.getConversationReply(
-        chatId: chatId, parentMessageId: parentMessageId, currentMessageId: currentMessageId, message: message);
-
-    var conversatorResponseMessage = await sendMessage(chatId, response);
-    var conversationId = await conversator.getConversationId(chatId, parentMessageId);
-
-    await conversator.saveConversationMessage(
-        chatId: chatId,
-        conversationId: conversationId,
-        currentMessageId: conversatorResponseMessage.messageId.toString(),
-        message: response,
-        fromUser: false);
   }
 }

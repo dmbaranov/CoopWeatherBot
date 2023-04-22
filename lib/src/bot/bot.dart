@@ -18,7 +18,7 @@ import 'package:weather/src/modules/chat_manager.dart';
 import 'package:weather/src/modules/commands_manager.dart';
 
 // TODO: move part of the logic to utils using self
-abstract class Bot<T> {
+abstract class Bot<PlatformEvent, PlatformMessage> {
   final String botToken;
   final String adminId;
   final String repoUrl;
@@ -89,19 +89,25 @@ abstract class Bot<T> {
   }
 
   @protected
-  void setupCommand(Command<T> command);
+  void setupCommand(Command<PlatformEvent> command);
 
   @protected
-  MessageEvent mapToGeneralMessageEvent(T event);
+  MessageEvent mapToGeneralMessageEvent(PlatformEvent event);
 
   @protected
-  MessageEvent mapToMessageEventWithParameters(T event, [List? otherParameters]);
+  MessageEvent mapToMessageEventWithParameters(PlatformEvent event, [List? otherParameters]);
 
   @protected
-  MessageEvent mapToMessageEventWithOtherUserIds(T event, [List? otherUserIds]);
+  MessageEvent mapToMessageEventWithOtherUserIds(PlatformEvent event, [List? otherUserIds]);
 
   @protected
-  Future<dynamic> sendMessage(String chatId, String message);
+  MessageEvent mapToConversatorMessageEvent(PlatformEvent event);
+
+  @protected
+  Future<PlatformMessage> sendMessage(String chatId, String message);
+
+  @protected
+  String getMessageId(PlatformMessage message);
 
   @protected
   void setupPlatformSpecificCommands();
@@ -187,6 +193,13 @@ abstract class Bot<T> {
         wrapper: cm.userCommand,
         withParameters: true,
         successCallback: searchYoutubeTrack));
+
+    setupCommand(Command(
+        command: 'ask',
+        description: '[U] Ask for advice or anything else from the Conversator',
+        wrapper: cm.userCommand,
+        conversatorCommand: true,
+        successCallback: askConversator));
 
     setupCommand(Command(command: 'na', description: '[U] Check if bot is alive', wrapper: cm.userCommand, successCallback: healthCheck));
 
@@ -450,6 +463,29 @@ abstract class Bot<T> {
   @protected
   void healthCheck(MessageEvent event) async {
     await sendMessage(event.chatId, sm.get('general.bot_is_alive'));
+  }
+
+  @protected
+  void askConversator(MessageEvent event) async {
+    if (!_parametersCheck(event)) return;
+
+    var parentMessageId = event.parameters[0];
+    var currentMessageId = event.parameters[1];
+    var message = event.parameters[2];
+
+    var response = await conversator.getConversationReply(
+        chatId: event.chatId, parentMessageId: parentMessageId, currentMessageId: currentMessageId, message: message);
+
+    var conversatorResponseMessage = await sendMessage(event.chatId, response);
+    var conversatorResponseMessageId = getMessageId(conversatorResponseMessage);
+    var conversationId = await conversator.getConversationId(event.chatId, parentMessageId);
+
+    await conversator.saveConversationMessage(
+        chatId: event.chatId,
+        conversationId: conversationId,
+        currentMessageId: conversatorResponseMessageId,
+        message: response,
+        fromUser: false);
   }
 
   @protected

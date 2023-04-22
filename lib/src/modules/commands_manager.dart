@@ -31,6 +31,7 @@ class Command<T> {
   final CommandsWrapper wrapper;
   final bool withParameters;
   final bool withOtherUserIds;
+  final bool conversatorCommand;
   final OnSuccessCallback successCallback;
 
   Command(
@@ -39,7 +40,8 @@ class Command<T> {
       required this.wrapper,
       required this.successCallback,
       this.withParameters = false,
-      this.withOtherUserIds = false});
+      this.withOtherUserIds = false,
+      this.conversatorCommand = false});
 }
 
 // TODO: instead of querying database every time, use a cache

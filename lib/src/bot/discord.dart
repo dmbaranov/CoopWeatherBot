@@ -10,7 +10,7 @@ import 'package:weather/src/bot/bot.dart';
 import 'package:weather/src/modules/chat_manager.dart';
 import 'package:weather/src/modules/commands_manager.dart';
 
-class DiscordBot extends Bot<IChatContext> {
+class DiscordBot extends Bot<IChatContext, IMessage> {
   final List<ChatCommand> _commands = [];
   late INyxxWebsocket bot;
 
@@ -46,11 +46,11 @@ class DiscordBot extends Bot<IChatContext> {
   }
 
   @override
-  Future<void> sendMessage(String chatId, String message) async {
+  Future<IMessage> sendMessage(String chatId, String message) async {
     var guild = await bot.httpEndpoints.fetchGuild(Snowflake(chatId));
     var channelId = guild.systemChannel?.id.toString() ?? '';
 
-    await bot.httpEndpoints.sendMessage(Snowflake(channelId), MessageBuilder.content(message));
+    return bot.httpEndpoints.sendMessage(Snowflake(channelId), MessageBuilder.content(message));
   }
 
   @override
@@ -95,6 +95,16 @@ class DiscordBot extends Bot<IChatContext> {
   @override
   MessageEvent mapToMessageEventWithOtherUserIds(IChatContext event, [List? otherUserIds]) {
     return mapToGeneralMessageEvent(event)..otherUserIds.addAll(otherUserIds?.map((param) => param.toString()).toList() ?? []);
+  }
+
+  @override
+  MessageEvent mapToConversatorMessageEvent(IChatContext event) {
+    return mapToGeneralMessageEvent(event);
+  }
+
+  @override
+  String getMessageId(IMessage message) {
+    return message.id.toString();
   }
 
   CommandsPlugin _setupDiscordCommands() {

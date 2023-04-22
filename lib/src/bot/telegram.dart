@@ -12,7 +12,7 @@ import 'package:weather/src/modules/commands_manager.dart';
 
 // TODO: maybe remove all the logic from Bot class and put it to the modules itself like invokeIncrease, invokeDecrease, invokeAdd, etc.
 // this methods would accept MessageEvent and the Bot class will have something like sendMessage(reputation.invokeIncrease());n
-class TelegramBot extends Bot<TeleDartMessage> {
+class TelegramBot extends Bot<TeleDartMessage, Message> {
   late TeleDart bot;
   late Telegram telegram;
   late Debouncer<TeleDartInlineQuery?> debouncer = Debouncer(Duration(seconds: 1), initialValue: null);
@@ -48,14 +48,12 @@ class TelegramBot extends Bot<TeleDartMessage> {
   }
 
   @override
-  Future<void> sendMessage(String chatId, String message) async {
+  Future<Message> sendMessage(String chatId, String message) async {
     if (message.isEmpty) {
-      await telegram.sendMessage(chatId, sm.get('general.something_went_wrong'));
-
-      return;
+      return telegram.sendMessage(chatId, sm.get('general.something_went_wrong'));
     }
 
-    await telegram.sendMessage(chatId, message);
+    return telegram.sendMessage(chatId, message);
   }
 
   @override
@@ -90,7 +88,6 @@ class TelegramBot extends Bot<TeleDartMessage> {
         chatId: event.chat.id.toString(),
         userId: event.from?.id.toString() ?? '',
         isBot: event.replyToMessage?.from?.isBot ?? false,
-        message: event.text?.split(' ').sublist(1).join(' ') ?? '',
         otherUserIds: [],
         parameters: [],
         rawMessage: event);
@@ -108,11 +105,27 @@ class TelegramBot extends Bot<TeleDartMessage> {
     return mapToGeneralMessageEvent(event)..otherUserIds.add(event.replyToMessage?.from?.id.toString() ?? '');
   }
 
+  @override
+  MessageEvent mapToConversatorMessageEvent(TeleDartMessage event, [List? otherParameters]) {
+    var currentMessageId = event.messageId.toString();
+    var parentMessageId = event.replyToMessage?.messageId.toString() ?? currentMessageId;
+    var message = event.text?.split(' ').sublist(1).join(' ') ?? '';
+
+    return mapToGeneralMessageEvent(event)..parameters.addAll([parentMessageId, currentMessageId, message]);
+  }
+
+  @override
+  String getMessageId(Message message) {
+    return message.messageId.toString();
+  }
+
   Function _getEventMapper(Command command) {
     if (command.withParameters) {
       return mapToMessageEventWithParameters;
     } else if (command.withOtherUserIds) {
       return mapToMessageEventWithOtherUserIds;
+    } else if (command.conversatorCommand) {
+      return mapToConversatorMessageEvent;
     }
 
     return mapToGeneralMessageEvent;
@@ -126,14 +139,7 @@ class TelegramBot extends Bot<TeleDartMessage> {
 
       allChats.forEach((chatId) {
         var fakeEvent = MessageEvent(
-            platform: ChatPlatform.telegram,
-            chatId: chatId,
-            userId: '',
-            isBot: false,
-            message: '',
-            otherUserIds: [],
-            parameters: [],
-            rawMessage: '');
+            platform: ChatPlatform.telegram, chatId: chatId, userId: '', isBot: false, otherUserIds: [], parameters: [], rawMessage: '');
 
         sendNewsToChat(fakeEvent);
       });

@@ -106,7 +106,7 @@ class TelegramBot extends Bot<TeleDartMessage, Message> {
   }
 
   @override
-  MessageEvent mapToConversatorMessageEvent(TeleDartMessage event) {
+  MessageEvent mapToConversatorMessageEvent(TeleDartMessage event, [List? otherParameters]) {
     var currentMessageId = event.messageId.toString();
     var parentMessageId = event.replyToMessage?.messageId.toString() ?? currentMessageId;
     var message = event.text?.split(' ').sublist(1).join(' ') ?? '';

@@ -101,7 +101,7 @@ abstract class Bot<PlatformEvent, PlatformMessage> {
   MessageEvent mapToMessageEventWithOtherUserIds(PlatformEvent event, [List? otherUserIds]);
 
   @protected
-  MessageEvent mapToConversatorMessageEvent(PlatformEvent event);
+  MessageEvent mapToConversatorMessageEvent(PlatformEvent event, [List? otherParameters]);
 
   @protected
   Future<PlatformMessage> sendMessage(String chatId, String message);
@@ -468,6 +468,16 @@ abstract class Bot<PlatformEvent, PlatformMessage> {
   @protected
   void askConversator(MessageEvent event) async {
     if (!_parametersCheck(event)) return;
+
+    if (event.parameters.length == 2 && event.parameters[0] == 'skip') {
+      // On Discord platform it's impossible to reply with a command. For now, simply skip the conversation and get reply straight away
+      var question = event.parameters[1];
+      var reply = await conversator.getSingleReply(question);
+
+      await sendMessage(event.chatId, reply);
+
+      return;
+    }
 
     var parentMessageId = event.parameters[0];
     var currentMessageId = event.parameters[1];

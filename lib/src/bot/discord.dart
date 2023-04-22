@@ -59,6 +59,8 @@ class DiscordBot extends Bot<IChatContext, IMessage> {
       _setupCommandWithParameters(command);
     } else if (command.withOtherUserIds) {
       _setupCommandWithOtherUserIds(command);
+    } else if (command.conversatorCommand) {
+      _setupCommandForConversator(command);
     } else {
       _setupSimpleCommand(command);
     }
@@ -98,8 +100,8 @@ class DiscordBot extends Bot<IChatContext, IMessage> {
   }
 
   @override
-  MessageEvent mapToConversatorMessageEvent(IChatContext event) {
-    return mapToGeneralMessageEvent(event);
+  MessageEvent mapToConversatorMessageEvent(IChatContext event, [List? otherParameters]) {
+    return mapToGeneralMessageEvent(event)..parameters.addAll(['skip', otherParameters?[0]]);
   }
 
   @override
@@ -137,6 +139,14 @@ class DiscordBot extends Bot<IChatContext, IMessage> {
 
       command.wrapper(mapToMessageEventWithOtherUserIds(context, [who.user.id.toString()]),
           onSuccess: command.successCallback, onFailure: sendNoAccessMessage);
+    }));
+  }
+
+  void _setupCommandForConversator(Command command) {
+    _commands.add(ChatCommand(command.command, command.description, (IChatContext context, String what) async {
+      await context.respond(MessageBuilder.content(what));
+
+      command.wrapper(mapToConversatorMessageEvent(context, [what]), onSuccess: command.successCallback, onFailure: sendNoAccessMessage);
     }));
   }
 

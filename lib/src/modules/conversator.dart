@@ -26,6 +26,12 @@ class Conversator {
     return response['choices']?[0]?['message']?['content'] ?? 'No response';
   }
 
+  Future<String> getSingleReply(String question) async {
+    var response = await _getConversatorResponse([], question);
+
+    return response['choices']?[0]?['message']?['content'] ?? 'No response';
+  }
+
   Future<void> saveConversationMessage(
       {required String chatId,
       required String conversationId,

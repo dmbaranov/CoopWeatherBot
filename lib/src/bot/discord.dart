@@ -168,11 +168,8 @@ class DiscordBot extends Bot<IChatContext, IMessage> {
       var onlineUsers = await onlineFile.readAsLines();
 
       await Future.forEach(authorizedChats, (chatId) async {
-        var guild = await bot.httpEndpoints.fetchGuild(Snowflake(chatId));
-        var channelId = guild.systemChannel?.id.toString() ?? '';
-
         if (onlineUsers.isEmpty) {
-          return sendMessage(channelId, sm.get('hero.users_at_five.no_users'));
+          return sendMessage(chatId, sm.get('hero.users_at_five.no_users'));
         }
 
         var heroesMessage = sm.get('hero.users_at_five.list');
@@ -187,7 +184,7 @@ class DiscordBot extends Bot<IChatContext, IMessage> {
           }
         });
 
-        await sendMessage(channelId, heroesMessage);
+        await sendMessage(chatId, heroesMessage);
       });
 
       await onlineFile.delete();

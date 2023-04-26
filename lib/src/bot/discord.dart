@@ -5,10 +5,13 @@ import 'package:collection/collection.dart';
 import 'package:nyxx/nyxx.dart';
 import 'package:nyxx_commands/nyxx_commands.dart';
 import 'package:cron/cron.dart';
+import 'package:uuid/uuid.dart';
 
 import 'package:weather/src/bot/bot.dart';
 import 'package:weather/src/modules/chat_manager.dart';
 import 'package:weather/src/modules/commands_manager.dart';
+
+const uuid = Uuid();
 
 class DiscordBot extends Bot<IChatContext, IMessage> {
   final List<ChatCommand> _commands = [];
@@ -100,8 +103,8 @@ class DiscordBot extends Bot<IChatContext, IMessage> {
   }
 
   @override
-  MessageEvent mapToConversatorMessageEvent(IChatContext event, [List? otherParameters]) {
-    return mapToGeneralMessageEvent(event)..parameters.addAll(['skip', otherParameters?[0]]);
+  MessageEvent mapToConversatorMessageEvent(IChatContext event, [List<String> otherParameters = const []]) {
+    return mapToGeneralMessageEvent(event)..parameters.addAll(otherParameters);
   }
 
   @override
@@ -143,10 +146,14 @@ class DiscordBot extends Bot<IChatContext, IMessage> {
   }
 
   void _setupCommandForConversator(Command command) {
-    _commands.add(ChatCommand(command.command, command.description, (IChatContext context, String what) async {
+    _commands.add(ChatCommand(command.command, command.description, (IChatContext context, String what, [String? conversationId]) async {
       await context.respond(MessageBuilder.content(what));
 
-      command.wrapper(mapToConversatorMessageEvent(context, [what]), onSuccess: command.successCallback, onFailure: sendNoAccessMessage);
+      conversationId ??= uuid.v4();
+      var currentMessageId = uuid.v4();
+
+      command.wrapper(mapToConversatorMessageEvent(context, [conversationId, currentMessageId, what]),
+          onSuccess: command.successCallback, onFailure: sendNoAccessMessage);
     }));
   }
 

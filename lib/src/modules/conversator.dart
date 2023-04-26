@@ -5,6 +5,7 @@ import 'package:weather/src/modules/database-manager/entities/conversator_chat_e
 
 const String _converstorApiURL = 'https://api.openai.com/v1/chat/completions';
 const String _conversatorModel = 'gpt-3.5-turbo';
+const int maxTokens = 4096;
 
 class Conversator {
   final DatabaseManager dbManager;
@@ -21,13 +22,17 @@ class Conversator {
     await saveConversationMessage(
         chatId: chatId, conversationId: conversationId, currentMessageId: currentMessageId, message: message, fromUser: true);
 
-    var response = await _getConversatorResponse(previousMessages, message);
+    var wholeConversation = [...previousMessages, ConversatorChatMessage(message: message, fromUser: true)];
 
-    return response['choices']?[0]?['message']?['content'] ?? 'No response';
+    var rawResponse = await _getConversatorResponse(wholeConversation);
+    var response = rawResponse['choices']?[0]?['message']?['content'] ?? 'No response';
+    var tokens = rawResponse['usage']['total_tokens'] ?? -1;
+
+    return '#$conversationId ($tokens/$maxTokens)\n\n$response';
   }
 
-  Future<String> getSingleReply(String question) async {
-    var response = await _getConversatorResponse([], question);
+  Future<String> getSingleReply(String message) async {
+    var response = await _getConversatorResponse([ConversatorChatMessage(message: message, fromUser: true)]);
 
     return response['choices']?[0]?['message']?['content'] ?? 'No response';
   }
@@ -47,11 +52,9 @@ class Conversator {
     return conversationId;
   }
 
-  Future<Map<String, dynamic>> _getConversatorResponse(List<ConversatorChatMessage> previousMessages, String question) async {
-    var formattedMessages = previousMessages
-        .map((message) => {'role': message.fromUser ? 'user' : 'system', 'content': message.message})
-        .toList()
-      ..add({'role': 'user', 'content': question});
+  Future<Map<String, dynamic>> _getConversatorResponse(List<ConversatorChatMessage> conversation) async {
+    var formattedMessages =
+        conversation.map((message) => {'role': message.fromUser ? 'user' : 'system', 'content': message.message}).toList();
 
     var headers = {'Content-Type': 'application/json', 'Authorization': 'Bearer $conversatorApiKey'};
     var body = {'model': _model, 'messages': formattedMessages};

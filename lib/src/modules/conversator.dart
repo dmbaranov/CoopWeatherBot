@@ -28,7 +28,7 @@ class Conversator {
     var response = rawResponse['choices']?[0]?['message']?['content'] ?? 'No response';
     var tokens = rawResponse['usage']['total_tokens'] ?? -1;
 
-    return '#$conversationId ($tokens/$maxTokens)\n\n$response';
+    return '# $conversationId\n($tokens/$maxTokens)\n\n$response';
   }
 
   Future<String> getSingleReply(String message) async {

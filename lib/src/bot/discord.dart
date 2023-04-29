@@ -138,7 +138,8 @@ class DiscordBot extends Bot<IChatContext, IMessage> {
 
   void _setupCommandWithOtherUserIds(Command command) {
     _commands.add(ChatCommand(command.command, command.description, (IChatContext context, IMember who) async {
-      await context.respond(MessageBuilder.content(who.user.getFromCache()?.username ?? 'Unknown user'));
+      var user = await who.user.getOrDownload();
+      await context.respond(MessageBuilder.content(user.username));
 
       command.wrapper(mapToMessageEventWithOtherUserIds(context, [who.user.id.toString()]),
           onSuccess: command.successCallback, onFailure: sendNoAccessMessage);

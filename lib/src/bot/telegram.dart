@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:io' as io;
 
 import 'package:teledart/teledart.dart';
 import 'package:teledart/telegram.dart';
@@ -50,7 +51,7 @@ class TelegramBot extends Bot<TeleDartMessage, Message> {
   @override
   Future<Message> sendMessage(String chatId, String message) async {
     if (message.isEmpty) {
-      return telegram.sendMessage(chatId, sm.get('general.something_went_wrong'));
+      return telegram.sendMessage(chatId, chatManager.getText(chatId, 'general.something_went_wrong'));
     }
 
     return telegram.sendMessage(chatId, message);
@@ -66,13 +67,14 @@ class TelegramBot extends Bot<TeleDartMessage, Message> {
   }
 
   @override
-  void setupPlatformSpecificCommands() {
+  void setupPlatformSpecificCommands() async {
     bot.onCommand('accordion').listen((event) => cm.userCommand(mapToGeneralMessageEvent(event),
         onSuccessCustom: () => _startTelegramAccordionPoll(event), onFailure: sendNoAccessMessage));
 
-    var bullyTagUserRegexp = RegExp(sm.get('general.bully_tag_user_regexp'), caseSensitive: false);
-    bot.onMessage(keyword: bullyTagUserRegexp).listen((event) => _bullyTagUser(event));
+    var bullyTagUserRegexpRaw = await io.File('assets/misc/bully_tag_user.txt').readAsString();
+    var bullyTagUserRegexp = bullyTagUserRegexpRaw.replaceAll('\n', '');
 
+    bot.onMessage(keyword: RegExp(bullyTagUserRegexp, caseSensitive: false)).listen((event) => _bullyTagUser(event));
     bot.onInlineQuery().listen((query) {
       debouncer.value = query;
     });
@@ -173,11 +175,15 @@ class TelegramBot extends Bot<TeleDartMessage, Message> {
 
   void _startTelegramAccordionPoll(TeleDartMessage message) async {
     var chatId = message.chat.id.toString();
-    const pollTime = 15;
-    var pollOptions = [sm.get('accordion.options.yes'), sm.get('accordion.options.no'), sm.get('accordion.options.maybe')];
+    const pollTime = 180;
+    var pollOptions = [
+      chatManager.getText(chatId, 'accordion.options.yes'),
+      chatManager.getText(chatId, 'accordion.options.no'),
+      chatManager.getText(chatId, 'accordion.options.maybe')
+    ];
 
     if (accordionPoll.isVoteActive) {
-      await sendMessage(chatId, sm.get('accordion.other.accordion_vote_in_progress'));
+      await sendMessage(chatId, chatManager.getText(chatId, 'accordion.other.accordion_vote_in_progress'));
 
       return;
     }
@@ -185,11 +191,11 @@ class TelegramBot extends Bot<TeleDartMessage, Message> {
     var votedMessageAuthor = message.replyToMessage?.from;
 
     if (votedMessageAuthor == null) {
-      await sendMessage(chatId, sm.get('accordion.other.message_not_chosen'));
+      await sendMessage(chatId, chatManager.getText(chatId, 'accordion.other.message_not_chosen'));
 
       return;
     } else if (votedMessageAuthor.isBot) {
-      await sendMessage(chatId, sm.get('accordion.other.bot_vote_attempt'));
+      await sendMessage(chatId, chatManager.getText(chatId, 'accordion.other.bot_vote_attempt'));
 
       return;
     }
@@ -198,9 +204,9 @@ class TelegramBot extends Bot<TeleDartMessage, Message> {
 
     var createdPoll = await telegram.sendPoll(
       chatId,
-      sm.get('accordion.other.title'),
+      chatManager.getText(chatId, 'accordion.other.title'),
       pollOptions,
-      explanation: sm.get('accordion.other.explanation'),
+      explanation: chatManager.getText(chatId, 'accordion.other.explanation'),
       type: 'quiz',
       correctOptionId: Random().nextInt(pollOptions.length),
       openPeriod: pollTime,
@@ -228,16 +234,16 @@ class TelegramBot extends Bot<TeleDartMessage, Message> {
 
     switch (voteResult) {
       case AccordionVoteResults.yes:
-        await sendMessage(chatId, sm.get('accordion.results.yes'));
+        await sendMessage(chatId, chatManager.getText(chatId, 'accordion.results.yes'));
         break;
       case AccordionVoteResults.no:
-        await sendMessage(chatId, sm.get('accordion.results.no'));
+        await sendMessage(chatId, chatManager.getText(chatId, 'accordion.results.no'));
         break;
       case AccordionVoteResults.maybe:
-        await sendMessage(chatId, sm.get('accordion.results.maybe'));
+        await sendMessage(chatId, chatManager.getText(chatId, 'accordion.results.maybe'));
         break;
       case AccordionVoteResults.noResults:
-        await sendMessage(chatId, sm.get('accordion.results.noResults'));
+        await sendMessage(chatId, chatManager.getText(chatId, 'accordion.results.noResults'));
         break;
     }
 

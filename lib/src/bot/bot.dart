@@ -5,7 +5,6 @@ import 'package:meta/meta.dart';
 import 'package:postgres/postgres.dart';
 
 import 'package:weather/src/modules/database-manager/database_manager.dart';
-import 'package:weather/src/modules/swearwords_manager.dart';
 import 'package:weather/src/modules/user_manager.dart';
 import 'package:weather/src/modules/weather_manager.dart';
 import 'package:weather/src/modules/panorama.dart';
@@ -29,8 +28,7 @@ abstract class Bot<PlatformEvent, PlatformMessage> {
 
   @protected
   late DatabaseManager dbManager;
-  @protected
-  late SwearwordsManager sm;
+
   @protected
   late UserManager userManager;
   @protected
@@ -73,9 +71,6 @@ abstract class Bot<PlatformEvent, PlatformMessage> {
 
     chatManager = ChatManager(dbManager: dbManager);
     await chatManager.initialize();
-
-    sm = SwearwordsManager();
-    await sm.initialize();
 
     panoramaNews = PanoramaNews(dbManager: dbManager);
     panoramaNews.initialize();
@@ -238,7 +233,7 @@ abstract class Bot<PlatformEvent, PlatformMessage> {
 
   bool _parametersCheck(MessageEvent event, [int numberOfParameters = 1]) {
     if (event.parameters.whereNot((parameter) => parameter.isEmpty).length < numberOfParameters) {
-      sendMessage(event.chatId, sm.get('general.something_went_wrong'));
+      sendMessage(event.chatId, chatManager.getText(event.chatId, 'general.something_went_wrong'));
 
       return false;
     }
@@ -248,7 +243,7 @@ abstract class Bot<PlatformEvent, PlatformMessage> {
 
   bool _userIdsCheck(MessageEvent event, [int numberOfIds = 1]) {
     if (event.otherUserIds.whereNot((id) => id.isEmpty).length < numberOfIds) {
-      sendMessage(event.chatId, sm.get('general.something_went_wrong'));
+      sendMessage(event.chatId, chatManager.getText(event.chatId, 'general.something_went_wrong'));
 
       return false;
     }
@@ -260,29 +255,29 @@ abstract class Bot<PlatformEvent, PlatformMessage> {
     if (operationResult) {
       sendMessage(chatId, successfulMessage);
     } else {
-      sendMessage(chatId, sm.get('general.something_went_wrong'));
+      sendMessage(chatId, chatManager.getText(chatId, 'general.something_went_wrong'));
     }
   }
 
   void _handleReputationChange(MessageEvent event, ReputationChangeResult result) async {
     switch (result) {
       case ReputationChangeResult.increaseSuccess:
-        await sendMessage(event.chatId, sm.get('reputation.change.increase_success'));
+        await sendMessage(event.chatId, chatManager.getText(event.chatId, 'reputation.change.increase_success'));
         break;
       case ReputationChangeResult.decreaseSuccess:
-        await sendMessage(event.chatId, sm.get('reputation.change.decrease_success'));
+        await sendMessage(event.chatId, chatManager.getText(event.chatId, 'reputation.change.decrease_success'));
         break;
       case ReputationChangeResult.userNotFound:
-        await sendMessage(event.chatId, sm.get('reputation.change.user_not_found'));
+        await sendMessage(event.chatId, chatManager.getText(event.chatId, 'reputation.change.user_not_found'));
         break;
       case ReputationChangeResult.selfUpdate:
-        await sendMessage(event.chatId, sm.get('reputation.change.self_update'));
+        await sendMessage(event.chatId, chatManager.getText(event.chatId, 'reputation.change.self_update'));
         break;
       case ReputationChangeResult.notEnoughOptions:
-        await sendMessage(event.chatId, sm.get('reputation.change.not_enough_options'));
+        await sendMessage(event.chatId, chatManager.getText(event.chatId, 'reputation.change.not_enough_options'));
         break;
       case ReputationChangeResult.systemError:
-        await sendMessage(event.chatId, sm.get('general.something_went_wrong'));
+        await sendMessage(event.chatId, chatManager.getText(event.chatId, 'general.something_went_wrong'));
         break;
     }
   }
@@ -313,12 +308,12 @@ abstract class Bot<PlatformEvent, PlatformMessage> {
 
   @protected
   sendNoAccessMessage(MessageEvent event) async {
-    await sendMessage(event.chatId, sm.get('general.no_access'));
+    await sendMessage(event.chatId, chatManager.getText(event.chatId, 'general.no_access'));
   }
 
   @protected
   sendErrorMessage(MessageEvent event) async {
-    await sendMessage(event.chatId, sm.get('general.something_went_wrong'));
+    await sendMessage(event.chatId, chatManager.getText(event.chatId, 'general.something_went_wrong'));
   }
 
   @protected
@@ -328,7 +323,7 @@ abstract class Bot<PlatformEvent, PlatformMessage> {
     var cityToAdd = event.parameters[0];
     var result = await weatherManager.addCity(event.chatId, cityToAdd);
 
-    _sendOperationMessage(event.chatId, result, sm.get('weather.cities.added', {'city': cityToAdd}));
+    _sendOperationMessage(event.chatId, result, chatManager.getText(event.chatId, 'weather.cities.added', {'city': cityToAdd}));
   }
 
   @protected
@@ -338,7 +333,7 @@ abstract class Bot<PlatformEvent, PlatformMessage> {
     var cityToRemove = event.parameters[0];
     var result = await weatherManager.removeCity(event.chatId, event.parameters[0]);
 
-    _sendOperationMessage(event.chatId, result, sm.get('weather.cities.removed', {'city': cityToRemove}));
+    _sendOperationMessage(event.chatId, result, chatManager.getText(event.chatId, 'weather.cities.removed', {'city': cityToRemove}));
   }
 
   @protected
@@ -356,8 +351,8 @@ abstract class Bot<PlatformEvent, PlatformMessage> {
     var city = event.parameters[0];
     var temperature = await weatherManager.getWeatherForCity(city);
 
-    _sendOperationMessage(
-        event.chatId, temperature != null, sm.get('weather.cities.temperature', {'city': city, 'temperature': temperature.toString()}));
+    _sendOperationMessage(event.chatId, temperature != null,
+        chatManager.getText(event.chatId, 'weather.cities.temperature', {'city': city, 'temperature': temperature.toString()}));
   }
 
   @protected
@@ -367,7 +362,8 @@ abstract class Bot<PlatformEvent, PlatformMessage> {
     var nextHour = event.parameters[0];
     var result = await weatherManager.setNotificationHour(event.chatId, int.parse(nextHour));
 
-    _sendOperationMessage(event.chatId, result, sm.get('weather.other.notification_hour_set', {'hour': nextHour}));
+    _sendOperationMessage(
+        event.chatId, result, chatManager.getText(event.chatId, 'weather.other.notification_hour_set', {'hour': nextHour}));
   }
 
   @protected
@@ -395,7 +391,7 @@ abstract class Bot<PlatformEvent, PlatformMessage> {
 
       await sendMessage(event.chatId, newsMessage);
     } else {
-      await sendMessage(event.chatId, sm.get('general.something_went_wrong'));
+      await sendMessage(event.chatId, chatManager.getText(event.chatId, 'general.something_went_wrong'));
     }
   }
 
@@ -447,10 +443,12 @@ abstract class Bot<PlatformEvent, PlatformMessage> {
     var reputationMessage = '';
 
     reputationData.forEach((reputation) {
-      reputationMessage += sm.get('reputation.other.line', {'name': reputation.name, 'reputation': reputation.reputation.toString()});
+      reputationMessage += chatManager
+          .getText(event.chatId, 'reputation.other.line', {'name': reputation.name, 'reputation': reputation.reputation.toString()});
     });
 
-    _sendOperationMessage(event.chatId, reputationMessage.isNotEmpty, sm.get('reputation.other.list', {'reputation': reputationMessage}));
+    _sendOperationMessage(event.chatId, reputationMessage.isNotEmpty,
+        chatManager.getText(event.chatId, 'reputation.other.list', {'reputation': reputationMessage}));
   }
 
   @protected
@@ -464,7 +462,7 @@ abstract class Bot<PlatformEvent, PlatformMessage> {
 
   @protected
   void healthCheck(MessageEvent event) async {
-    await sendMessage(event.chatId, sm.get('general.bot_is_alive'));
+    await sendMessage(event.chatId, chatManager.getText(event.chatId, 'general.bot_is_alive'));
   }
 
   @protected
@@ -517,7 +515,7 @@ abstract class Bot<PlatformEvent, PlatformMessage> {
     var addResult =
         await userManager.addUser(userId: event.otherUserIds[0], chatId: event.chatId, name: fullUsername, isPremium: isPremium);
 
-    _sendOperationMessage(event.chatId, addResult, sm.get('user.user_added'));
+    _sendOperationMessage(event.chatId, addResult, chatManager.getText(event.chatId, 'user.user_added'));
   }
 
   @protected
@@ -526,7 +524,7 @@ abstract class Bot<PlatformEvent, PlatformMessage> {
 
     var removeResult = await userManager.removeUser(event.chatId, event.otherUserIds[0]);
 
-    _sendOperationMessage(event.chatId, removeResult, sm.get('user.user_removed'));
+    _sendOperationMessage(event.chatId, removeResult, chatManager.getText(event.chatId, 'user.user_removed'));
   }
 
   @protected
@@ -539,7 +537,7 @@ abstract class Bot<PlatformEvent, PlatformMessage> {
 
     var result = await chatManager.createChat(id: event.chatId, name: chatName, platform: event.platform);
 
-    _sendOperationMessage(event.chatId, result, sm.get('chat.initialization.success'));
+    _sendOperationMessage(event.chatId, result, chatManager.getText(event.chatId, 'chat.initialization.success'));
   }
 
   @protected
@@ -548,13 +546,13 @@ abstract class Bot<PlatformEvent, PlatformMessage> {
 
     var result = await reputation.createReputationData(event.chatId, event.otherUserIds[0]);
 
-    _sendOperationMessage(event.chatId, result, sm.get('general.success'));
+    _sendOperationMessage(event.chatId, result, chatManager.getText(event.chatId, 'general.success'));
   }
 
   @protected
   void createWeather(MessageEvent event) async {
     var result = await weatherManager.createWeatherData(event.chatId);
 
-    _sendOperationMessage(event.chatId, result, sm.get('general.success'));
+    _sendOperationMessage(event.chatId, result, chatManager.getText(event.chatId, 'general.success'));
   }
 }

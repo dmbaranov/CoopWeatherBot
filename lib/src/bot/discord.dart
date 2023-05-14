@@ -170,10 +170,10 @@ class DiscordBot extends Bot<IChatContext, IMessage> {
 
       await Future.forEach(authorizedChats, (chatId) async {
         if (onlineUsers.isEmpty) {
-          return sendMessage(chatId, sm.get('hero.users_at_five.no_users'));
+          return sendMessage(chatId, chatManager.getText(chatId, 'hero.users_at_five.no_users'));
         }
 
-        var heroesMessage = sm.get('hero.users_at_five.list');
+        var heroesMessage = chatManager.getText(chatId, 'hero.users_at_five.list');
         var chatUsers = await userManager.getUsersForChat(chatId);
 
         onlineUsers.forEach((userId) {

@@ -1,4 +1,14 @@
+import 'package:weather/src/modules/chat_manager.dart';
 import 'entity.dart';
+
+class ChatData {
+  final String id;
+  final String name;
+  final ChatPlatform platform;
+  final String swearwords_config;
+
+  ChatData({required this.id, required this.name, required this.platform, required this.swearwords_config});
+}
 
 class ChatEntity extends Entity {
   ChatEntity({required super.dbConnection}) : super(entityName: 'chat');
@@ -15,5 +25,17 @@ class ChatEntity extends Entity {
     }
 
     return ids.map((rawId) => rawId[0].toString()).toList();
+  }
+
+  Future<List<ChatData>> getAllChats() async {
+    var chats = await executeQuery(queriesMap['get_all_chats']);
+
+    if (chats == null || chats.isEmpty) {
+      return [];
+    }
+
+    return chats
+        .map((chat) => ChatData(id: chat[0], name: chat[1], platform: ChatPlatform.fromString(chat[2]), swearwords_config: chat[3]))
+        .toList();
   }
 }

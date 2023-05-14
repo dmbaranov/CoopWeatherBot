@@ -68,9 +68,11 @@ abstract class Bot<PlatformEvent, PlatformMessage> {
     dadJokes = DadJokes();
     youtube = Youtube(youtubeKey);
     conversator = Conversator(dbManager: dbManager, conversatorApiKey: conversatorKey);
-    chatManager = ChatManager(dbManager: dbManager);
     accordionPoll = AccordionPoll();
     cm = CommandsManager(adminId: adminId, dbManager: dbManager);
+
+    chatManager = ChatManager(dbManager: dbManager);
+    await chatManager.initialize();
 
     sm = SwearwordsManager();
     await sm.initialize();

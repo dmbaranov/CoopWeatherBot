@@ -5,9 +5,9 @@ class ChatData {
   final String id;
   final String name;
   final ChatPlatform platform;
-  final String swearwords_config;
+  final String swearwordsConfig;
 
-  ChatData({required this.id, required this.name, required this.platform, required this.swearwords_config});
+  ChatData({required this.id, required this.name, required this.platform, required this.swearwordsConfig});
 }
 
 class ChatEntity extends Entity {
@@ -35,7 +35,7 @@ class ChatEntity extends Entity {
     }
 
     return chats
-        .map((chat) => ChatData(id: chat[0], name: chat[1], platform: ChatPlatform.fromString(chat[2]), swearwords_config: chat[3]))
+        .map((chat) => ChatData(id: chat[0], name: chat[1], platform: ChatPlatform.fromString(chat[2]), swearwordsConfig: chat[3]))
         .toList();
   }
 }

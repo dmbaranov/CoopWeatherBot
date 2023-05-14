@@ -161,7 +161,7 @@ class DiscordBot extends Bot<IChatContext, IMessage> {
   void _startHeroCheckJob() async {
     // TODO: onlineUsers are returned for a single chat only. Fix this + make this job configurable per chat
     Cron().schedule(Schedule.parse('0 5 * * 6,0'), () async {
-      var authorizedChats = await chatManager.getAllChatIds(ChatPlatform.discord);
+      var authorizedChats = await chatManager.getAllChatIdsForPlatform(ChatPlatform.discord);
 
       await Process.run('${Directory.current.path}/generate-online', []);
 

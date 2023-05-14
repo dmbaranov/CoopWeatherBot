@@ -135,7 +135,7 @@ class TelegramBot extends Bot<TeleDartMessage, Message> {
     var panoramaStream = panoramaNews.panoramaStream;
 
     panoramaStream.listen((event) async {
-      var allChats = await chatManager.getAllChatIds(ChatPlatform.telegram);
+      var allChats = await chatManager.getAllChatIdsForPlatform(ChatPlatform.telegram);
 
       allChats.forEach((chatId) {
         var fakeEvent = MessageEvent(
@@ -147,7 +147,7 @@ class TelegramBot extends Bot<TeleDartMessage, Message> {
   }
 
   void _subscribeToWeather() async {
-    var telegramChats = await chatManager.getAllChatIds(ChatPlatform.telegram);
+    var telegramChats = await chatManager.getAllChatIdsForPlatform(ChatPlatform.telegram);
     var weatherStream = weatherManager.weatherStream;
 
     weatherStream.listen((weatherData) {

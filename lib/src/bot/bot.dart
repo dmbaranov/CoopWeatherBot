@@ -381,7 +381,7 @@ abstract class Bot<PlatformEvent, PlatformMessage> {
     var commitApiUrl = Uri.https('api.github.com', '/repos$repoUrl/commits');
     var response = await http.read(commitApiUrl).then(json.decode);
     var updateMessage = response[0]['commit']['message'];
-    var chatIds = await chatManager.getAllChatIds(ChatPlatform.telegram);
+    var chatIds = await chatManager.getAllChatIdsForPlatform(ChatPlatform.telegram);
 
     chatIds.forEach((chatId) => sendMessage(chatId, updateMessage));
   }

@@ -31,7 +31,7 @@ class ChatManager {
     return creationResult == 1;
   }
 
-  Future<List<String>> getAllChatIds(ChatPlatform platform) {
+  Future<List<String>> getAllChatIdsForPlatform(ChatPlatform platform) {
     return dbManager.chat.getAllChatIds(platform.value);
   }
 
@@ -59,7 +59,7 @@ class ChatManager {
     var allChats = await dbManager.chat.getAllChats();
 
     await Future.forEach(allChats, (chat) async {
-      var chatConfig = await File('assets/swearwords/swearwords.${chat.swearwords_config}.json').readAsString();
+      var chatConfig = await File('assets/swearwords/swearwords.${chat.swearwordsConfig}.json').readAsString();
 
       _chatToSwearwordsConfig[chat.id] = json.decode(chatConfig);
     });

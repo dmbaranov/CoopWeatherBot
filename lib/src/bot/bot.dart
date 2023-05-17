@@ -229,6 +229,13 @@ abstract class Bot<PlatformEvent, PlatformMessage> {
         description: '[A] Activate weather module for the chat',
         wrapper: cm.adminCommand,
         successCallback: createWeather));
+
+    setupCommand(Command(
+        command: 'setswearwordsconfig',
+        description: '[A] Set swearwords config for the chat',
+        wrapper: cm.adminCommand,
+        withParameters: true,
+        successCallback: setSwearwordsConfig));
   }
 
   bool _parametersCheck(MessageEvent event, [int numberOfParameters = 1]) {
@@ -552,6 +559,15 @@ abstract class Bot<PlatformEvent, PlatformMessage> {
   @protected
   void createWeather(MessageEvent event) async {
     var result = await weatherManager.createWeatherData(event.chatId);
+
+    _sendOperationMessage(event.chatId, result, chatManager.getText(event.chatId, 'general.success'));
+  }
+
+  @protected
+  void setSwearwordsConfig(MessageEvent event) async {
+    if (!_parametersCheck(event)) return;
+
+    var result = await chatManager.setSwearwordsConfig(event.chatId, event.parameters[0]);
 
     _sendOperationMessage(event.chatId, result, chatManager.getText(event.chatId, 'general.success'));
   }

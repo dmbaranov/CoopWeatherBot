@@ -55,6 +55,18 @@ class ChatManager {
     return text;
   }
 
+  Future<bool> setSwearwordsConfig(String chatId, String config) async {
+    var fileExists = await File('assets/swearwords/swearwords.$config.json').exists();
+
+    if (!fileExists) {
+      return false;
+    }
+
+    var updateResult = await dbManager.chat.setChatSwearwordsConfig(chatId, config);
+
+    return updateResult == 1;
+  }
+
   Future<void> _setupSwearwordsConfigs() async {
     var allChats = await dbManager.chat.getAllChats();
 

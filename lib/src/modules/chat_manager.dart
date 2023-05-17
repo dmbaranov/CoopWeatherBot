@@ -28,6 +28,8 @@ class ChatManager {
   Future<bool> createChat({required String id, required String name, required ChatPlatform platform}) async {
     var creationResult = await dbManager.chat.createChat(id, name, platform.value);
 
+    await _updateSwearwordsConfigs();
+
     return creationResult == 1;
   }
 

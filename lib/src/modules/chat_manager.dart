@@ -22,7 +22,7 @@ class ChatManager {
   ChatManager({required this.dbManager});
 
   Future<void> initialize() async {
-    await _setupSwearwordsConfigs();
+    await _updateSwearwordsConfigs();
   }
 
   Future<bool> createChat({required String id, required String name, required ChatPlatform platform}) async {
@@ -64,10 +64,16 @@ class ChatManager {
 
     var updateResult = await dbManager.chat.setChatSwearwordsConfig(chatId, config);
 
-    return updateResult == 1;
+    if (updateResult != 1) {
+      return false;
+    }
+
+    await _updateSwearwordsConfigs();
+
+    return true;
   }
 
-  Future<void> _setupSwearwordsConfigs() async {
+  Future<void> _updateSwearwordsConfigs() async {
     var allChats = await dbManager.chat.getAllChats();
 
     await Future.forEach(allChats, (chat) async {

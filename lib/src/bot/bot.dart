@@ -496,31 +496,12 @@ abstract class Bot<PlatformEvent, PlatformMessage> {
 
   @protected
   void addUser(MessageEvent event) async {
-    if (!_userIdsCheck(event)) return;
+    if (!_userIdsCheck(event) && !_parametersCheck(event)) return;
 
-    var fullUsername = '';
-    var isPremium = false;
+    var username = event.parameters[0];
+    var isPremium = event.parameters[1] == 'true';
 
-    if (event.platform == ChatPlatform.telegram) {
-      var repliedUser = event.rawMessage.replyToMessage.from;
-
-      fullUsername += repliedUser.firstName;
-
-      if (repliedUser.username != null) {
-        fullUsername += ' <${repliedUser.username}> ';
-      }
-
-      if (repliedUser.lastName != null) {
-        fullUsername += repliedUser.lastName;
-      }
-
-      isPremium = repliedUser.isPremium ?? false;
-    } else if (event.platform == ChatPlatform.discord && event.parameters.isNotEmpty) {
-      fullUsername = event.parameters[0];
-    }
-
-    var addResult =
-        await userManager.addUser(userId: event.otherUserIds[0], chatId: event.chatId, name: fullUsername, isPremium: isPremium);
+    var addResult = await userManager.addUser(userId: event.otherUserIds[0], chatId: event.chatId, name: username, isPremium: isPremium);
 
     _sendOperationMessage(event.chatId, addResult, chatManager.getText(event.chatId, 'user.user_added'));
   }

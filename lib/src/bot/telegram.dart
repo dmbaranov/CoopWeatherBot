@@ -104,7 +104,9 @@ class TelegramBot extends Bot<TeleDartMessage, Message> {
 
   @override
   MessageEvent mapToMessageEventWithOtherUserIds(TeleDartMessage event, [List? otherUserIds]) {
-    return mapToGeneralMessageEvent(event)..otherUserIds.add(event.replyToMessage?.from?.id.toString() ?? '');
+    return mapToGeneralMessageEvent(event)
+      ..otherUserIds.add(event.replyToMessage?.from?.id.toString() ?? '')
+      ..parameters.addAll(_getUserInfo(event));
   }
 
   @override
@@ -284,5 +286,24 @@ class TelegramBot extends Bot<TeleDartMessage, Message> {
     });
 
     await bot.answerInlineQuery(query.id, [...inlineQueryResult], cacheTime: 10);
+  }
+
+  List<String> _getUserInfo(TeleDartMessage message) {
+    var fullUsername = '';
+    var repliedUser = message.replyToMessage?.from;
+
+    if (repliedUser == null) {
+      return [];
+    }
+
+    fullUsername += repliedUser.firstName;
+
+    if (repliedUser.username != null) {
+      fullUsername += ' <${repliedUser.username}> ';
+    }
+
+    fullUsername += repliedUser.lastName ?? '';
+
+    return [fullUsername, repliedUser.isPremium?.toString() ?? 'false'];
   }
 }

@@ -139,9 +139,11 @@ class DiscordBot extends Bot<IChatContext, IMessage> {
   void _setupCommandWithOtherUserIds(Command command) {
     _commands.add(ChatCommand(command.command, command.description, (IChatContext context, IMember who) async {
       var user = await who.user.getOrDownload();
+      var isPremium = who.boostingSince != null ? 'true' : 'false';
       await context.respond(MessageBuilder.content(user.username));
 
-      var messageEvent = mapToMessageEventWithOtherUserIds(context, [who.user.id.toString()])..parameters.add(user.username);
+      var messageEvent = mapToMessageEventWithOtherUserIds(context, [who.user.id.toString()])
+        ..parameters.addAll([user.username, isPremium]);
 
       command.wrapper(messageEvent, onSuccess: command.successCallback, onFailure: sendNoAccessMessage);
     }));

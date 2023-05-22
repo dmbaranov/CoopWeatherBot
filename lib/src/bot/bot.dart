@@ -521,6 +521,8 @@ abstract class Bot<PlatformEvent, PlatformMessage> {
 
     if (event.platform == ChatPlatform.telegram) {
       chatName = event.rawMessage.chat.title.toString();
+    } else if (event.platform == ChatPlatform.discord) {
+      chatName = event.rawMessage.guild.name.toString();
     }
 
     var result = await chatManager.createChat(id: event.chatId, name: chatName, platform: event.platform);

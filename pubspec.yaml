@@ -3,7 +3,7 @@ description: Multi-platform bot that provides weather to the Coop chat plus some
 version: 3.5.0
 
 environment:
-  sdk: '>=2.19.2 <3.0.0'
+  sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
   dotenv: ^4.0.1

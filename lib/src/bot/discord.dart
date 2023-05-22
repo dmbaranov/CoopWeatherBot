@@ -141,8 +141,9 @@ class DiscordBot extends Bot<IChatContext, IMessage> {
       var user = await who.user.getOrDownload();
       await context.respond(MessageBuilder.content(user.username));
 
-      command.wrapper(mapToMessageEventWithOtherUserIds(context, [who.user.id.toString()]),
-          onSuccess: command.successCallback, onFailure: sendNoAccessMessage);
+      var messageEvent = mapToMessageEventWithOtherUserIds(context, [who.user.id.toString()])..parameters.add(user.username);
+
+      command.wrapper(messageEvent, onSuccess: command.successCallback, onFailure: sendNoAccessMessage);
     }));
   }
 

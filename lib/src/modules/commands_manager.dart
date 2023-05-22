@@ -5,7 +5,6 @@ import 'chat_manager.dart' show ChatPlatform;
 typedef CommandsWrapper = void Function(MessageEvent event, {required Function onFailure, Function? onSuccess, Function? onSuccessCustom});
 typedef OnSuccessCallback = void Function(MessageEvent event);
 
-// TODO: remove rawMessage?
 class MessageEvent<T> {
   final ChatPlatform platform;
   final String chatId;

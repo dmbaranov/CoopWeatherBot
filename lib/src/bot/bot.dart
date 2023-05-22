@@ -16,7 +16,6 @@ import 'package:weather/src/modules/conversator.dart';
 import 'package:weather/src/modules/chat_manager.dart';
 import 'package:weather/src/modules/commands_manager.dart';
 
-// TODO: move part of the logic to utils using self
 abstract class Bot<PlatformEvent, PlatformMessage> {
   final String botToken;
   final String adminId;
@@ -502,7 +501,6 @@ abstract class Bot<PlatformEvent, PlatformMessage> {
     var fullUsername = '';
     var isPremium = false;
 
-    // TODO: move to utils
     if (event.platform == ChatPlatform.telegram) {
       var repliedUser = event.rawMessage.replyToMessage.from;
 
@@ -517,6 +515,8 @@ abstract class Bot<PlatformEvent, PlatformMessage> {
       }
 
       isPremium = repliedUser.isPremium ?? false;
+    } else if (event.platform == ChatPlatform.discord && event.parameters.isNotEmpty) {
+      fullUsername = event.parameters[0];
     }
 
     var addResult =

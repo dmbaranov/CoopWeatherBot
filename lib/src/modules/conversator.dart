@@ -26,7 +26,7 @@ class Conversator {
 
     var rawResponse = await _getConversatorResponse(wholeConversation);
     var response = rawResponse['choices']?[0]?['message']?['content'] ?? 'No response';
-    var tokens = rawResponse['usage']['total_tokens'] ?? -1;
+    var tokens = rawResponse['usage']?['total_tokens'] ?? -1;
 
     return '# $conversationId\n($tokens/$maxTokens)\n\n$response';
   }

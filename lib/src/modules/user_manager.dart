@@ -81,6 +81,12 @@ class UserManager {
     return false;
   }
 
+  Future<bool> updatePremiumStatus(String userId, bool isPremium) async {
+    var updateResult = await dbManager.user.updatePremiumStatus(userId, isPremium);
+
+    return updateResult == 1;
+  }
+
   void _updateUserManagerStream() {
     _userManagerCronTask?.cancel();
 

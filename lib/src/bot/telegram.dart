@@ -171,7 +171,7 @@ class TelegramBot extends Bot<TeleDartMessage, Message> {
     var userManagerStream = userManager.userManagerStream;
 
     userManagerStream.listen((_) {
-      print('TODO: update users premium status');
+      _updateUsersPremiumStatus();
     });
   }
 
@@ -305,5 +305,24 @@ class TelegramBot extends Bot<TeleDartMessage, Message> {
     fullUsername += repliedUser.lastName ?? '';
 
     return [fullUsername, repliedUser.isPremium?.toString() ?? 'false'];
+  }
+
+  Future<void> _updateUsersPremiumStatus() async {
+    var allPlatformChats = await chatManager.getAllChatIdsForPlatform(ChatPlatform.telegram);
+
+    await Future.forEach(allPlatformChats, (chatId) async {
+      var chatUsers = await userManager.getUsersForChat(chatId);
+
+      await Future.forEach(chatUsers, (chatUser) async {
+        await Future.delayed(Duration(seconds: 1));
+
+        var telegramUser = await telegram.getChatMember(chatId, int.parse(chatUser.id));
+
+        if (chatUser.isPremium != telegramUser.user.isPremium) {
+          print('Updating premium status for ${chatUser.id}');
+          await userManager.updatePremiumStatus(chatUser.id, chatUser.isPremium);
+        }
+      });
+    });
   }
 }

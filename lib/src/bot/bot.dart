@@ -108,6 +108,9 @@ abstract class Bot<PlatformEvent, PlatformMessage> {
   @protected
   void setupPlatformSpecificCommands();
 
+  @protected
+  void subscribeToUserUpdates();
+
   void setupCommands() {
     setupCommand(Command(
         command: 'addcity',
@@ -304,15 +307,6 @@ abstract class Bot<PlatformEvent, PlatformMessage> {
   }
 
   @protected
-  void subscribeToUsersUpdates() {
-    var userManagerStream = userManager.userManagerStream;
-
-    userManagerStream.listen((_) {
-      print('TODO: update users premium status');
-    });
-  }
-
-  @protected
   sendNoAccessMessage(MessageEvent event) async {
     await sendMessage(event.chatId, chatManager.getText(event.chatId, 'general.no_access'));
   }
@@ -445,7 +439,7 @@ abstract class Bot<PlatformEvent, PlatformMessage> {
 
   @protected
   void sendReputationList(MessageEvent event) async {
-    var reputationData = await reputation.getReputationMessage(event.chatId);
+    var reputationData = await reputation.getReputationData(event.chatId);
     var reputationMessage = '';
 
     reputationData.forEach((reputation) {

@@ -75,6 +75,7 @@ class ChatManager {
     return true;
   }
 
+  // TODO: instead of this function, check _config every time check _config first, if not found, then fetch from database and update _config
   Future<void> _updateSwearwordsConfigs() async {
     var allChats = await dbManager.chat.getAllChats();
 

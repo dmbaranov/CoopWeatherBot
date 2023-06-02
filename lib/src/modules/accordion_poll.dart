@@ -2,7 +2,6 @@ enum AccordionVoteOption { yes, no, maybe }
 
 enum AccordionVoteResults { yes, no, maybe, noResults }
 
-// TODO: add voting duration as a parameter but not less than 180 sec
 class AccordionPoll {
   bool _isVoteActive = false;
   String? _userId;

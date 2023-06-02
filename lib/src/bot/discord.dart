@@ -41,6 +41,7 @@ class DiscordBot extends Bot<IChatContext, IMessage> {
       ..registerPlugin(IgnoreExceptions())
       ..registerPlugin(_setupDiscordCommands());
 
+    subscribeToUserUpdates();
     _startHeroCheckJob();
 
     await bot.connect();
@@ -110,6 +111,15 @@ class DiscordBot extends Bot<IChatContext, IMessage> {
   @override
   String getMessageId(IMessage message) {
     return message.id.toString();
+  }
+
+  @override
+  void subscribeToUserUpdates() {
+    var userManagerStream = userManager.userManagerStream;
+
+    userManagerStream.listen((_) {
+      _updateUserPremiumStatus();
+    });
   }
 
   CommandsPlugin _setupDiscordCommands() {
@@ -213,5 +223,25 @@ class DiscordBot extends Bot<IChatContext, IMessage> {
     });
 
     await channelUsersFile.delete();
+  }
+
+  Future<void> _updateUserPremiumStatus() async {
+    var allPlatformChats = await chatManager.getAllChatIdsForPlatform(ChatPlatform.discord);
+
+    await Future.forEach(allPlatformChats, (chatId) async {
+      var chatUsers = await userManager.getUsersForChat(chatId);
+
+      await Future.forEach(chatUsers, (chatUser) async {
+        await Future.delayed(Duration(seconds: 1));
+
+        var discordUser = await bot.httpEndpoints.fetchGuildMember(Snowflake(chatId), Snowflake(chatUser.id));
+        var discordPremiumStatus = discordUser.boostingSince != null;
+
+        if (chatUser.isPremium != discordPremiumStatus) {
+          print('Updating premium status for ${chatUser.id}');
+          await userManager.updatePremiumStatus(chatUser.id, discordPremiumStatus);
+        }
+      });
+    });
   }
 }

@@ -37,11 +37,11 @@ class TelegramBot extends Bot<TeleDartMessage, Message> {
     bot = TeleDart(botToken, Event(botName!), fetcher: LongPolling(Telegram(botToken), limit: 100, timeout: 50));
 
     setupCommands();
+    subscribeToUserUpdates();
     setupPlatformSpecificCommands();
 
     _subscribeToPanoramaNews();
     _subscribeToWeather();
-    _subscribeToUsersUpdate();
 
     bot.start();
 
@@ -123,6 +123,15 @@ class TelegramBot extends Bot<TeleDartMessage, Message> {
     return message.messageId.toString();
   }
 
+  @override
+  void subscribeToUserUpdates() {
+    var userManagerStream = userManager.userManagerStream;
+
+    userManagerStream.listen((_) {
+      _updateUsersPremiumStatus();
+    });
+  }
+
   Function _getEventMapper(Command command) {
     if (command.withParameters) {
       return mapToMessageEventWithParameters;
@@ -135,6 +144,7 @@ class TelegramBot extends Bot<TeleDartMessage, Message> {
     return mapToGeneralMessageEvent;
   }
 
+  // TODO: move this to bot.dart, add news_enabled flag and send news to all the enabled chats
   void _subscribeToPanoramaNews() {
     var panoramaStream = panoramaNews.panoramaStream;
 
@@ -317,10 +327,11 @@ class TelegramBot extends Bot<TeleDartMessage, Message> {
         await Future.delayed(Duration(seconds: 1));
 
         var telegramUser = await telegram.getChatMember(chatId, int.parse(chatUser.id));
+        var telegramPremiumStatus = telegramUser.user.isPremium ?? false;
 
-        if (chatUser.isPremium != telegramUser.user.isPremium) {
+        if (chatUser.isPremium != telegramPremiumStatus) {
           print('Updating premium status for ${chatUser.id}');
-          await userManager.updatePremiumStatus(chatUser.id, chatUser.isPremium);
+          await userManager.updatePremiumStatus(chatUser.id, telegramPremiumStatus);
         }
       });
     });

@@ -82,7 +82,7 @@ class Reputation {
     return result == 1;
   }
 
-  Future<List<ChatReputationData>> getReputationMessage(String chatId) async {
+  Future<List<ChatReputationData>> getReputationData(String chatId) async {
     var reputation = await dbManager.reputation.getReputationForChat(chatId);
 
     return reputation;

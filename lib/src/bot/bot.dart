@@ -373,11 +373,10 @@ abstract class Bot<PlatformEvent, PlatformMessage> {
 
   @protected
   void postUpdateMessage(MessageEvent event) async {
-    // TODO: add support for Discord
     var commitApiUrl = Uri.https('api.github.com', '/repos$repoUrl/commits');
     var response = await http.read(commitApiUrl).then(json.decode);
     var updateMessage = response[0]['commit']['message'];
-    var chatIds = await chatManager.getAllChatIdsForPlatform(ChatPlatform.telegram);
+    var chatIds = await chatManager.getAllChatIdsForPlatform(event.platform);
 
     chatIds.forEach((chatId) => sendMessage(chatId, updateMessage));
   }

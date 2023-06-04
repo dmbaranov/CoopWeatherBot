@@ -7,6 +7,8 @@ enum ReputationChangeOption { increase, decrease }
 
 enum ReputationChangeResult { increaseSuccess, decreaseSuccess, userNotFound, selfUpdate, notEnoughOptions, systemError }
 
+const numberOfVoteOptions = 3;
+
 class Reputation {
   final DatabaseManager dbManager;
 
@@ -18,8 +20,7 @@ class Reputation {
 
   void _startResetVotesJob() {
     Cron().schedule(Schedule.parse('0 0 * * *'), () async {
-      var numberOfOptions = 3;
-      var result = await dbManager.reputation.resetChangeOptions(numberOfOptions);
+      var result = await dbManager.reputation.resetChangeOptions(numberOfVoteOptions);
 
       if (result == 0) {
         print('Something went wrong with resetting reputation change options');
@@ -77,7 +78,7 @@ class Reputation {
 
   Future<bool> createReputationData(String chatId, String userId) async {
     // TODO: add 6 options for premium users
-    var result = await dbManager.reputation.createReputationData(chatId, userId, 3);
+    var result = await dbManager.reputation.createReputationData(chatId, userId, numberOfVoteOptions);
 
     return result == 1;
   }

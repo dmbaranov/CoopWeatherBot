@@ -41,7 +41,7 @@ class DiscordBot extends Bot<IChatContext, IMessage> {
       ..registerPlugin(IgnoreExceptions())
       ..registerPlugin(_setupDiscordCommands());
 
-    subscribeToUserUpdates();
+    _subscribeToUserUpdates();
     _startHeroCheckJob();
 
     await bot.connect();
@@ -114,11 +114,15 @@ class DiscordBot extends Bot<IChatContext, IMessage> {
   }
 
   @override
-  void subscribeToUserUpdates() {
-    var userManagerStream = userManager.userManagerStream;
+  Future<bool> getUserPremiumStatus(String chatId, String userId) async {
+    var discordUser = await bot.httpEndpoints.fetchGuildMember(Snowflake(chatId), Snowflake(userId));
 
-    userManagerStream.listen((_) {
-      _updateUserPremiumStatus();
+    return discordUser.boostingSince != null;
+  }
+
+  void _subscribeToUserUpdates() {
+    userManager.userManagerStream.listen((_) {
+      updateUsersPremiumStatus(ChatPlatform.discord);
     });
   }
 

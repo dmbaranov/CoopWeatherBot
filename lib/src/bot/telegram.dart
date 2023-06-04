@@ -37,11 +37,11 @@ class TelegramBot extends Bot<TeleDartMessage, Message> {
     bot = TeleDart(botToken, Event(botName!), fetcher: LongPolling(Telegram(botToken), limit: 100, timeout: 50));
 
     setupCommands();
-    subscribeToUserUpdates();
     setupPlatformSpecificCommands();
 
     _subscribeToPanoramaNews();
     _subscribeToWeather();
+    _subscribeToUserUpdates();
 
     bot.start();
 
@@ -124,11 +124,15 @@ class TelegramBot extends Bot<TeleDartMessage, Message> {
   }
 
   @override
-  void subscribeToUserUpdates() {
-    var userManagerStream = userManager.userManagerStream;
+  Future<bool> getUserPremiumStatus(String chatId, String userId) async {
+    var telegramUser = await telegram.getChatMember(chatId, int.parse(userId));
 
-    userManagerStream.listen((_) {
-      _updateUsersPremiumStatus();
+    return telegramUser.user.isPremium ?? false;
+  }
+
+  void _subscribeToUserUpdates() {
+    userManager.userManagerStream.listen((_) {
+      updateUsersPremiumStatus(ChatPlatform.telegram);
     });
   }
 
@@ -174,14 +178,6 @@ class TelegramBot extends Bot<TeleDartMessage, Message> {
       if (telegramChats.contains(weatherData.chatId)) {
         sendMessage(weatherData.chatId, message);
       }
-    });
-  }
-
-  void _subscribeToUsersUpdate() {
-    var userManagerStream = userManager.userManagerStream;
-
-    userManagerStream.listen((_) {
-      _updateUsersPremiumStatus();
     });
   }
 
@@ -315,25 +311,5 @@ class TelegramBot extends Bot<TeleDartMessage, Message> {
     fullUsername += repliedUser.lastName ?? '';
 
     return [fullUsername, repliedUser.isPremium?.toString() ?? 'false'];
-  }
-
-  Future<void> _updateUsersPremiumStatus() async {
-    var allPlatformChats = await chatManager.getAllChatIdsForPlatform(ChatPlatform.telegram);
-
-    await Future.forEach(allPlatformChats, (chatId) async {
-      var chatUsers = await userManager.getUsersForChat(chatId);
-
-      await Future.forEach(chatUsers, (chatUser) async {
-        await Future.delayed(Duration(seconds: 1));
-
-        var telegramUser = await telegram.getChatMember(chatId, int.parse(chatUser.id));
-        var telegramPremiumStatus = telegramUser.user.isPremium ?? false;
-
-        if (chatUser.isPremium != telegramPremiumStatus) {
-          print('Updating premium status for ${chatUser.id}');
-          await userManager.updatePremiumStatus(chatUser.id, telegramPremiumStatus);
-        }
-      });
-    });
   }
 }

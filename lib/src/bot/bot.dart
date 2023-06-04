@@ -109,8 +109,9 @@ abstract class Bot<PlatformEvent, PlatformMessage> {
   void setupPlatformSpecificCommands();
 
   @protected
-  void subscribeToUserUpdates();
+  Future<bool> getUserPremiumStatus(String chatId, String userId);
 
+  @protected
   void setupCommands() {
     setupCommand(Command(
         command: 'addcity',
@@ -238,6 +239,26 @@ abstract class Bot<PlatformEvent, PlatformMessage> {
         wrapper: cm.adminCommand,
         withParameters: true,
         successCallback: setSwearwordsConfig));
+  }
+
+  @protected
+  void updateUsersPremiumStatus(ChatPlatform platform) async {
+    var allPlatformChatIds = await chatManager.getAllChatIdsForPlatform(platform);
+
+    await Future.forEach(allPlatformChatIds, (chatId) async {
+      var chatUsers = await userManager.getUsersForChat(chatId);
+
+      await Future.forEach(chatUsers, (chatUser) async {
+        await Future.delayed(Duration(seconds: 1));
+
+        var platformUserPremiumStatus = await getUserPremiumStatus(chatId, chatUser.id);
+
+        if (chatUser.isPremium != platformUserPremiumStatus) {
+          print('Updating premium status for ${chatUser.id}');
+          await userManager.updatePremiumStatus(chatUser.id, platformUserPremiumStatus);
+        }
+      });
+    });
   }
 
   bool _parametersCheck(MessageEvent event, [int numberOfParameters = 1]) {

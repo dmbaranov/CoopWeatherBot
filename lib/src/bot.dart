@@ -3,6 +3,8 @@ import 'package:meta/meta.dart';
 
 import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/platform/shared/chat_platform.dart';
+import 'package:weather/src/platform/shared/command.dart';
+import 'package:weather/src/platform/shared/message_event.dart';
 
 import 'package:weather/src/modules/chat_manager.dart';
 import 'package:weather/src/modules/database-manager/database_manager.dart';
@@ -91,5 +93,12 @@ class Bot {
     _setupCommands();
   }
 
-  void _setupCommands() {}
+  void _setupCommands() {
+    platform.setupCommand(
+        Command(command: 'na', description: '[U] Check if bot is alive', wrapper: cm.userCommand, successCallback: healthCheck));
+  }
+
+  void healthCheck(MessageEvent event) async {
+    await platform.sendMessage(event.chatId, chatManager.getText(event.chatId, 'general.bot_is_alive'));
+  }
 }

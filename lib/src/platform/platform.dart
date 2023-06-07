@@ -1,23 +1,33 @@
 import 'package:weather/src/platform/shared/chat_platform.dart';
 import 'package:weather/src/platform/shared/message_event.dart';
+import 'package:weather/src/platform/shared/command.dart';
 
 import 'package:weather/src/platform/telegram/initialize_platform.dart';
 import 'package:weather/src/platform/telegram/post_start.dart';
+import 'package:weather/src/platform/telegram/setup_command.dart';
 import 'package:weather/src/platform/telegram/event_mappers.dart';
+import 'package:weather/src/platform/telegram/send_message.dart';
 
 import 'package:weather/src/platform/discord/initialize_platform.dart';
 import 'package:weather/src/platform/discord/post_start.dart';
+import 'package:weather/src/platform/discord/setup_command.dart';
 import 'package:weather/src/platform/discord/event_mappers.dart';
+import 'package:weather/src/platform/discord/send_message.dart';
 
+// TODO: create classes instead of small functions?
 const platformToolsMap = {
   ChatPlatform.telegram: {
     'initializePlatform': initializeTelegram,
     'postStart': telegramPostStart,
+    'setupCommand': setupTelegramCommand,
+    'sendMessage': sendTelegramMessage,
     'eventMappers': {'mapToGeneralMessageEvent': mapTelegramEventToGeneralMessageEvent}
   },
   ChatPlatform.discord: {
     'initializePlatform': initializeDiscord,
     'postStart': discordPostStart,
+    'setupCommand': setupDiscordCommand,
+    'sendMessage': sendDiscordMessage,
     'eventMappers': {'mapToGeneralMessageEvent': mapDiscordEventToGeneralMessageEvent}
   }
 };
@@ -36,6 +46,14 @@ class Platform {
 
   MessageEvent transformToGeneralMessageEvent(event) {
     return _getPlatformToolMethod(_platformTools[platform], 'eventMappers.mapToGeneralMessageEvent')(event);
+  }
+
+  void setupCommand(Command command) {
+    _getPlatformToolMethod(_platformTools[platform], 'setupCommand')(botInstance, command);
+  }
+
+  Future<void> sendMessage(String chatId, String message) async {
+    await _getPlatformToolMethod(_platformTools[platform], 'sendMessage')(chatId, message);
   }
 
   Function _getPlatformToolMethod(Map<String, dynamic> object, String pathString) {

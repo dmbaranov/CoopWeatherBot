@@ -27,7 +27,6 @@ abstract class Bot<PlatformEvent, PlatformMessage> {
 
   @protected
   late DatabaseManager dbManager;
-
   @protected
   late UserManager userManager;
   @protected

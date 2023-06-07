@@ -1,0 +1,20 @@
+import 'chat_platform.dart';
+
+class MessageEvent<T> {
+  final ChatPlatform platform;
+  final String chatId;
+  final String userId;
+  final List<String> otherUserIds;
+  final List<String> parameters;
+  final bool isBot;
+  final T rawMessage;
+
+  MessageEvent(
+      {required this.platform,
+      required this.chatId,
+      required this.userId,
+      required this.isBot,
+      required this.otherUserIds,
+      required this.parameters,
+      required this.rawMessage});
+}

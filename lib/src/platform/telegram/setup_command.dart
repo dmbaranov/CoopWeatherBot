@@ -1,5 +1,5 @@
 import 'package:teledart/teledart.dart';
-import 'package:weather/src/platform/shared/command.dart';
+import 'package:weather/src/globals/command.dart';
 
 import './event_mappers.dart';
 

@@ -2,9 +2,9 @@ import 'package:postgres/postgres.dart';
 import 'package:meta/meta.dart';
 
 import 'package:weather/src/platform/platform.dart';
-import 'package:weather/src/platform/shared/chat_platform.dart';
-import 'package:weather/src/platform/shared/command.dart';
-import 'package:weather/src/platform/shared/message_event.dart';
+import 'package:weather/src/globals/chat_platform.dart';
+import 'package:weather/src/globals/command.dart';
+import 'package:weather/src/globals/message_event.dart';
 
 import 'package:weather/src/modules/chat_manager.dart';
 import 'package:weather/src/modules/database-manager/database_manager.dart';
@@ -67,13 +67,15 @@ class Bot {
     dbManager = DatabaseManager(dbConnection);
     await dbManager.initialize();
 
-    platform = Platform(platform: platformName);
-
     dadJokes = DadJokes();
     youtube = Youtube(youtubeKey);
     conversator = Conversator(dbManager: dbManager, conversatorApiKey: conversatorKey);
     accordionPoll = AccordionPoll();
     cm = CommandsManager(adminId: adminId, dbManager: dbManager);
+
+    platform = Platform(platform: platformName, token: botToken);
+    await platform.initializePlatform();
+    platform.setupPlatformSpecificCommands(cm);
 
     chatManager = ChatManager(dbManager: dbManager);
     await chatManager.initialize();
@@ -94,8 +96,11 @@ class Bot {
   }
 
   void _setupCommands() {
-    platform.setupCommand(
-        Command(command: 'na', description: '[U] Check if bot is alive', wrapper: cm.userCommand, successCallback: healthCheck));
+    platform.setupCommand(Command(
+        command: 'na',
+        description: '[U] Check if bot is alive',
+        wrapper: cm.userCommand,
+        successCallback: healthCheck));
   }
 
   void healthCheck(MessageEvent event) async {

@@ -1,4 +1,4 @@
-import './message_event.dart';
+import 'message_event.dart';
 
 typedef CommandsWrapper = void Function(MessageEvent event, {required Function onFailure, Function? onSuccess, Function? onSuccessCustom});
 typedef OnSuccessCallback = void Function(MessageEvent event);

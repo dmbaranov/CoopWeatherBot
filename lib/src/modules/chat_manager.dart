@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
+import 'package:weather/src/globals/chat_platform.dart';
 import 'database-manager/database_manager.dart';
 
 class ChatManager {

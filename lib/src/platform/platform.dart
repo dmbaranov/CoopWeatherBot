@@ -1,12 +1,14 @@
-import 'package:weather/src/platform/shared/chat_platform.dart';
-import 'package:weather/src/platform/shared/message_event.dart';
-import 'package:weather/src/platform/shared/command.dart';
+import 'package:weather/src/globals/chat_platform.dart';
+import 'package:weather/src/globals/message_event.dart';
+import 'package:weather/src/globals/command.dart';
+import 'package:weather/src/modules/commands_manager.dart';
 
 import 'package:weather/src/platform/telegram/initialize_platform.dart';
 import 'package:weather/src/platform/telegram/post_start.dart';
 import 'package:weather/src/platform/telegram/setup_command.dart';
 import 'package:weather/src/platform/telegram/event_mappers.dart';
 import 'package:weather/src/platform/telegram/send_message.dart';
+import 'package:weather/src/platform/telegram/setup_platform_specific_commands.dart';
 
 import 'package:weather/src/platform/discord/initialize_platform.dart';
 import 'package:weather/src/platform/discord/post_start.dart';
@@ -21,6 +23,7 @@ const platformToolsMap = {
     'postStart': telegramPostStart,
     'setupCommand': setupTelegramCommand,
     'sendMessage': sendTelegramMessage,
+    'setupPlatformSpecificCommands': setupTelegramSpecificCommands,
     'eventMappers': {'mapToGeneralMessageEvent': mapTelegramEventToGeneralMessageEvent}
   },
   ChatPlatform.discord: {
@@ -34,13 +37,14 @@ const platformToolsMap = {
 
 class Platform {
   final ChatPlatform platform;
+  final String token;
   final Map<ChatPlatform, dynamic> _platformTools = platformToolsMap;
 
   late dynamic botInstance;
 
-  Platform({required this.platform});
+  Platform({required this.platform, required this.token});
 
-  Future<void> initializePlatform(String token) async {
+  Future<void> initializePlatform() async {
     botInstance = await _getPlatformToolMethod(_platformTools[platform], 'initializePlatform')(token);
   }
 
@@ -50,6 +54,10 @@ class Platform {
 
   void setupCommand(Command command) {
     _getPlatformToolMethod(_platformTools[platform], 'setupCommand')(botInstance, command);
+  }
+
+  void setupPlatformSpecificCommands(CommandsManager cm) {
+    _getPlatformToolMethod(_platformTools[platform], 'setupPlatformSpecificCommands')(this, cm);
   }
 
   Future<void> sendMessage(String chatId, String message) async {

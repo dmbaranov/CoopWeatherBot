@@ -56,7 +56,7 @@ void main(List<String> args) async {
   await runMigrations(dbConnection);
 
   runZonedGuarded(() {
-    final token = env['telegramtoken']!;
+    final token = env['bottoken']!;
     final adminId = env['telegramadminid']!;
     final repoUrl = env['githubrepo']!;
     final youtubeKey = env['youtube']!;

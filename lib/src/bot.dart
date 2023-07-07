@@ -67,15 +67,13 @@ class Bot {
     dbManager = DatabaseManager(dbConnection);
     await dbManager.initialize();
 
+    platform = Platform(chatPlatform: platformName, token: botToken);
+
     dadJokes = DadJokes();
     youtube = Youtube(youtubeKey);
     conversator = Conversator(dbManager: dbManager, conversatorApiKey: conversatorKey);
     accordionPoll = AccordionPoll();
     cm = CommandsManager(adminId: adminId, dbManager: dbManager);
-
-    platform = Platform(platform: platformName, token: botToken);
-    await platform.initializePlatform();
-    platform.setupPlatformSpecificCommands(cm);
 
     chatManager = ChatManager(dbManager: dbManager);
     await chatManager.initialize();
@@ -92,15 +90,17 @@ class Bot {
     weatherManager = WeatherManager(dbManager: dbManager, openweatherKey: openweatherKey);
     await weatherManager.initialize();
 
+    await platform.initializePlatform();
+    platform.setupPlatformSpecificCommands(cm);
+
     _setupCommands();
+
+    await platform.postStart();
   }
 
   void _setupCommands() {
-    platform.setupCommand(Command(
-        command: 'na',
-        description: '[U] Check if bot is alive',
-        wrapper: cm.userCommand,
-        successCallback: healthCheck));
+    platform.setupCommand(
+        Command(command: 'na', description: '[U] Check if bot is alive', wrapper: cm.userCommand, successCallback: healthCheck));
   }
 
   void healthCheck(MessageEvent event) async {

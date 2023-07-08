@@ -10,7 +10,6 @@ import 'package:weather/src/modules/commands_manager.dart';
 import 'package:weather/src/platform/platform.dart';
 
 class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
-  final ChatPlatform chatPlatform = ChatPlatform.telegram;
   final String token;
 
   late TeleDart bot;
@@ -26,8 +25,6 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
     bot = TeleDart(token, Event(botName!), fetcher: LongPolling(Telegram(token), limit: 100, timeout: 50));
 
     bot.start();
-
-    print('Telegram platform has been started!');
   }
 
   @override
@@ -43,7 +40,7 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
 
   @override
   Future<void> postStart() async {
-    print('No post-start instructions for Telegram');
+    print('Telegram platform has been started!');
   }
 
   @override

@@ -29,8 +29,20 @@ abstract class Platform<T> {
   MessageEvent transformPlatformMessageToGeneralMessageEvent(T event);
 
   @protected
+  MessageEvent transformPlatformMessageToMessageEventWithParameters(T event);
+
+  @protected
+  MessageEvent transformPlatformMessageToMessageEventWithOtherUserIds(T event);
+
+  @protected
+  MessageEvent transformPlatformMessageToConversatorMessageEvent(T event);
+
+  @protected
   void setupCommand(Command command);
 
   @protected
   Future<void> sendMessage(String chatId, String message);
+
+  @protected
+  Future<bool> getUserPremiumStatus(String chatId, String userId);
 }

@@ -44,15 +44,38 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   }
 
   @override
-  MessageEvent transformPlatformMessageToGeneralMessageEvent(TeleDartMessage event) {
+  MessageEvent transformPlatformMessageToGeneralMessageEvent(TeleDartMessage message) {
     return MessageEvent(
         platform: ChatPlatform.telegram,
-        chatId: event.chat.id.toString(),
-        userId: event.from?.id.toString() ?? '',
-        isBot: event.replyToMessage?.from?.isBot ?? false,
+        chatId: message.chat.id.toString(),
+        userId: message.from?.id.toString() ?? '',
+        isBot: message.replyToMessage?.from?.isBot ?? false,
         otherUserIds: [],
         parameters: [],
-        rawMessage: event);
+        rawMessage: message);
+  }
+
+  @override
+  MessageEvent transformPlatformMessageToMessageEventWithParameters(TeleDartMessage message) {
+    List<String> parameters = message.text?.split(' ').sublist(1).toList() ?? [];
+
+    return transformPlatformMessageToGeneralMessageEvent(message)..parameters.addAll(parameters);
+  }
+
+  @override
+  MessageEvent transformPlatformMessageToMessageEventWithOtherUserIds(TeleDartMessage event) {
+    return transformPlatformMessageToGeneralMessageEvent(event)
+      ..otherUserIds.add(event.replyToMessage?.from?.id.toString() ?? '')
+      ..parameters.addAll(_getUserInfo(event));
+  }
+
+  @override
+  MessageEvent transformPlatformMessageToConversatorMessageEvent(TeleDartMessage event) {
+    var currentMessageId = event.messageId.toString();
+    var parentMessageId = event.replyToMessage?.messageId.toString() ?? currentMessageId;
+    var message = event.text?.split(' ').sublist(1).join(' ') ?? '';
+
+    return transformPlatformMessageToGeneralMessageEvent(event)..parameters.addAll([parentMessageId, currentMessageId, message]);
   }
 
   @override
@@ -68,7 +91,33 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
     await telegram.sendMessage(chatId, message);
   }
 
+  @override
+  Future<bool> getUserPremiumStatus(String chatId, String userId) async {
+    var telegramUser = await telegram.getChatMember(chatId, int.parse(userId));
+
+    return telegramUser.user.isPremium ?? false;
+  }
+
   void _startTelegramAccordionPoll(MessageEvent event) {
     print('running accordion poll');
+  }
+
+  List<String> _getUserInfo(TeleDartMessage message) {
+    var fullUsername = '';
+    var repliedUser = message.replyToMessage?.from;
+
+    if (repliedUser == null) {
+      return [];
+    }
+
+    fullUsername += repliedUser.firstName;
+
+    if (repliedUser.username != null) {
+      fullUsername += ' <${repliedUser.username}> ';
+    }
+
+    fullUsername += repliedUser.lastName ?? '';
+
+    return [fullUsername, repliedUser.isPremium?.toString() ?? 'false'];
   }
 }

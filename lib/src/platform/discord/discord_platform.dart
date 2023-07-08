@@ -48,13 +48,15 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
 
   @override
   void setupCommand(Command command) {
-    _commands.add(ChatCommand(command.command, command.description, (IChatContext context) async {
-      await context.respond(MessageBuilder.content('Test'));
-
-      command.wrapper(transformPlatformMessageToGeneralMessageEvent(context), onSuccess: command.successCallback, onFailure: () {
-        print('no_access_message');
-      });
-    }));
+    if (command.withParameters) {
+      _setupCommandWithParameters(command);
+    } else if (command.withOtherUserIds) {
+      _setupCommandWithOtherUserIds(command);
+    } else if (command.conversatorCommand) {
+      _setupCommandForConversator(command);
+    } else {
+      _setupSimpleCommand(command);
+    }
   }
 
   @override
@@ -82,5 +84,54 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
     _commands.forEach((command) => commands.addCommand(command));
 
     return commands;
+  }
+
+  void _setupSimpleCommand(Command command) {
+    _commands.add(ChatCommand(command.command, command.description, (IChatContext context) async {
+      await context.respond(MessageBuilder.empty());
+
+      command.wrapper(transformPlatformMessageToGeneralMessageEvent(context), onSuccess: command.successCallback, onFailure: () {
+        print('no_access_message');
+      });
+    }));
+  }
+
+  void _setupCommandWithParameters(Command command) {
+    _commands.add(ChatCommand(command.command, command.description, (IChatContext context, String what) async {
+      await context.respond(MessageBuilder.content(what));
+
+      // command.wrapper(transformPlatformMessageToGeneralMessageEvent(context, [what]), onSuccess: command.successCallback, onFailure: () {
+      command.wrapper(transformPlatformMessageToGeneralMessageEvent(context), onSuccess: command.successCallback, onFailure: () {
+        print('no_access_message');
+      });
+    }));
+  }
+
+  void _setupCommandWithOtherUserIds(Command command) {
+    _commands.add(ChatCommand(command.command, command.description, (IChatContext context, IMember who) async {
+      var user = await who.user.getOrDownload();
+      var isPremium = who.boostingSince != null ? 'true' : 'false';
+      await context.respond(MessageBuilder.content(user.username));
+
+      // var messageEvent = transformPlatformMessageToGeneralMessageEvent(context, [who.user.id.toString()])
+      //   ..parameters.addAll([user.username, isPremium]);
+      command.wrapper(transformPlatformMessageToGeneralMessageEvent(context), onSuccess: command.successCallback, onFailure: () {
+        print('no_access_message');
+      });
+    }));
+  }
+
+  void _setupCommandForConversator(Command command) {
+    _commands.add(ChatCommand(command.command, command.description, (IChatContext context, String what, [String? conversationId]) async {
+      await context.respond(MessageBuilder.content(what));
+
+      conversationId ??= uuid.v4();
+      var currentMessageId = uuid.v4();
+
+      // command.wrapper(transformPlatformMessageToGeneralMessageEvent(context, [conversationId, currentMessageId, what]), onSuccess: command.successCallback, onFailure: () {
+      command.wrapper(transformPlatformMessageToGeneralMessageEvent(context), onSuccess: command.successCallback, onFailure: () {
+        print('no_access_message');
+      });
+    }));
   }
 }

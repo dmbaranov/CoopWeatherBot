@@ -102,9 +102,8 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
   }
 
   @override
-  String getMessageId(dynamic message) {
-    // TODO: figure out this dynamic
-    return message.id.toString();
+  String getMessageId(message) {
+    return (message as IMessage).id.toString();
   }
 
   CommandsPlugin _setupDiscordCommands() {
@@ -129,8 +128,8 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
     _commands.add(ChatCommand(command.command, command.description, (IChatContext context, String what) async {
       await context.respond(MessageBuilder.content(what));
 
-      // command.wrapper(transformPlatformMessageToGeneralMessageEvent(context, [what]), onSuccess: command.successCallback, onFailure: () {
-      command.wrapper(transformPlatformMessageToGeneralMessageEvent(context), onSuccess: command.successCallback, onFailure: () {
+      command.wrapper(transformPlatformMessageToMessageEventWithParameters(context, [what]), onSuccess: command.successCallback,
+          onFailure: () {
         print('no_access_message');
       });
     }));
@@ -142,9 +141,10 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
       var isPremium = who.boostingSince != null ? 'true' : 'false';
       await context.respond(MessageBuilder.content(user.username));
 
-      // var messageEvent = transformPlatformMessageToGeneralMessageEvent(context, [who.user.id.toString()])
-      //   ..parameters.addAll([user.username, isPremium]);
-      command.wrapper(transformPlatformMessageToGeneralMessageEvent(context), onSuccess: command.successCallback, onFailure: () {
+      command.wrapper(
+          transformPlatformMessageToMessageEventWithOtherUserIds(context, [who.user.id.toString()])
+            ..parameters.addAll([user.username, isPremium]),
+          onSuccess: command.successCallback, onFailure: () {
         print('no_access_message');
       });
     }));

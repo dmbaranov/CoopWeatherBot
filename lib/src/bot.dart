@@ -96,6 +96,7 @@ class Bot {
     platform.setupPlatformSpecificCommands(cm);
 
     _setupCommands();
+    _subscribeToUserUpdates();
 
     await platform.postStart();
   }
@@ -110,6 +111,27 @@ class Bot {
         wrapper: cm.userCommand,
         conversatorCommand: true,
         successCallback: _askConversator));
+  }
+
+  void _subscribeToUserUpdates() {
+    userManager.userManagerStream.listen((_) async {
+      var allPlatformChatIds = await chatManager.getAllChatIdsForPlatform(platformName);
+
+      await Future.forEach(allPlatformChatIds, (chatId) async {
+        var chatUsers = await userManager.getUsersForChat(chatId);
+
+        await Future.forEach(chatUsers, (chatUser) async {
+          await Future.delayed(Duration(seconds: 1));
+
+          var platformUserPremiumStatus = await platform.getUserPremiumStatus(chatId, chatUser.id);
+
+          if (chatUser.isPremium != platformUserPremiumStatus) {
+            print('Updating premium status for ${chatUser.id}');
+            await userManager.updatePremiumStatus(chatUser.id, platformUserPremiumStatus);
+          }
+        });
+      });
+    });
   }
 
   bool _parametersCheck(MessageEvent event, [int numberOfParameters = 1]) {

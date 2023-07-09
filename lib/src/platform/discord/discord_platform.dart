@@ -38,12 +38,11 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
   }
 
   @override
-  Future<void> sendMessage(String chatId, String message) async {
+  Future<IMessage> sendMessage(String chatId, String message) async {
     var guild = await bot.httpEndpoints.fetchGuild(Snowflake(chatId));
     var channelId = guild.systemChannel?.id.toString() ?? '';
 
-    // TODO: should return IMessage
-    bot.httpEndpoints.sendMessage(Snowflake(channelId), MessageBuilder.content(message));
+    return bot.httpEndpoints.sendMessage(Snowflake(channelId), MessageBuilder.content(message));
   }
 
   @override
@@ -76,6 +75,36 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
         isBot: event.user.bot,
         parameters: [],
         rawMessage: event);
+  }
+
+  @override
+  MessageEvent transformPlatformMessageToMessageEventWithParameters(IChatContext event, [List? otherParameters]) {
+    return transformPlatformMessageToGeneralMessageEvent(event)
+      ..parameters.addAll(otherParameters?.map((param) => param.toString()).toList() ?? []);
+  }
+
+  @override
+  MessageEvent transformPlatformMessageToMessageEventWithOtherUserIds(IChatContext event, [List? otherUserIds]) {
+    return transformPlatformMessageToGeneralMessageEvent(event)
+      ..otherUserIds.addAll(otherUserIds?.map((param) => param.toString()).toList() ?? []);
+  }
+
+  @override
+  MessageEvent transformPlatformMessageToConversatorMessageEvent(IChatContext event, [List<String>? otherParameters]) {
+    return transformPlatformMessageToGeneralMessageEvent(event)..parameters.addAll(otherParameters ?? []);
+  }
+
+  @override
+  Future<bool> getUserPremiumStatus(String chatId, String userId) async {
+    var discordUser = await bot.httpEndpoints.fetchGuildMember(Snowflake(chatId), Snowflake(userId));
+
+    return discordUser.boostingSince != null;
+  }
+
+  @override
+  String getMessageId(dynamic message) {
+    // TODO: figure out this dynamic
+    return message.id.toString();
   }
 
   CommandsPlugin _setupDiscordCommands() {
@@ -128,8 +157,8 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
       conversationId ??= uuid.v4();
       var currentMessageId = uuid.v4();
 
-      // command.wrapper(transformPlatformMessageToGeneralMessageEvent(context, [conversationId, currentMessageId, what]), onSuccess: command.successCallback, onFailure: () {
-      command.wrapper(transformPlatformMessageToGeneralMessageEvent(context), onSuccess: command.successCallback, onFailure: () {
+      command.wrapper(transformPlatformMessageToConversatorMessageEvent(context, [conversationId, currentMessageId, what]),
+          onSuccess: command.successCallback, onFailure: () {
         print('no_access_message');
       });
     }));

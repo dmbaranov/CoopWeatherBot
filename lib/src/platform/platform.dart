@@ -26,23 +26,26 @@ abstract class Platform<T> {
   Future<void> postStart();
 
   @protected
-  MessageEvent transformPlatformMessageToGeneralMessageEvent(T event);
+  MessageEvent transformPlatformMessageToGeneralMessageEvent(T message);
 
   @protected
-  MessageEvent transformPlatformMessageToMessageEventWithParameters(T event);
+  MessageEvent transformPlatformMessageToMessageEventWithParameters(T message, [List? otherParameters]);
 
   @protected
-  MessageEvent transformPlatformMessageToMessageEventWithOtherUserIds(T event);
+  MessageEvent transformPlatformMessageToMessageEventWithOtherUserIds(T message, [List? otherUserIds]);
 
   @protected
-  MessageEvent transformPlatformMessageToConversatorMessageEvent(T event);
+  MessageEvent transformPlatformMessageToConversatorMessageEvent(T message, [List<String>? otherParameters]);
 
   @protected
   void setupCommand(Command command);
 
   @protected
-  Future<void> sendMessage(String chatId, String message);
+  Future sendMessage(String chatId, String message);
 
   @protected
   Future<bool> getUserPremiumStatus(String chatId, String userId);
+
+  @protected
+  String getMessageId(T message);
 }

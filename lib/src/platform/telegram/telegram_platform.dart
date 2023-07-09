@@ -56,21 +56,21 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   }
 
   @override
-  MessageEvent transformPlatformMessageToMessageEventWithParameters(TeleDartMessage message) {
+  MessageEvent transformPlatformMessageToMessageEventWithParameters(TeleDartMessage message, [List? otherParameters]) {
     List<String> parameters = message.text?.split(' ').sublist(1).toList() ?? [];
 
     return transformPlatformMessageToGeneralMessageEvent(message)..parameters.addAll(parameters);
   }
 
   @override
-  MessageEvent transformPlatformMessageToMessageEventWithOtherUserIds(TeleDartMessage event) {
+  MessageEvent transformPlatformMessageToMessageEventWithOtherUserIds(TeleDartMessage event, [List? otherUserIds]) {
     return transformPlatformMessageToGeneralMessageEvent(event)
       ..otherUserIds.add(event.replyToMessage?.from?.id.toString() ?? '')
       ..parameters.addAll(_getUserInfo(event));
   }
 
   @override
-  MessageEvent transformPlatformMessageToConversatorMessageEvent(TeleDartMessage event) {
+  MessageEvent transformPlatformMessageToConversatorMessageEvent(TeleDartMessage event, [List<String>? otherParameters]) {
     var currentMessageId = event.messageId.toString();
     var parentMessageId = event.replyToMessage?.messageId.toString() ?? currentMessageId;
     var message = event.text?.split(' ').sublist(1).join(' ') ?? '';
@@ -80,15 +80,20 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
 
   @override
   void setupCommand(Command command) {
-    bot.onCommand(command.command).listen(
-        (event) => command.wrapper(transformPlatformMessageToGeneralMessageEvent(event), onSuccess: command.successCallback, onFailure: () {
-              print('no_access_message');
-            }));
+    var eventMapper = _getEventMapper(command);
+
+    bot.onCommand(command.command).listen((event) => command.wrapper(eventMapper(event), onSuccess: command.successCallback, onFailure: () {
+          print('no_access_message');
+        }));
   }
 
   @override
-  Future<void> sendMessage(String chatId, String message) async {
-    await telegram.sendMessage(chatId, message);
+  Future<Message> sendMessage(String chatId, String message) async {
+    if (message.isEmpty) {
+      return telegram.sendMessage(chatId, 'something_went_wrong');
+    }
+
+    return telegram.sendMessage(chatId, message);
   }
 
   @override
@@ -96,6 +101,11 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
     var telegramUser = await telegram.getChatMember(chatId, int.parse(userId));
 
     return telegramUser.user.isPremium ?? false;
+  }
+
+  @override
+  String getMessageId(TeleDartMessage message) {
+    return message.messageId.toString();
   }
 
   void _startTelegramAccordionPoll(MessageEvent event) {
@@ -119,5 +129,17 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
     fullUsername += repliedUser.lastName ?? '';
 
     return [fullUsername, repliedUser.isPremium?.toString() ?? 'false'];
+  }
+
+  Function _getEventMapper(Command command) {
+    if (command.withParameters) {
+      return transformPlatformMessageToMessageEventWithParameters;
+    } else if (command.withOtherUserIds) {
+      return transformPlatformMessageToMessageEventWithOtherUserIds;
+    } else if (command.conversatorCommand) {
+      return transformPlatformMessageToConversatorMessageEvent;
+    }
+
+    return transformPlatformMessageToGeneralMessageEvent;
   }
 }

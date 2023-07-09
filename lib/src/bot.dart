@@ -1,7 +1,9 @@
+import 'package:collection/collection.dart';
 import 'package:postgres/postgres.dart';
 import 'package:meta/meta.dart';
 
 import 'package:weather/src/platform/platform.dart';
+
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/command.dart';
 import 'package:weather/src/globals/message_event.dart';
@@ -100,10 +102,50 @@ class Bot {
 
   void _setupCommands() {
     platform.setupCommand(
-        Command(command: 'na', description: '[U] Check if bot is alive', wrapper: cm.userCommand, successCallback: healthCheck));
+        Command(command: 'na', description: '[U] Check if bot is alive', wrapper: cm.userCommand, successCallback: _healthCheck));
+
+    platform.setupCommand(Command(
+        command: 'ask',
+        description: '[U] Ask for advice or anything else from the Conversator',
+        wrapper: cm.userCommand,
+        conversatorCommand: true,
+        successCallback: _askConversator));
   }
 
-  void healthCheck(MessageEvent event) async {
+  bool _parametersCheck(MessageEvent event, [int numberOfParameters = 1]) {
+    if (event.parameters.whereNot((parameter) => parameter.isEmpty).length < numberOfParameters) {
+      platform.sendMessage(event.chatId, chatManager.getText(event.chatId, 'general.something_went_wrong'));
+
+      return false;
+    }
+
+    return true;
+  }
+
+  void _healthCheck(MessageEvent event) async {
     await platform.sendMessage(event.chatId, chatManager.getText(event.chatId, 'general.bot_is_alive'));
+  }
+
+  @protected
+  void _askConversator(MessageEvent event) async {
+    if (!_parametersCheck(event)) return;
+
+    var parentMessageId = event.parameters[0];
+    var currentMessageId = event.parameters[1];
+    var message = event.parameters[2];
+
+    var response = await conversator.getConversationReply(
+        chatId: event.chatId, parentMessageId: parentMessageId, currentMessageId: currentMessageId, message: message);
+
+    var conversatorResponseMessage = await platform.sendMessage(event.chatId, response);
+    var conversatorResponseMessageId = platform.getMessageId(conversatorResponseMessage);
+    var conversationId = await conversator.getConversationId(event.chatId, parentMessageId);
+
+    await conversator.saveConversationMessage(
+        chatId: event.chatId,
+        conversationId: conversationId,
+        currentMessageId: conversatorResponseMessageId,
+        message: response,
+        fromUser: false);
   }
 }

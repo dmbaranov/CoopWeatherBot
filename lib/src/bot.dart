@@ -1,6 +1,5 @@
 import 'package:collection/collection.dart';
 import 'package:postgres/postgres.dart';
-import 'package:meta/meta.dart';
 
 import 'package:weather/src/platform/platform.dart';
 
@@ -30,30 +29,18 @@ class Bot {
   final String conversatorKey;
   final PostgreSQLConnection dbConnection;
 
-  @protected
-  late Platform platform;
-  @protected
-  late DatabaseManager dbManager;
-  @protected
-  late UserManager userManager;
-  @protected
-  late WeatherManager weatherManager;
-  @protected
-  late DadJokes dadJokes;
-  @protected
-  late PanoramaNews panoramaNews;
-  @protected
-  late Reputation reputation;
-  @protected
-  late Youtube youtube;
-  @protected
-  late AccordionPoll accordionPoll;
-  @protected
-  late Conversator conversator;
-  @protected
-  late ChatManager chatManager;
-  @protected
-  late CommandsManager cm;
+  late Platform _platform;
+  late DatabaseManager _dbManager;
+  late UserManager _userManager;
+  late WeatherManager _weatherManager;
+  late DadJokes _dadJokes;
+  late PanoramaNews _panoramaNews;
+  late Reputation _reputation;
+  late Youtube _youtube;
+  late AccordionPoll _accordionPoll;
+  late Conversator _conversator;
+  late ChatManager _chatManager;
+  late CommandsManager _cm;
 
   Bot(
       {required this.platformName,
@@ -66,68 +53,68 @@ class Bot {
       required this.dbConnection});
 
   Future<void> startBot() async {
-    dbManager = DatabaseManager(dbConnection);
-    await dbManager.initialize();
+    _dbManager = DatabaseManager(dbConnection);
+    await _dbManager.initialize();
 
-    platform = Platform(chatPlatform: platformName, token: botToken);
+    _platform = Platform(chatPlatform: platformName, token: botToken);
 
-    dadJokes = DadJokes();
-    youtube = Youtube(youtubeKey);
-    conversator = Conversator(dbManager: dbManager, conversatorApiKey: conversatorKey);
-    accordionPoll = AccordionPoll();
-    cm = CommandsManager(adminId: adminId, dbManager: dbManager);
+    _dadJokes = DadJokes();
+    _youtube = Youtube(youtubeKey);
+    _conversator = Conversator(dbManager: _dbManager, conversatorApiKey: conversatorKey);
+    _accordionPoll = AccordionPoll();
+    _cm = CommandsManager(adminId: adminId, dbManager: _dbManager);
 
-    chatManager = ChatManager(dbManager: dbManager);
-    await chatManager.initialize();
+    _chatManager = ChatManager(dbManager: _dbManager);
+    await _chatManager.initialize();
 
-    panoramaNews = PanoramaNews(dbManager: dbManager);
-    panoramaNews.initialize();
+    _panoramaNews = PanoramaNews(dbManager: _dbManager);
+    _panoramaNews.initialize();
 
-    userManager = UserManager(dbManager: dbManager);
-    userManager.initialize();
+    _userManager = UserManager(dbManager: _dbManager);
+    _userManager.initialize();
 
-    reputation = Reputation(dbManager: dbManager);
-    reputation.initialize();
+    _reputation = Reputation(dbManager: _dbManager);
+    _reputation.initialize();
 
-    weatherManager = WeatherManager(dbManager: dbManager, openweatherKey: openweatherKey);
-    await weatherManager.initialize();
+    _weatherManager = WeatherManager(dbManager: _dbManager, openweatherKey: openweatherKey);
+    await _weatherManager.initialize();
 
-    await platform.initializePlatform();
-    platform.setupPlatformSpecificCommands(cm);
+    await _platform.initializePlatform();
+    _platform.setupPlatformSpecificCommands(_cm);
 
     _setupCommands();
     _subscribeToUserUpdates();
 
-    await platform.postStart();
+    await _platform.postStart();
   }
 
   void _setupCommands() {
-    platform.setupCommand(
-        Command(command: 'na', description: '[U] Check if bot is alive', wrapper: cm.userCommand, successCallback: _healthCheck));
+    _platform.setupCommand(
+        Command(command: 'na', description: '[U] Check if bot is alive', wrapper: _cm.userCommand, successCallback: _healthCheck));
 
-    platform.setupCommand(Command(
+    _platform.setupCommand(Command(
         command: 'ask',
         description: '[U] Ask for advice or anything else from the Conversator',
-        wrapper: cm.userCommand,
+        wrapper: _cm.userCommand,
         conversatorCommand: true,
         successCallback: _askConversator));
   }
 
   void _subscribeToUserUpdates() {
-    userManager.userManagerStream.listen((_) async {
-      var allPlatformChatIds = await chatManager.getAllChatIdsForPlatform(platformName);
+    _userManager.userManagerStream.listen((_) async {
+      var allPlatformChatIds = await _chatManager.getAllChatIdsForPlatform(platformName);
 
       await Future.forEach(allPlatformChatIds, (chatId) async {
-        var chatUsers = await userManager.getUsersForChat(chatId);
+        var chatUsers = await _userManager.getUsersForChat(chatId);
 
         await Future.forEach(chatUsers, (chatUser) async {
           await Future.delayed(Duration(seconds: 1));
 
-          var platformUserPremiumStatus = await platform.getUserPremiumStatus(chatId, chatUser.id);
+          var platformUserPremiumStatus = await _platform.getUserPremiumStatus(chatId, chatUser.id);
 
           if (chatUser.isPremium != platformUserPremiumStatus) {
             print('Updating premium status for ${chatUser.id}');
-            await userManager.updatePremiumStatus(chatUser.id, platformUserPremiumStatus);
+            await _userManager.updatePremiumStatus(chatUser.id, platformUserPremiumStatus);
           }
         });
       });
@@ -136,7 +123,7 @@ class Bot {
 
   bool _parametersCheck(MessageEvent event, [int numberOfParameters = 1]) {
     if (event.parameters.whereNot((parameter) => parameter.isEmpty).length < numberOfParameters) {
-      platform.sendMessage(event.chatId, chatManager.getText(event.chatId, 'general.something_went_wrong'));
+      _platform.sendMessage(event.chatId, _chatManager.getText(event.chatId, 'general.something_went_wrong'));
 
       return false;
     }
@@ -145,10 +132,9 @@ class Bot {
   }
 
   void _healthCheck(MessageEvent event) async {
-    await platform.sendMessage(event.chatId, chatManager.getText(event.chatId, 'general.bot_is_alive'));
+    await _platform.sendMessage(event.chatId, _chatManager.getText(event.chatId, 'general.bot_is_alive'));
   }
 
-  @protected
   void _askConversator(MessageEvent event) async {
     if (!_parametersCheck(event)) return;
 
@@ -156,14 +142,14 @@ class Bot {
     var currentMessageId = event.parameters[1];
     var message = event.parameters[2];
 
-    var response = await conversator.getConversationReply(
+    var response = await _conversator.getConversationReply(
         chatId: event.chatId, parentMessageId: parentMessageId, currentMessageId: currentMessageId, message: message);
 
-    var conversatorResponseMessage = await platform.sendMessage(event.chatId, response);
-    var conversatorResponseMessageId = platform.getMessageId(conversatorResponseMessage);
-    var conversationId = await conversator.getConversationId(event.chatId, parentMessageId);
+    var conversatorResponseMessage = await _platform.sendMessage(event.chatId, response);
+    var conversatorResponseMessageId = _platform.getMessageId(conversatorResponseMessage);
+    var conversationId = await _conversator.getConversationId(event.chatId, parentMessageId);
 
-    await conversator.saveConversationMessage(
+    await _conversator.saveConversationMessage(
         chatId: event.chatId,
         conversationId: conversationId,
         currentMessageId: conversatorResponseMessageId,

@@ -56,8 +56,6 @@ class Bot {
     _dbManager = DatabaseManager(dbConnection);
     await _dbManager.initialize();
 
-    _platform = Platform(chatPlatform: platformName, token: botToken, adminId: adminId, chatManager: _chatManager);
-
     _dadJokes = DadJokes();
     _youtube = Youtube(youtubeKey);
     _conversator = Conversator(dbManager: _dbManager, conversatorApiKey: conversatorKey);
@@ -79,12 +77,14 @@ class Bot {
     _weatherManager = WeatherManager(dbManager: _dbManager, openweatherKey: openweatherKey);
     await _weatherManager.initialize();
 
+    _platform = Platform(chatPlatform: platformName, token: botToken, adminId: adminId, chatManager: _chatManager, youtube: _youtube);
     await _platform.initializePlatform();
     _platform.setupPlatformSpecificCommands(_cm);
 
     _setupCommands();
     _subscribeToUserUpdates();
     _subscribeToWeatherUpdates();
+    _subscribeToPanoramaNews();
 
     await _platform.postStart();
   }
@@ -118,6 +118,22 @@ class Bot {
       });
 
       _platform.sendMessage(weatherData.chatId, message);
+    });
+  }
+
+  // TODO: add news_enabled flag and send news to all the enabled chats
+  void _subscribeToPanoramaNews() {
+    var panoramaStream = _panoramaNews.panoramaStream;
+
+    panoramaStream.listen((event) async {
+      var allChats = await _chatManager.getAllChatIdsForPlatform(ChatPlatform.telegram);
+
+      allChats.forEach((chatId) {
+        var fakeEvent = MessageEvent(
+            platform: ChatPlatform.telegram, chatId: chatId, userId: '', isBot: false, otherUserIds: [], parameters: [], rawMessage: '');
+
+        _sendNewsToChat(fakeEvent);
+      });
     });
   }
 
@@ -165,6 +181,18 @@ class Bot {
       _platform.sendMessage(chatId, successfulMessage);
     } else {
       _platform.sendMessage(chatId, _chatManager.getText(chatId, 'general.something_went_wrong'));
+    }
+  }
+
+  void _sendNewsToChat(MessageEvent event) async {
+    var news = await _panoramaNews.getNews(event.chatId);
+
+    if (news != null) {
+      var newsMessage = '${news.title}\n\nFull: ${news.url}';
+
+      await _platform.sendMessage(event.chatId, newsMessage);
+    } else {
+      await _platform.sendMessage(event.chatId, _chatManager.getText(event.chatId, 'general.something_went_wrong'));
     }
   }
 

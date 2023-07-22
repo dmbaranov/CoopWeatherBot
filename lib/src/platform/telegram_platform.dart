@@ -3,12 +3,15 @@ import 'dart:io' as io;
 import 'package:teledart/model.dart';
 import 'package:teledart/teledart.dart';
 import 'package:teledart/telegram.dart';
+import 'package:debounce_throttle/debounce_throttle.dart';
 
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/globals/command.dart';
+
 import 'package:weather/src/modules/commands_manager.dart';
 import 'package:weather/src/modules/chat_manager.dart';
+import 'package:weather/src/modules/youtube.dart';
 
 import 'package:weather/src/platform/platform.dart';
 
@@ -16,20 +19,22 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   final String token;
   final String adminId;
   final ChatManager chatManager;
+  final Youtube youtube;
 
-  late TeleDart bot;
-  late Telegram telegram;
+  late TeleDart _bot;
+  late Telegram _telegram;
+  late Debouncer<TeleDartInlineQuery?> _debouncer = Debouncer(Duration(seconds: 1), initialValue: null);
 
-  TelegramPlatform({required this.token, required this.adminId, required this.chatManager});
+  TelegramPlatform({required this.token, required this.adminId, required this.chatManager, required this.youtube});
 
   @override
   Future<void> initializePlatform() async {
     var botName = (await Telegram(token).getMe()).username;
 
-    telegram = Telegram(token);
-    bot = TeleDart(token, Event(botName!), fetcher: LongPolling(Telegram(token), limit: 100, timeout: 50));
+    _telegram = Telegram(token);
+    _bot = TeleDart(token, Event(botName!), fetcher: LongPolling(Telegram(token), limit: 100, timeout: 50));
 
-    bot.start();
+    _bot.start();
 
     print('Telegram platform has been started!');
   }
@@ -45,7 +50,13 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
     var bullyTagUserRegexpRaw = await io.File('assets/misc/bully_tag_user.txt').readAsString();
     var bullyTagUserRegexp = bullyTagUserRegexpRaw.replaceAll('\n', '');
 
-    bot.onMessage(keyword: RegExp(bullyTagUserRegexp, caseSensitive: false)).listen((event) => _bullyTagUser(event));
+    _bot.onMessage(keyword: RegExp(bullyTagUserRegexp, caseSensitive: false)).listen((event) => _bullyTagUser(event));
+    _bot.onInlineQuery().listen((query) {
+      _debouncer.value = query;
+    });
+    _debouncer.values.listen((query) {
+      _searchYoutubeTrackInline(query as TeleDartInlineQuery);
+    });
   }
 
   @override
@@ -92,7 +103,7 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   void setupCommand(Command command) {
     var eventMapper = _getEventMapper(command);
 
-    bot
+    _bot
         .onCommand(command.command)
         .listen((event) => command.wrapper(eventMapper(event), onSuccess: command.successCallback, onFailure: sendNoAccessMessage));
   }
@@ -100,10 +111,10 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   @override
   Future<Message> sendMessage(String chatId, String message) async {
     if (message.isEmpty) {
-      return telegram.sendMessage(chatId, 'something_went_wrong');
+      return _telegram.sendMessage(chatId, 'something_went_wrong');
     }
 
-    return telegram.sendMessage(chatId, message);
+    return _telegram.sendMessage(chatId, message);
   }
 
   @override
@@ -118,7 +129,7 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
 
   @override
   Future<bool> getUserPremiumStatus(String chatId, String userId) async {
-    var telegramUser = await telegram.getChatMember(chatId, int.parse(userId));
+    var telegramUser = await _telegram.getChatMember(chatId, int.parse(userId));
 
     return telegramUser.user.isPremium ?? false;
   }
@@ -174,5 +185,28 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
     } else if (messageAuthorId == denisId) {
       await sendMessage(chatId, '@dmbaranov_io');
     }
+  }
+
+  Future<void> _searchYoutubeTrackInline(TeleDartInlineQuery query) async {
+    var searchResults = await youtube.getYoutubeSearchResults(query.query);
+    List items = searchResults['items'];
+    var inlineQueryResult = [];
+
+    items.forEach((searchResult) {
+      var videoId = searchResult['id']['videoId'];
+      var videoData = searchResult['snippet'];
+      var videoUrl = 'https://www.youtube.com/watch?v=$videoId';
+
+      inlineQueryResult.add(InlineQueryResultVideo(
+          id: videoId,
+          title: videoData['title'],
+          thumbUrl: videoData['thumbnails']['high']['url'],
+          mimeType: 'video/mp4',
+          videoDuration: 600,
+          videoUrl: videoUrl,
+          inputMessageContent: InputTextMessageContent(messageText: videoUrl, disableWebPagePreview: false)));
+    });
+
+    await _bot.answerInlineQuery(query.id, [...inlineQueryResult], cacheTime: 10);
   }
 }

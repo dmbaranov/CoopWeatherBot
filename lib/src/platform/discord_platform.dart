@@ -8,6 +8,7 @@ import 'package:weather/src/globals/message_event.dart';
 
 import 'package:weather/src/modules/commands_manager.dart';
 import 'package:weather/src/modules/chat_manager.dart';
+import 'package:weather/src/modules/youtube.dart';
 
 import 'package:weather/src/platform/platform.dart';
 
@@ -17,12 +18,13 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
   final String token;
   final String adminId;
   final ChatManager chatManager;
+  final Youtube youtube;
 
   final List<ChatCommand> _commands = [];
 
   late INyxxWebsocket bot;
 
-  DiscordPlatform({required this.token, required this.adminId, required this.chatManager});
+  DiscordPlatform({required this.token, required this.adminId, required this.chatManager, required this.youtube});
 
   @override
   Future<void> initializePlatform() async {

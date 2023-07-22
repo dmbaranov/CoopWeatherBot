@@ -51,6 +51,16 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
   }
 
   @override
+  Future<void> sendNoAccessMessage(MessageEvent event) async {
+    await sendMessage(event.chatId, chatManager.getText(event.chatId, 'general.no_access'));
+  }
+
+  @override
+  Future<void> sendErrorMessage(MessageEvent event) async {
+    await sendMessage(event.chatId, chatManager.getText(event.chatId, 'general.something_went_wrong'));
+  }
+
+  @override
   void setupCommand(Command command) {
     if (command.withParameters) {
       _setupCommandWithParameters(command);
@@ -123,9 +133,8 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
     _commands.add(ChatCommand(command.command, command.description, (IChatContext context) async {
       await context.respond(MessageBuilder.empty());
 
-      command.wrapper(transformPlatformMessageToGeneralMessageEvent(context), onSuccess: command.successCallback, onFailure: () {
-        print('no_access_message');
-      });
+      command.wrapper(transformPlatformMessageToGeneralMessageEvent(context),
+          onSuccess: command.successCallback, onFailure: sendNoAccessMessage);
     }));
   }
 

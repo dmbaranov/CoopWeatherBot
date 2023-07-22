@@ -92,9 +92,9 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   void setupCommand(Command command) {
     var eventMapper = _getEventMapper(command);
 
-    bot.onCommand(command.command).listen((event) => command.wrapper(eventMapper(event), onSuccess: command.successCallback, onFailure: () {
-          print('no_access_message');
-        }));
+    bot
+        .onCommand(command.command)
+        .listen((event) => command.wrapper(eventMapper(event), onSuccess: command.successCallback, onFailure: sendNoAccessMessage));
   }
 
   @override
@@ -104,6 +104,16 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
     }
 
     return telegram.sendMessage(chatId, message);
+  }
+
+  @override
+  Future<void> sendNoAccessMessage(MessageEvent event) async {
+    await sendMessage(event.chatId, chatManager.getText(event.chatId, 'general.no_access'));
+  }
+
+  @override
+  Future<void> sendErrorMessage(MessageEvent event) async {
+    await sendMessage(event.chatId, chatManager.getText(event.chatId, 'general.something_went_wrong'));
   }
 
   @override

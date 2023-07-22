@@ -50,6 +50,12 @@ abstract class Platform<T> {
   Future sendMessage(String chatId, String message);
 
   @protected
+  Future sendNoAccessMessage(MessageEvent event);
+
+  @protected
+  Future sendErrorMessage(MessageEvent event);
+
+  @protected
   Future<bool> getUserPremiumStatus(String chatId, String userId);
 
   @protected

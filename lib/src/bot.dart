@@ -15,7 +15,6 @@ import 'package:weather/src/modules/panorama.dart';
 import 'package:weather/src/modules/dadjokes.dart';
 import 'package:weather/src/modules/reputation.dart';
 import 'package:weather/src/modules/youtube.dart';
-import 'package:weather/src/modules/accordion_poll.dart';
 import 'package:weather/src/modules/conversator.dart';
 import 'package:weather/src/modules/commands_manager.dart';
 
@@ -37,7 +36,6 @@ class Bot {
   late PanoramaNews _panoramaNews;
   late Reputation _reputation;
   late Youtube _youtube;
-  late AccordionPoll _accordionPoll;
   late Conversator _conversator;
   late ChatManager _chatManager;
   late CommandsManager _cm;
@@ -59,7 +57,6 @@ class Bot {
     _dadJokes = DadJokes();
     _youtube = Youtube(youtubeKey);
     _conversator = Conversator(dbManager: _dbManager, conversatorApiKey: conversatorKey);
-    _accordionPoll = AccordionPoll();
     _cm = CommandsManager(adminId: adminId, dbManager: _dbManager);
 
     _chatManager = ChatManager(dbManager: _dbManager);

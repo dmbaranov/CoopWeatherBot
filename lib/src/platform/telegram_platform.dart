@@ -1,5 +1,7 @@
+import 'dart:math';
 import 'dart:io' as io;
 
+import 'package:collection/collection.dart';
 import 'package:teledart/model.dart';
 import 'package:teledart/teledart.dart';
 import 'package:teledart/telegram.dart';
@@ -12,6 +14,7 @@ import 'package:weather/src/globals/command.dart';
 import 'package:weather/src/modules/commands_manager.dart';
 import 'package:weather/src/modules/chat_manager.dart';
 import 'package:weather/src/modules/youtube.dart';
+import 'package:weather/src/modules/accordion_poll.dart';
 
 import 'package:weather/src/platform/platform.dart';
 
@@ -24,6 +27,7 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   late TeleDart _bot;
   late Telegram _telegram;
   late Debouncer<TeleDartInlineQuery?> _debouncer = Debouncer(Duration(seconds: 1), initialValue: null);
+  late AccordionPoll _accordionPoll;
 
   TelegramPlatform({required this.token, required this.adminId, required this.chatManager, required this.youtube});
 
@@ -33,6 +37,7 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
 
     _telegram = Telegram(token);
     _bot = TeleDart(token, Event(botName!), fetcher: LongPolling(Telegram(token), limit: 100, timeout: 50));
+    _accordionPoll = AccordionPoll();
 
     _bot.start();
 
@@ -45,6 +50,7 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
         command: 'accordion',
         description: 'Start vote for the freshness of the content',
         wrapper: cm.userCommand,
+        withOtherUserIds: true,
         successCallback: _startTelegramAccordionPoll));
 
     var bullyTagUserRegexpRaw = await io.File('assets/misc/bully_tag_user.txt').readAsString();
@@ -85,8 +91,10 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
 
   @override
   MessageEvent transformPlatformMessageToMessageEventWithOtherUserIds(TeleDartMessage event, [List? otherUserIds]) {
+    var otherUserId = [event.replyToMessage?.from?.id.toString()].whereNotNull();
+
     return transformPlatformMessageToGeneralMessageEvent(event)
-      ..otherUserIds.add(event.replyToMessage?.from?.id.toString() ?? '')
+      ..otherUserIds.addAll(otherUserId)
       ..parameters.addAll(_getUserInfo(event));
   }
 
@@ -139,8 +147,77 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
     return message.messageId.toString();
   }
 
-  void _startTelegramAccordionPoll(MessageEvent event) {
-    print('running accordion poll');
+  void _startTelegramAccordionPoll(MessageEvent event) async {
+    var chatId = event.chatId;
+    const pollTime = 30;
+    var pollOptions = [
+      chatManager.getText(chatId, 'accordion.options.yes'),
+      chatManager.getText(chatId, 'accordion.options.no'),
+      chatManager.getText(chatId, 'accordion.options.maybe')
+    ];
+
+    if (_accordionPoll.isVoteActive) {
+      await sendMessage(chatId, chatManager.getText(chatId, 'accordion.other.accordion_vote_in_progress'));
+
+      return;
+    } else if (event.otherUserIds.isEmpty) {
+      await sendMessage(chatId, chatManager.getText(chatId, 'accordion.other.message_not_chosen'));
+
+      return;
+    } else if (event.isBot) {
+      await sendMessage(chatId, chatManager.getText(chatId, 'accordion.other.bot_vote_attempt'));
+
+      return;
+    }
+
+    _accordionPoll.startPoll(event.otherUserIds[0]);
+
+    var createdPoll = await _telegram.sendPoll(
+      chatId,
+      chatManager.getText(chatId, 'accordion.other.title'),
+      pollOptions,
+      explanation: chatManager.getText(chatId, 'accordion.other.explanation'),
+      type: 'quiz',
+      correctOptionId: Random().nextInt(pollOptions.length),
+      openPeriod: pollTime,
+    );
+
+    var pollSubscription = _bot.onPoll().listen((poll) {
+      if (createdPoll.poll?.id != poll.id) {
+        print('Wrong poll');
+
+        return;
+      }
+
+      var currentPollResults = {
+        AccordionVoteOption.yes: poll.options[0].voterCount,
+        AccordionVoteOption.no: poll.options[1].voterCount,
+        AccordionVoteOption.maybe: poll.options[2].voterCount
+      };
+
+      _accordionPoll.voteResult = currentPollResults;
+    });
+
+    await Future.delayed(Duration(seconds: pollTime));
+
+    var voteResult = _accordionPoll.endVoteAndGetResults();
+
+    switch (voteResult) {
+      case AccordionVoteResults.yes:
+        await sendMessage(chatId, chatManager.getText(chatId, 'accordion.results.yes'));
+        break;
+      case AccordionVoteResults.no:
+        await sendMessage(chatId, chatManager.getText(chatId, 'accordion.results.no'));
+        break;
+      case AccordionVoteResults.maybe:
+        await sendMessage(chatId, chatManager.getText(chatId, 'accordion.results.maybe'));
+        break;
+      case AccordionVoteResults.noResults:
+        await sendMessage(chatId, chatManager.getText(chatId, 'accordion.results.noResults'));
+        break;
+    }
+
+    await pollSubscription.cancel();
   }
 
   List<String> _getUserInfo(TeleDartMessage message) {

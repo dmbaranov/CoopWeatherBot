@@ -4,8 +4,8 @@ import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/globals/command.dart';
 import 'package:weather/src/modules/commands_manager.dart';
 
-import 'package:weather/src/platform/telegram/telegram_platform.dart';
-import 'package:weather/src/platform/discord/discord_platform.dart';
+import 'package:weather/src/platform/telegram_platform.dart';
+import 'package:weather/src/platform/discord_platform.dart';
 
 abstract class Platform<T> {
   factory Platform({required ChatPlatform chatPlatform, required String token}) {

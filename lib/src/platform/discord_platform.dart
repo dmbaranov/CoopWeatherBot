@@ -5,7 +5,9 @@ import 'package:uuid/uuid.dart';
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/command.dart';
 import 'package:weather/src/globals/message_event.dart';
+
 import 'package:weather/src/modules/commands_manager.dart';
+import 'package:weather/src/modules/chat_manager.dart';
 
 import 'package:weather/src/platform/platform.dart';
 
@@ -14,12 +16,13 @@ const uuid = Uuid();
 class DiscordPlatform<T extends IChatContext> implements Platform<T> {
   final String token;
   final String adminId;
+  final ChatManager chatManager;
 
   final List<ChatCommand> _commands = [];
 
   late INyxxWebsocket bot;
 
-  DiscordPlatform({required this.token, required this.adminId});
+  DiscordPlatform({required this.token, required this.adminId, required this.chatManager});
 
   @override
   Future<void> initializePlatform() async {

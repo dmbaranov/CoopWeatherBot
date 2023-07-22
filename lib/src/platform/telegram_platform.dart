@@ -8,17 +8,19 @@ import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/globals/command.dart';
 import 'package:weather/src/modules/commands_manager.dart';
+import 'package:weather/src/modules/chat_manager.dart';
 
 import 'package:weather/src/platform/platform.dart';
 
 class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   final String token;
   final String adminId;
+  final ChatManager chatManager;
 
   late TeleDart bot;
   late Telegram telegram;
 
-  TelegramPlatform({required this.token, required this.adminId});
+  TelegramPlatform({required this.token, required this.adminId, required this.chatManager});
 
   @override
   Future<void> initializePlatform() async {

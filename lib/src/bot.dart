@@ -84,6 +84,7 @@ class Bot {
 
     _setupCommands();
     _subscribeToUserUpdates();
+    _subscribeToWeatherUpdates();
 
     await _platform.postStart();
   }
@@ -102,21 +103,39 @@ class Bot {
 
   void _subscribeToUserUpdates() {
     _userManager.userManagerStream.listen((_) async {
-      var allPlatformChatIds = await _chatManager.getAllChatIdsForPlatform(platformName);
+      await _updateUsersPremiumStatus();
+    });
+  }
 
-      await Future.forEach(allPlatformChatIds, (chatId) async {
-        var chatUsers = await _userManager.getUsersForChat(chatId);
+  void _subscribeToWeatherUpdates() {
+    var weatherStream = _weatherManager.weatherStream;
 
-        await Future.forEach(chatUsers, (chatUser) async {
-          await Future.delayed(Duration(seconds: 1));
+    weatherStream.listen((weatherData) {
+      var message = '';
 
-          var platformUserPremiumStatus = await _platform.getUserPremiumStatus(chatId, chatUser.id);
+      weatherData.weatherData.forEach((weatherData) {
+        message += 'In city: ${weatherData.city} the temperature is ${weatherData.temp}\n\n';
+      });
 
-          if (chatUser.isPremium != platformUserPremiumStatus) {
-            print('Updating premium status for ${chatUser.id}');
-            await _userManager.updatePremiumStatus(chatUser.id, platformUserPremiumStatus);
-          }
-        });
+      _platform.sendMessage(weatherData.chatId, message);
+    });
+  }
+
+  Future<void> _updateUsersPremiumStatus() async {
+    var allPlatformChatIds = await _chatManager.getAllChatIdsForPlatform(platformName);
+
+    await Future.forEach(allPlatformChatIds, (chatId) async {
+      var chatUsers = await _userManager.getUsersForChat(chatId);
+
+      await Future.forEach(chatUsers, (chatUser) async {
+        await Future.delayed(Duration(seconds: 1));
+
+        var platformUserPremiumStatus = await _platform.getUserPremiumStatus(chatId, chatUser.id);
+
+        if (chatUser.isPremium != platformUserPremiumStatus) {
+          print('Updating premium status for ${chatUser.id}');
+          await _userManager.updatePremiumStatus(chatUser.id, platformUserPremiumStatus);
+        }
       });
     });
   }
@@ -129,6 +148,24 @@ class Bot {
     }
 
     return true;
+  }
+
+  bool _userIdsCheck(MessageEvent event, [int numberOfIds = 1]) {
+    if (event.otherUserIds.whereNot((id) => id.isEmpty).length < numberOfIds) {
+      _platform.sendMessage(event.chatId, _chatManager.getText(event.chatId, 'general.something_went_wrong'));
+
+      return false;
+    }
+
+    return true;
+  }
+
+  void _sendOperationMessage(String chatId, bool operationResult, String successfulMessage) {
+    if (operationResult) {
+      _platform.sendMessage(chatId, successfulMessage);
+    } else {
+      _platform.sendMessage(chatId, _chatManager.getText(chatId, 'general.something_went_wrong'));
+    }
   }
 
   void _healthCheck(MessageEvent event) async {

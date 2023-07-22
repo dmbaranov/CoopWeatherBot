@@ -56,7 +56,7 @@ class Bot {
     _dbManager = DatabaseManager(dbConnection);
     await _dbManager.initialize();
 
-    _platform = Platform(chatPlatform: platformName, token: botToken);
+    _platform = Platform(chatPlatform: platformName, token: botToken, adminId: adminId);
 
     _dadJokes = DadJokes();
     _youtube = Youtube(youtubeKey);

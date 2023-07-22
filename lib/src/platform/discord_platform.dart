@@ -13,11 +13,13 @@ const uuid = Uuid();
 
 class DiscordPlatform<T extends IChatContext> implements Platform<T> {
   final String token;
+  final String adminId;
+
   final List<ChatCommand> _commands = [];
 
   late INyxxWebsocket bot;
 
-  DiscordPlatform({required this.token});
+  DiscordPlatform({required this.token, required this.adminId});
 
   @override
   Future<void> initializePlatform() async {

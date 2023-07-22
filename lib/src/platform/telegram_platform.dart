@@ -1,3 +1,5 @@
+import 'dart:io' as io;
+
 import 'package:teledart/model.dart';
 import 'package:teledart/teledart.dart';
 import 'package:teledart/telegram.dart';
@@ -11,11 +13,12 @@ import 'package:weather/src/platform/platform.dart';
 
 class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   final String token;
+  final String adminId;
 
   late TeleDart bot;
   late Telegram telegram;
 
-  TelegramPlatform({required this.token});
+  TelegramPlatform({required this.token, required this.adminId});
 
   @override
   Future<void> initializePlatform() async {
@@ -25,22 +28,27 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
     bot = TeleDart(token, Event(botName!), fetcher: LongPolling(Telegram(token), limit: 100, timeout: 50));
 
     bot.start();
+
+    print('Telegram platform has been started!');
   }
 
   @override
-  void setupPlatformSpecificCommands(CommandsManager cm) {
-    var accordionCommand = Command(
+  void setupPlatformSpecificCommands(CommandsManager cm) async {
+    setupCommand(Command(
         command: 'accordion',
         description: 'Start vote for the freshness of the content',
         wrapper: cm.userCommand,
-        successCallback: _startTelegramAccordionPoll);
+        successCallback: _startTelegramAccordionPoll));
 
-    setupCommand(accordionCommand);
+    var bullyTagUserRegexpRaw = await io.File('assets/misc/bully_tag_user.txt').readAsString();
+    var bullyTagUserRegexp = bullyTagUserRegexpRaw.replaceAll('\n', '');
+
+    bot.onMessage(keyword: RegExp(bullyTagUserRegexp, caseSensitive: false)).listen((event) => _bullyTagUser(event));
   }
 
   @override
   Future<void> postStart() async {
-    print('Telegram platform has been started!');
+    print('No post-start script for Telegram');
   }
 
   @override
@@ -141,5 +149,18 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
     }
 
     return transformPlatformMessageToGeneralMessageEvent;
+  }
+
+  void _bullyTagUser(TeleDartMessage message) async {
+    // just an original feature of this bot that will stay here forever
+    var denisId = '354903232';
+    var messageAuthorId = message.from?.id.toString();
+    var chatId = message.chat.id.toString();
+
+    if (messageAuthorId == adminId) {
+      await sendMessage(chatId, '@daimonil');
+    } else if (messageAuthorId == denisId) {
+      await sendMessage(chatId, '@dmbaranov_io');
+    }
   }
 }

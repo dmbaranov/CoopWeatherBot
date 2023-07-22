@@ -8,12 +8,12 @@ import 'package:weather/src/platform/telegram_platform.dart';
 import 'package:weather/src/platform/discord_platform.dart';
 
 abstract class Platform<T> {
-  factory Platform({required ChatPlatform chatPlatform, required String token}) {
+  factory Platform({required ChatPlatform chatPlatform, required String token, required String adminId}) {
     switch (chatPlatform) {
       case ChatPlatform.telegram:
-        return TelegramPlatform(token: token);
+        return TelegramPlatform(token: token, adminId: adminId);
       case ChatPlatform.discord:
-        return DiscordPlatform(token: token);
+        return DiscordPlatform(token: token, adminId: adminId);
       default:
         throw Exception('Platform $chatPlatform is not supported');
     }

@@ -74,7 +74,13 @@ class Bot {
     _weatherManager = WeatherManager(dbManager: _dbManager, openweatherKey: openweatherKey);
     await _weatherManager.initialize();
 
-    _platform = Platform(chatPlatform: platformName, token: botToken, adminId: adminId, chatManager: _chatManager, youtube: _youtube);
+    _platform = Platform(
+        chatPlatform: platformName,
+        token: botToken,
+        adminId: adminId,
+        chatManager: _chatManager,
+        youtube: _youtube,
+        userManager: _userManager);
     await _platform.initializePlatform();
     _platform.setupPlatformSpecificCommands(_cm);
 
@@ -96,6 +102,20 @@ class Bot {
         wrapper: _cm.userCommand,
         conversatorCommand: true,
         successCallback: _askConversator));
+
+    _platform.setupCommand(Command(
+        command: 'addcity',
+        description: '[U] Add city to the watchlist',
+        wrapper: _cm.userCommand,
+        withParameters: true,
+        successCallback: _addWeatherCity));
+
+    _platform.setupCommand(Command(
+        command: 'removecity',
+        description: '[U] Remove city from the watchlist',
+        wrapper: _cm.userCommand,
+        withParameters: true,
+        successCallback: _removeWeatherCity));
   }
 
   void _subscribeToUserUpdates() {
@@ -195,6 +215,24 @@ class Bot {
 
   void _healthCheck(MessageEvent event) async {
     await _platform.sendMessage(event.chatId, _chatManager.getText(event.chatId, 'general.bot_is_alive'));
+  }
+
+  void _addWeatherCity(MessageEvent event) async {
+    if (!_parametersCheck(event)) return;
+
+    var cityToRemove = event.parameters[0];
+    var result = await _weatherManager.removeCity(event.chatId, event.parameters[0]);
+
+    _sendOperationMessage(event.chatId, result, _chatManager.getText(event.chatId, 'weather.cities.removed', {'city': cityToRemove}));
+  }
+
+  void _removeWeatherCity(MessageEvent event) async {
+    if (!_parametersCheck(event)) return;
+
+    var cityToRemove = event.parameters[0];
+    var result = await _weatherManager.removeCity(event.chatId, event.parameters[0]);
+
+    _sendOperationMessage(event.chatId, result, _chatManager.getText(event.chatId, 'weather.cities.removed', {'city': cityToRemove}));
   }
 
   void _askConversator(MessageEvent event) async {

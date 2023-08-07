@@ -1,6 +1,10 @@
+import 'dart:io';
+
+import 'package:collection/collection.dart';
 import 'package:nyxx/nyxx.dart';
 import 'package:nyxx_commands/nyxx_commands.dart';
 import 'package:uuid/uuid.dart';
+import 'package:cron/cron.dart';
 
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/command.dart';
@@ -8,7 +12,7 @@ import 'package:weather/src/globals/message_event.dart';
 
 import 'package:weather/src/modules/commands_manager.dart';
 import 'package:weather/src/modules/chat_manager.dart';
-import 'package:weather/src/modules/youtube.dart';
+import 'package:weather/src/modules/user_manager.dart';
 
 import 'package:weather/src/platform/platform.dart';
 
@@ -18,13 +22,13 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
   final String token;
   final String adminId;
   final ChatManager chatManager;
-  final Youtube youtube;
+  final UserManager userManager;
 
   final List<ChatCommand> _commands = [];
 
   late INyxxWebsocket bot;
 
-  DiscordPlatform({required this.token, required this.adminId, required this.chatManager, required this.youtube});
+  DiscordPlatform({required this.token, required this.adminId, required this.chatManager, required this.userManager});
 
   @override
   Future<void> initializePlatform() async {
@@ -40,6 +44,8 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
       ..registerPlugin(_setupDiscordCommands());
 
     await bot.connect();
+
+    _startHeroCheckJob();
 
     print('Discord platform has been started!');
   }
@@ -178,5 +184,38 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
         print('no_access_message');
       });
     }));
+  }
+
+  void _startHeroCheckJob() {
+    Cron().schedule(Schedule.parse('0 5 * * 6,0'), () async {
+      var authorizedChats = await chatManager.getAllChatIdsForPlatform(ChatPlatform.discord);
+
+      await Process.run('${Directory.current.path}/generate-online', []);
+
+      var onlineFile = File('assets/online');
+      var onlineUsers = await onlineFile.readAsLines();
+
+      await Future.forEach(authorizedChats, (chatId) async {
+        if (onlineUsers.isEmpty) {
+          return sendMessage(chatId, chatManager.getText(chatId, 'hero.users_at_five.no_users'));
+        }
+
+        var heroesMessage = chatManager.getText(chatId, 'hero.users_at_five.list');
+        var chatUsers = await userManager.getUsersForChat(chatId);
+
+        onlineUsers.forEach((userId) {
+          var onlineUser = chatUsers.firstWhereOrNull((user) => user.id == userId);
+
+          if (onlineUser != null) {
+            heroesMessage += onlineUser.name;
+            heroesMessage += '\n';
+          }
+        });
+
+        await sendMessage(chatId, heroesMessage);
+      });
+
+      await onlineFile.delete();
+    });
   }
 }

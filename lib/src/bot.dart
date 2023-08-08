@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'package:collection/collection.dart';
 import 'package:postgres/postgres.dart';
+import 'package:http/http.dart' as http;
 
 import 'package:weather/src/platform/platform.dart';
 
@@ -93,16 +95,6 @@ class Bot {
   }
 
   void _setupCommands() {
-    _platform.setupCommand(
-        Command(command: 'na', description: '[U] Check if bot is alive', wrapper: _cm.userCommand, successCallback: _healthCheck));
-
-    _platform.setupCommand(Command(
-        command: 'ask',
-        description: '[U] Ask for advice or anything else from the Conversator',
-        wrapper: _cm.userCommand,
-        conversatorCommand: true,
-        successCallback: _askConversator));
-
     _platform.setupCommand(Command(
         command: 'addcity',
         description: '[U] Add city to the watchlist',
@@ -116,6 +108,43 @@ class Bot {
         wrapper: _cm.userCommand,
         withParameters: true,
         successCallback: _removeWeatherCity));
+
+    _platform.setupCommand(Command(
+        command: 'watchlist', description: '[U] Get weather watchlist', wrapper: _cm.userCommand, successCallback: _getWeatherWatchlist));
+
+    _platform.setupCommand(Command(
+        command: 'getweather',
+        description: '[U] Get weather for city',
+        wrapper: _cm.userCommand,
+        withParameters: true,
+        successCallback: _getWeatherForCity));
+
+    _platform.setupCommand(Command(
+        command: 'updatemessage', description: '[A] Post update message', wrapper: _cm.adminCommand, successCallback: _postUpdateMessage));
+
+    _platform.setupCommand(
+        Command(command: 'na', description: '[U] Check if bot is alive', wrapper: _cm.userCommand, successCallback: _healthCheck));
+
+    _platform.setupCommand(Command(
+        command: 'setnotificationhour',
+        description: '[M] Set time for weather notifications',
+        wrapper: _cm.moderatorCommand,
+        withParameters: true,
+        successCallback: _setWeatherNotificationHour));
+
+    _platform.setupCommand(Command(
+        command: 'write',
+        description: '[M] Write message to the chat on behalf of the bot',
+        wrapper: _cm.moderatorCommand,
+        withParameters: true,
+        successCallback: _writeToChat));
+
+    _platform.setupCommand(Command(
+        command: 'ask',
+        description: '[U] Ask for advice or anything else from the Conversator',
+        wrapper: _cm.userCommand,
+        conversatorCommand: true,
+        successCallback: _askConversator));
   }
 
   void _subscribeToUserUpdates() {
@@ -213,10 +242,6 @@ class Bot {
     }
   }
 
-  void _healthCheck(MessageEvent event) async {
-    await _platform.sendMessage(event.chatId, _chatManager.getText(event.chatId, 'general.bot_is_alive'));
-  }
-
   void _addWeatherCity(MessageEvent event) async {
     if (!_parametersCheck(event)) return;
 
@@ -233,6 +258,52 @@ class Bot {
     var result = await _weatherManager.removeCity(event.chatId, event.parameters[0]);
 
     _sendOperationMessage(event.chatId, result, _chatManager.getText(event.chatId, 'weather.cities.removed', {'city': cityToRemove}));
+  }
+
+  void _getWeatherWatchlist(MessageEvent event) async {
+    var cities = await _weatherManager.getWatchList(event.chatId);
+    var citiesString = cities.join('\n');
+
+    await _platform.sendMessage(event.chatId, citiesString);
+  }
+
+  void _getWeatherForCity(MessageEvent event) async {
+    if (!_parametersCheck(event)) return;
+
+    var city = event.parameters[0];
+    var temperature = await _weatherManager.getWeatherForCity(city);
+
+    _sendOperationMessage(event.chatId, temperature != null,
+        _chatManager.getText(event.chatId, 'weather.cities.temperature', {'city': city, 'temperature': temperature.toString()}));
+  }
+
+  void _postUpdateMessage(MessageEvent event) async {
+    var commitApiUrl = Uri.https('api.github.com', '/repos$repoUrl/commits');
+    var response = await http.read(commitApiUrl).then(json.decode);
+    var updateMessage = response[0]['commit']['message'];
+    var chatIds = await _chatManager.getAllChatIdsForPlatform(event.platform);
+
+    chatIds.forEach((chatId) => _platform.sendMessage(chatId, updateMessage));
+  }
+
+  void _setWeatherNotificationHour(MessageEvent event) async {
+    if (!_parametersCheck(event)) return;
+
+    var nextHour = event.parameters[0];
+    var result = await _weatherManager.setNotificationHour(event.chatId, int.parse(nextHour));
+
+    _sendOperationMessage(
+        event.chatId, result, _chatManager.getText(event.chatId, 'weather.other.notification_hour_set', {'hour': nextHour}));
+  }
+
+  void _writeToChat(MessageEvent event) async {
+    if (!_parametersCheck(event)) return;
+
+    await _platform.sendMessage(event.chatId, event.parameters.join());
+  }
+
+  void _healthCheck(MessageEvent event) async {
+    await _platform.sendMessage(event.chatId, _chatManager.getText(event.chatId, 'general.bot_is_alive'));
   }
 
   void _askConversator(MessageEvent event) async {

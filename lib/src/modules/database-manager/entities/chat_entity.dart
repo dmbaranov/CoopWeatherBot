@@ -1,4 +1,4 @@
-import 'package:weather/src/modules/chat_manager.dart';
+import 'package:weather/src/globals/chat_platform.dart';
 import 'entity.dart';
 
 class ChatData {

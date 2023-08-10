@@ -1,19 +1,7 @@
 import 'dart:io';
 import 'dart:convert';
+import 'package:weather/src/globals/chat_platform.dart';
 import 'database-manager/database_manager.dart';
-
-enum ChatPlatform {
-  telegram('telegram'),
-  discord('discord');
-
-  final String value;
-
-  const ChatPlatform(this.value);
-
-  factory ChatPlatform.fromString(String platform) {
-    return values.firstWhere((platform) => platform == platform);
-  }
-}
 
 class ChatManager {
   final DatabaseManager dbManager;

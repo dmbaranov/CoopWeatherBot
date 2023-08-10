@@ -1,52 +1,54 @@
-import 'dart:convert';
 import 'dart:io';
+import 'dart:convert';
 
 import 'package:collection/collection.dart';
 import 'package:nyxx/nyxx.dart';
 import 'package:nyxx_commands/nyxx_commands.dart';
-import 'package:cron/cron.dart';
 import 'package:uuid/uuid.dart';
+import 'package:cron/cron.dart';
 
-import 'package:weather/src/bot/bot.dart';
-import 'package:weather/src/modules/chat_manager.dart';
+import 'package:weather/src/globals/chat_platform.dart';
+import 'package:weather/src/globals/command.dart';
+import 'package:weather/src/globals/message_event.dart';
+
 import 'package:weather/src/modules/commands_manager.dart';
+import 'package:weather/src/modules/chat_manager.dart';
+import 'package:weather/src/modules/user_manager.dart';
+
+import 'package:weather/src/platform/platform.dart';
 
 const uuid = Uuid();
 
-class DiscordBot extends Bot<IChatContext, IMessage> {
+class DiscordPlatform<T extends IChatContext> implements Platform<T> {
+  final String token;
+  final String adminId;
+  final ChatManager chatManager;
+  final UserManager userManager;
+
   final List<ChatCommand> _commands = [];
+
   late INyxxWebsocket bot;
 
-  DiscordBot(
-      {required super.botToken,
-      required super.adminId,
-      required super.repoUrl,
-      required super.openweatherKey,
-      required super.conversatorKey,
-      required super.dbConnection,
-      required super.youtubeKey});
+  DiscordPlatform({required this.token, required this.adminId, required this.chatManager, required this.userManager});
 
   @override
-  Future<void> startBot() async {
-    await super.startBot();
+  Future<void> initializePlatform() async {
+    bot = NyxxFactory.createNyxxWebsocket(token, GatewayIntents.all);
+  }
 
-    bot = NyxxFactory.createNyxxWebsocket(botToken, GatewayIntents.all);
-
-    setupCommands();
-    setupPlatformSpecificCommands();
-
+  @override
+  Future<void> postStart() async {
     bot
       ..registerPlugin(Logging())
       ..registerPlugin(CliIntegration())
       ..registerPlugin(IgnoreExceptions())
       ..registerPlugin(_setupDiscordCommands());
 
-    _subscribeToUserUpdates();
-    _startHeroCheckJob();
-
     await bot.connect();
 
-    print('Discord bot has been started!');
+    _startHeroCheckJob();
+
+    print('Discord platform has been started!');
   }
 
   @override
@@ -55,6 +57,16 @@ class DiscordBot extends Bot<IChatContext, IMessage> {
     var channelId = guild.systemChannel?.id.toString() ?? '';
 
     return bot.httpEndpoints.sendMessage(Snowflake(channelId), MessageBuilder.content(message));
+  }
+
+  @override
+  Future<void> sendNoAccessMessage(MessageEvent event) async {
+    await sendMessage(event.chatId, chatManager.getText(event.chatId, 'general.no_access'));
+  }
+
+  @override
+  Future<void> sendErrorMessage(MessageEvent event) async {
+    await sendMessage(event.chatId, chatManager.getText(event.chatId, 'general.something_went_wrong'));
   }
 
   @override
@@ -71,20 +83,21 @@ class DiscordBot extends Bot<IChatContext, IMessage> {
   }
 
   @override
-  void setupPlatformSpecificCommands() {
+  void setupPlatformSpecificCommands(CommandsManager cm) {
     _commands.add(ChatCommand('moveall', 'Move all users from one voice channel to another',
         (IChatContext context, IChannel fromChannel, IChannel toChannel) async {
       await context.respond(MessageBuilder.empty());
 
-      cm.moderatorCommand(mapToGeneralMessageEvent(context),
+      cm.moderatorCommand(transformPlatformMessageToGeneralMessageEvent(context),
           onSuccessCustom: () => _moveAll(context, fromChannel, toChannel), onFailure: sendNoAccessMessage);
     }));
   }
 
   @override
-  MessageEvent mapToGeneralMessageEvent(IChatContext event) {
+  MessageEvent transformPlatformMessageToGeneralMessageEvent(IChatContext event) {
     return MessageEvent(
         platform: ChatPlatform.discord,
+        // TODO: replace guildId with channelId?
         chatId: event.guild?.id.toString() ?? '',
         userId: event.user.id.toString(),
         otherUserIds: [],
@@ -94,23 +107,20 @@ class DiscordBot extends Bot<IChatContext, IMessage> {
   }
 
   @override
-  MessageEvent mapToMessageEventWithParameters(IChatContext event, [List? otherParameters]) {
-    return mapToGeneralMessageEvent(event)..parameters.addAll(otherParameters?.map((param) => param.toString()).toList() ?? []);
+  MessageEvent transformPlatformMessageToMessageEventWithParameters(IChatContext event, [List? otherParameters]) {
+    return transformPlatformMessageToGeneralMessageEvent(event)
+      ..parameters.addAll(otherParameters?.map((param) => param.toString()).toList() ?? []);
   }
 
   @override
-  MessageEvent mapToMessageEventWithOtherUserIds(IChatContext event, [List? otherUserIds]) {
-    return mapToGeneralMessageEvent(event)..otherUserIds.addAll(otherUserIds?.map((param) => param.toString()).toList() ?? []);
+  MessageEvent transformPlatformMessageToMessageEventWithOtherUserIds(IChatContext event, [List? otherUserIds]) {
+    return transformPlatformMessageToGeneralMessageEvent(event)
+      ..otherUserIds.addAll(otherUserIds?.map((param) => param.toString()).toList() ?? []);
   }
 
   @override
-  MessageEvent mapToConversatorMessageEvent(IChatContext event, [List<String> otherParameters = const []]) {
-    return mapToGeneralMessageEvent(event)..parameters.addAll(otherParameters);
-  }
-
-  @override
-  String getMessageId(IMessage message) {
-    return message.id.toString();
+  MessageEvent transformPlatformMessageToConversatorMessageEvent(IChatContext event, [List<String>? otherParameters]) {
+    return transformPlatformMessageToGeneralMessageEvent(event)..parameters.addAll(otherParameters ?? []);
   }
 
   @override
@@ -120,10 +130,9 @@ class DiscordBot extends Bot<IChatContext, IMessage> {
     return discordUser.boostingSince != null;
   }
 
-  void _subscribeToUserUpdates() {
-    userManager.userManagerStream.listen((_) {
-      updateUsersPremiumStatus(ChatPlatform.discord);
-    });
+  @override
+  String getMessageId(message) {
+    return (message as IMessage).id.toString();
   }
 
   CommandsPlugin _setupDiscordCommands() {
@@ -138,7 +147,8 @@ class DiscordBot extends Bot<IChatContext, IMessage> {
     _commands.add(ChatCommand(command.command, command.description, (IChatContext context) async {
       await context.respond(MessageBuilder.empty());
 
-      command.wrapper(mapToGeneralMessageEvent(context), onSuccess: command.successCallback, onFailure: sendNoAccessMessage);
+      command.wrapper(transformPlatformMessageToGeneralMessageEvent(context),
+          onSuccess: command.successCallback, onFailure: sendNoAccessMessage);
     }));
   }
 
@@ -146,7 +156,10 @@ class DiscordBot extends Bot<IChatContext, IMessage> {
     _commands.add(ChatCommand(command.command, command.description, (IChatContext context, String what) async {
       await context.respond(MessageBuilder.content(what));
 
-      command.wrapper(mapToMessageEventWithParameters(context, [what]), onSuccess: command.successCallback, onFailure: sendNoAccessMessage);
+      command.wrapper(transformPlatformMessageToMessageEventWithParameters(context, [what]), onSuccess: command.successCallback,
+          onFailure: () {
+        print('no_access_message');
+      });
     }));
   }
 
@@ -156,10 +169,12 @@ class DiscordBot extends Bot<IChatContext, IMessage> {
       var isPremium = who.boostingSince != null ? 'true' : 'false';
       await context.respond(MessageBuilder.content(user.username));
 
-      var messageEvent = mapToMessageEventWithOtherUserIds(context, [who.user.id.toString()])
-        ..parameters.addAll([user.username, isPremium]);
-
-      command.wrapper(messageEvent, onSuccess: command.successCallback, onFailure: sendNoAccessMessage);
+      command.wrapper(
+          transformPlatformMessageToMessageEventWithOtherUserIds(context, [who.user.id.toString()])
+            ..parameters.addAll([user.username, isPremium]),
+          onSuccess: command.successCallback, onFailure: () {
+        print('no_access_message');
+      });
     }));
   }
 
@@ -170,12 +185,14 @@ class DiscordBot extends Bot<IChatContext, IMessage> {
       conversationId ??= uuid.v4();
       var currentMessageId = uuid.v4();
 
-      command.wrapper(mapToConversatorMessageEvent(context, [conversationId, currentMessageId, what]),
-          onSuccess: command.successCallback, onFailure: sendNoAccessMessage);
+      command.wrapper(transformPlatformMessageToConversatorMessageEvent(context, [conversationId, currentMessageId, what]),
+          onSuccess: command.successCallback, onFailure: () {
+        print('no_access_message');
+      });
     }));
   }
 
-  void _startHeroCheckJob() async {
+  void _startHeroCheckJob() {
     // TODO: onlineUsers are returned for a single chat only. Fix this + make this job configurable per chat
     Cron().schedule(Schedule.parse('0 5 * * 6,0'), () async {
       var authorizedChats = await chatManager.getAllChatIdsForPlatform(ChatPlatform.discord);
@@ -227,25 +244,5 @@ class DiscordBot extends Bot<IChatContext, IMessage> {
     });
 
     await channelUsersFile.delete();
-  }
-
-  Future<void> _updateUserPremiumStatus() async {
-    var allPlatformChats = await chatManager.getAllChatIdsForPlatform(ChatPlatform.discord);
-
-    await Future.forEach(allPlatformChats, (chatId) async {
-      var chatUsers = await userManager.getUsersForChat(chatId);
-
-      await Future.forEach(chatUsers, (chatUser) async {
-        await Future.delayed(Duration(seconds: 1));
-
-        var discordUser = await bot.httpEndpoints.fetchGuildMember(Snowflake(chatId), Snowflake(chatUser.id));
-        var discordPremiumStatus = discordUser.boostingSince != null;
-
-        if (chatUser.isPremium != discordPremiumStatus) {
-          print('Updating premium status for ${chatUser.id}');
-          await userManager.updatePremiumStatus(chatUser.id, discordPremiumStatus);
-        }
-      });
-    });
   }
 }

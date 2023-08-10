@@ -4,7 +4,8 @@ import 'dart:async';
 import 'package:args/args.dart';
 import 'package:dotenv/dotenv.dart';
 import 'package:postgres/postgres.dart';
-import 'package:weather/weather.dart' as weather;
+import 'package:weather/src/globals/chat_platform.dart';
+import 'package:weather/weather.dart';
 import 'package:weather/src/utils/migrations_manager.dart';
 
 Future<PostgreSQLConnection> getDatabaseConnection(DotEnv env) async {
@@ -39,42 +40,11 @@ Future<void> runMigrations(PostgreSQLConnection dbConnection) async {
   await migrationsManager.runMigrations();
 }
 
-void runDiscordBot(DotEnv env, PostgreSQLConnection dbConnection) {
-  final token = env['discordtoken']!;
-  final adminId = env['discordadminid']!;
-  final repoUrl = env['githubrepo']!;
-  final openweatherKey = env['openweather']!;
-  final youtubeKey = env['youtube']!;
-  final conversatorKey = env['conversatorkey']!;
+ChatPlatform getPlatform(ArgResults arguments) {
+  if (arguments['platform'] == 'telegram') return ChatPlatform.telegram;
+  if (arguments['platform'] == 'discord') return ChatPlatform.discord;
 
-  weather.DiscordBot(
-    botToken: token,
-    adminId: adminId,
-    repoUrl: repoUrl,
-    openweatherKey: openweatherKey,
-    youtubeKey: youtubeKey,
-    conversatorKey: conversatorKey,
-    dbConnection: dbConnection,
-  ).startBot();
-}
-
-void runTelegramBot(DotEnv env, PostgreSQLConnection dbConnection) {
-  final token = env['telegramtoken']!;
-  final adminId = env['telegramadminid']!;
-  final repoUrl = env['githubrepo']!;
-  final youtubeKey = env['youtube']!;
-  final openweatherKey = env['openweather']!;
-  final conversatorKey = env['conversatorkey']!;
-
-  weather.TelegramBot(
-          botToken: token,
-          adminId: adminId,
-          repoUrl: repoUrl,
-          openweatherKey: openweatherKey,
-          conversatorKey: conversatorKey,
-          youtubeKey: youtubeKey,
-          dbConnection: dbConnection)
-      .startBot();
+  throw Exception("Invalid platform ${arguments['platform']}");
 }
 
 void main(List<String> args) async {
@@ -86,8 +56,23 @@ void main(List<String> args) async {
   await runMigrations(dbConnection);
 
   runZonedGuarded(() {
-    if (arguments['platform'] == 'discord') runDiscordBot(env, dbConnection);
-    if (arguments['platform'] == 'telegram') runTelegramBot(env, dbConnection);
+    final token = env['bottoken']!;
+    final adminId = env['adminid']!;
+    final repoUrl = env['githubrepo']!;
+    final youtubeKey = env['youtube']!;
+    final openweatherKey = env['openweather']!;
+    final conversatorKey = env['conversatorkey']!;
+
+    Bot(
+      platformName: getPlatform(arguments),
+      botToken: token,
+      adminId: adminId,
+      repoUrl: repoUrl,
+      openweatherKey: openweatherKey,
+      conversatorKey: conversatorKey,
+      youtubeKey: youtubeKey,
+      dbConnection: dbConnection,
+    ).startBot();
   }, (error, stack) {
     var now = DateTime.now();
 

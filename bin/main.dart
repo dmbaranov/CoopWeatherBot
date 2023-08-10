@@ -57,7 +57,7 @@ void main(List<String> args) async {
 
   runZonedGuarded(() {
     final token = env['bottoken']!;
-    final adminId = env['telegramadminid']!;
+    final adminId = env['adminid']!;
     final repoUrl = env['githubrepo']!;
     final youtubeKey = env['youtube']!;
     final openweatherKey = env['openweather']!;

@@ -149,7 +149,7 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
 
   void _startTelegramAccordionPoll(MessageEvent event) async {
     var chatId = event.chatId;
-    const pollTime = 30;
+    const pollTime = 180;
     var pollOptions = [
       chatManager.getText(chatId, 'accordion.options.yes'),
       chatManager.getText(chatId, 'accordion.options.no'),

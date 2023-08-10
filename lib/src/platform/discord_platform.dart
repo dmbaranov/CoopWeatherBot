@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:convert';
 
 import 'package:collection/collection.dart';
 import 'package:nyxx/nyxx.dart';
@@ -83,8 +84,13 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
 
   @override
   void setupPlatformSpecificCommands(CommandsManager cm) {
-    // TODO: implement setupPlatformSpecificCommands
-    print('setupPlatformSpecificCommands');
+    _commands.add(ChatCommand('moveall', 'Move all users from one voice channel to another',
+        (IChatContext context, IChannel fromChannel, IChannel toChannel) async {
+      await context.respond(MessageBuilder.empty());
+
+      cm.moderatorCommand(transformPlatformMessageToGeneralMessageEvent(context),
+          onSuccessCustom: () => _moveAll(context, fromChannel, toChannel), onFailure: sendNoAccessMessage);
+    }));
   }
 
   @override
@@ -217,5 +223,25 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
 
       await onlineFile.delete();
     });
+  }
+
+  void _moveAll(IContext context, IChannel fromChannel, IChannel toChannel) async {
+    await Process.run('${Directory.current.path}/generate-channel-users', []);
+
+    var channelUsersFile = File('assets/channels-users');
+    var channelsWithUsersRaw = await channelUsersFile.readAsLines();
+
+    Map<String, dynamic> channelsWithUsers = jsonDecode(channelsWithUsersRaw[0]);
+    List usersToMove = channelsWithUsers[fromChannel.toString()];
+
+    var chatId = context.guild?.id.toString() ?? '';
+
+    usersToMove.forEach((user) {
+      var builder = MemberBuilder()..channel = Snowflake(toChannel);
+
+      bot.httpEndpoints.editGuildMember(Snowflake(chatId), Snowflake(user), builder: builder);
+    });
+
+    await channelUsersFile.delete();
   }
 }

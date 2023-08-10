@@ -120,12 +120,6 @@ class Bot {
         successCallback: _getWeatherForCity));
 
     _platform.setupCommand(Command(
-        command: 'updatemessage', description: '[A] Post update message', wrapper: _cm.adminCommand, successCallback: _postUpdateMessage));
-
-    _platform.setupCommand(
-        Command(command: 'na', description: '[U] Check if bot is alive', wrapper: _cm.userCommand, successCallback: _healthCheck));
-
-    _platform.setupCommand(Command(
         command: 'setnotificationhour',
         description: '[M] Set time for weather notifications',
         wrapper: _cm.moderatorCommand,
@@ -140,11 +134,94 @@ class Bot {
         successCallback: _writeToChat));
 
     _platform.setupCommand(Command(
+        command: 'updatemessage', description: '[A] Post update message', wrapper: _cm.adminCommand, successCallback: _postUpdateMessage));
+
+    _platform.setupCommand(
+        Command(command: 'sendnews', description: '[U] Send news to the chat', wrapper: _cm.userCommand, successCallback: _sendNewsToChat));
+
+    _platform.setupCommand(
+        Command(command: 'sendjoke', description: '[U] Send joke to the chat', wrapper: _cm.userCommand, successCallback: _sendJokeToChat));
+
+    _platform.setupCommand(Command(
+        command: 'sendrealmusic',
+        description: '[U] Convert link from YouTube Music to YouTube',
+        wrapper: _cm.userCommand,
+        withParameters: true,
+        successCallback: _sendRealMusicToChat));
+
+    _platform.setupCommand(Command(
+        command: 'increp',
+        description: '[U] Increase reputation for the user',
+        wrapper: _cm.userCommand,
+        withOtherUserIds: true,
+        successCallback: _increaseReputation));
+
+    _platform.setupCommand(Command(
+        command: 'decrep',
+        description: '[U] Decrease reputation for the user',
+        wrapper: _cm.userCommand,
+        withOtherUserIds: true,
+        successCallback: _decreaseReputation));
+
+    _platform.setupCommand(Command(
+        command: 'replist',
+        description: '[U] Send reputation list to the chat',
+        wrapper: _cm.userCommand,
+        successCallback: _sendReputationList));
+
+    _platform.setupCommand(Command(
+        command: 'searchsong',
+        description: '[U] Search song on YouTube',
+        wrapper: _cm.userCommand,
+        withParameters: true,
+        successCallback: _searchYoutubeTrack));
+
+    _platform.setupCommand(Command(
         command: 'ask',
         description: '[U] Ask for advice or anything else from the Conversator',
         wrapper: _cm.userCommand,
         conversatorCommand: true,
         successCallback: _askConversator));
+
+    _platform.setupCommand(
+        Command(command: 'na', description: '[U] Check if bot is alive', wrapper: _cm.userCommand, successCallback: _healthCheck));
+
+    _platform.setupCommand(Command(
+        command: 'initialize', description: '[A] Initialize new chat', wrapper: _cm.adminCommand, successCallback: _initializeChat));
+
+    _platform.setupCommand(Command(
+        command: 'adduser',
+        description: '[M] Add new user to the bot',
+        wrapper: _cm.moderatorCommand,
+        withOtherUserIds: true,
+        successCallback: _addUser));
+
+    _platform.setupCommand(Command(
+        command: 'removeuser',
+        description: '[M] Remove user from the bot',
+        wrapper: _cm.moderatorCommand,
+        withOtherUserIds: true,
+        successCallback: _removeUser));
+
+    _platform.setupCommand(Command(
+        command: 'createreputation',
+        description: '[A] Create reputation for the user',
+        wrapper: _cm.adminCommand,
+        withOtherUserIds: true,
+        successCallback: _createReputation));
+
+    _platform.setupCommand(Command(
+        command: 'createweather',
+        description: '[A] Activate weather module for the chat',
+        wrapper: _cm.adminCommand,
+        successCallback: _createWeather));
+
+    _platform.setupCommand(Command(
+        command: 'setswearwordsconfig',
+        description: '[A] Set swearwords config for the chat',
+        wrapper: _cm.adminCommand,
+        withParameters: true,
+        successCallback: _setSwearwordsConfig));
   }
 
   void _subscribeToUserUpdates() {
@@ -230,15 +307,26 @@ class Bot {
     }
   }
 
-  void _sendNewsToChat(MessageEvent event) async {
-    var news = await _panoramaNews.getNews(event.chatId);
-
-    if (news != null) {
-      var newsMessage = '${news.title}\n\nFull: ${news.url}';
-
-      await _platform.sendMessage(event.chatId, newsMessage);
-    } else {
-      await _platform.sendMessage(event.chatId, _chatManager.getText(event.chatId, 'general.something_went_wrong'));
+  void _handleReputationChange(MessageEvent event, ReputationChangeResult result) async {
+    switch (result) {
+      case ReputationChangeResult.increaseSuccess:
+        await _platform.sendMessage(event.chatId, _chatManager.getText(event.chatId, 'reputation.change.increase_success'));
+        break;
+      case ReputationChangeResult.decreaseSuccess:
+        await _platform.sendMessage(event.chatId, _chatManager.getText(event.chatId, 'reputation.change.decrease_success'));
+        break;
+      case ReputationChangeResult.userNotFound:
+        await _platform.sendMessage(event.chatId, _chatManager.getText(event.chatId, 'reputation.change.user_not_found'));
+        break;
+      case ReputationChangeResult.selfUpdate:
+        await _platform.sendMessage(event.chatId, _chatManager.getText(event.chatId, 'reputation.change.self_update'));
+        break;
+      case ReputationChangeResult.notEnoughOptions:
+        await _platform.sendMessage(event.chatId, _chatManager.getText(event.chatId, 'reputation.change.not_enough_options'));
+        break;
+      case ReputationChangeResult.systemError:
+        await _platform.sendMessage(event.chatId, _chatManager.getText(event.chatId, 'general.something_went_wrong'));
+        break;
     }
   }
 
@@ -277,15 +365,6 @@ class Bot {
         _chatManager.getText(event.chatId, 'weather.cities.temperature', {'city': city, 'temperature': temperature.toString()}));
   }
 
-  void _postUpdateMessage(MessageEvent event) async {
-    var commitApiUrl = Uri.https('api.github.com', '/repos$repoUrl/commits');
-    var response = await http.read(commitApiUrl).then(json.decode);
-    var updateMessage = response[0]['commit']['message'];
-    var chatIds = await _chatManager.getAllChatIdsForPlatform(event.platform);
-
-    chatIds.forEach((chatId) => _platform.sendMessage(chatId, updateMessage));
-  }
-
   void _setWeatherNotificationHour(MessageEvent event) async {
     if (!_parametersCheck(event)) return;
 
@@ -302,8 +381,84 @@ class Bot {
     await _platform.sendMessage(event.chatId, event.parameters.join());
   }
 
-  void _healthCheck(MessageEvent event) async {
-    await _platform.sendMessage(event.chatId, _chatManager.getText(event.chatId, 'general.bot_is_alive'));
+  void _postUpdateMessage(MessageEvent event) async {
+    var commitApiUrl = Uri.https('api.github.com', '/repos$repoUrl/commits');
+    var response = await http.read(commitApiUrl).then(json.decode);
+    var updateMessage = response[0]['commit']['message'];
+    var chatIds = await _chatManager.getAllChatIdsForPlatform(event.platform);
+
+    chatIds.forEach((chatId) => _platform.sendMessage(chatId, updateMessage));
+  }
+
+  void _sendNewsToChat(MessageEvent event) async {
+    var news = await _panoramaNews.getNews(event.chatId);
+
+    if (news != null) {
+      var newsMessage = '${news.title}\n\nFull: ${news.url}';
+
+      await _platform.sendMessage(event.chatId, newsMessage);
+    } else {
+      await _platform.sendMessage(event.chatId, _chatManager.getText(event.chatId, 'general.something_went_wrong'));
+    }
+  }
+
+  void _sendJokeToChat(MessageEvent event) async {
+    var joke = await _dadJokes.getJoke();
+
+    await _platform.sendMessage(event.chatId, joke.joke);
+  }
+
+  void _sendRealMusicToChat(MessageEvent event) async {
+    if (!_parametersCheck(event)) return;
+
+    var formattedLink = event.parameters[0].replaceAll('music.', '');
+
+    await _platform.sendMessage(event.chatId, formattedLink);
+  }
+
+  void _increaseReputation(MessageEvent event) async {
+    if (!_userIdsCheck(event)) return;
+
+    var fromUserId = event.userId;
+    var toUserId = event.otherUserIds[0];
+
+    var result = await _reputation.updateReputation(
+        chatId: event.chatId, fromUserId: fromUserId, toUserId: toUserId, change: ReputationChangeOption.increase);
+
+    _handleReputationChange(event, result);
+  }
+
+  void _decreaseReputation(MessageEvent event) async {
+    if (!_userIdsCheck(event)) return;
+
+    var fromUserId = event.userId;
+    var toUserId = event.otherUserIds[0];
+
+    var result = await _reputation.updateReputation(
+        chatId: event.chatId, fromUserId: fromUserId, toUserId: toUserId, change: ReputationChangeOption.decrease);
+
+    _handleReputationChange(event, result);
+  }
+
+  void _sendReputationList(MessageEvent event) async {
+    var reputationData = await _reputation.getReputationData(event.chatId);
+    var reputationMessage = '';
+
+    reputationData.forEach((reputation) {
+      reputationMessage += _chatManager
+          .getText(event.chatId, 'reputation.other.line', {'name': reputation.name, 'reputation': reputation.reputation.toString()});
+    });
+
+    _sendOperationMessage(event.chatId, reputationMessage.isNotEmpty,
+        _chatManager.getText(event.chatId, 'reputation.other.list', {'reputation': reputationMessage}));
+  }
+
+  void _searchYoutubeTrack(MessageEvent event) async {
+    if (!_parametersCheck(event)) return;
+
+    var videoUrl = await _youtube.getYoutubeVideoUrl(event.parameters.join(' '));
+
+    _sendOperationMessage(event.chatId, videoUrl.isNotEmpty, videoUrl);
   }
 
   void _askConversator(MessageEvent event) async {
@@ -326,5 +481,64 @@ class Bot {
         currentMessageId: conversatorResponseMessageId,
         message: response,
         fromUser: false);
+  }
+
+  void _healthCheck(MessageEvent event) async {
+    await _platform.sendMessage(event.chatId, _chatManager.getText(event.chatId, 'general.bot_is_alive'));
+  }
+
+  void _initializeChat(MessageEvent event) async {
+    var chatName = 'Unknown';
+
+    if (event.platform == ChatPlatform.telegram) {
+      chatName = event.rawMessage.chat.title.toString();
+    } else if (event.platform == ChatPlatform.discord) {
+      chatName = event.rawMessage.guild.name.toString();
+    }
+
+    var result = await _chatManager.createChat(id: event.chatId, name: chatName, platform: event.platform);
+
+    _sendOperationMessage(event.chatId, result, _chatManager.getText(event.chatId, 'chat.initialization.success'));
+  }
+
+  void _addUser(MessageEvent event) async {
+    if (!_userIdsCheck(event) && !_parametersCheck(event)) return;
+
+    var username = event.parameters[0];
+    var isPremium = event.parameters[1] == 'true';
+
+    var addResult = await _userManager.addUser(userId: event.otherUserIds[0], chatId: event.chatId, name: username, isPremium: isPremium);
+
+    _sendOperationMessage(event.chatId, addResult, _chatManager.getText(event.chatId, 'user.user_added'));
+  }
+
+  void _removeUser(MessageEvent event) async {
+    if (!_userIdsCheck(event)) return;
+
+    var removeResult = await _userManager.removeUser(event.chatId, event.otherUserIds[0]);
+
+    _sendOperationMessage(event.chatId, removeResult, _chatManager.getText(event.chatId, 'user.user_removed'));
+  }
+
+  void _createReputation(MessageEvent event) async {
+    if (!_userIdsCheck(event)) return;
+
+    var result = await _reputation.createReputationData(event.chatId, event.otherUserIds[0]);
+
+    _sendOperationMessage(event.chatId, result, _chatManager.getText(event.chatId, 'general.success'));
+  }
+
+  void _createWeather(MessageEvent event) async {
+    var result = await _weatherManager.createWeatherData(event.chatId);
+
+    _sendOperationMessage(event.chatId, result, _chatManager.getText(event.chatId, 'general.success'));
+  }
+
+  void _setSwearwordsConfig(MessageEvent event) async {
+    if (!_parametersCheck(event)) return;
+
+    var result = await _chatManager.setSwearwordsConfig(event.chatId, event.parameters[0]);
+
+    _sendOperationMessage(event.chatId, result, _chatManager.getText(event.chatId, 'general.success'));
   }
 }

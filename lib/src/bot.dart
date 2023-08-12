@@ -13,7 +13,8 @@ import 'package:weather/src/modules/chat_manager.dart';
 import 'package:weather/src/modules/database-manager/database_manager.dart';
 import 'package:weather/src/modules/user_manager.dart';
 import 'package:weather/src/modules/weather/weather_manager.dart';
-import 'package:weather/src/modules/panorama.dart';
+
+import 'package:weather/src/modules/panorama/panorama_manager.dart';
 import 'package:weather/src/modules/dadjokes.dart';
 import 'package:weather/src/modules/reputation.dart';
 import 'package:weather/src/modules/youtube.dart';
@@ -35,7 +36,8 @@ class Bot {
   late UserManager _userManager;
   late WeatherManager _weatherManager;
   late DadJokes _dadJokes;
-  late PanoramaNews _panoramaNews;
+
+  late PanoramaManager _panoramaManager;
   late Reputation _reputation;
   late Youtube _youtube;
   late Conversator _conversator;
@@ -64,8 +66,8 @@ class Bot {
     _chatManager = ChatManager(dbManager: _dbManager);
     await _chatManager.initialize();
 
-    _panoramaNews = PanoramaNews(dbManager: _dbManager);
-    _panoramaNews.initialize();
+    _panoramaManager = PanoramaManager(platform: _platform, chatManager: _chatManager, dbManager: _dbManager);
+    _panoramaManager.initialize();
 
     _userManager = UserManager(dbManager: _dbManager);
     _userManager.initialize();
@@ -87,9 +89,10 @@ class Bot {
     _platform.setupPlatformSpecificCommands(_cm);
 
     _setupCommands();
+    // TODO: check if these work
     _subscribeToUserUpdates();
-    // _subscribeToWeatherUpdates(); // TODO: check if it works
-    _subscribeToPanoramaNews();
+    // _subscribeToWeatherUpdates();
+    // _subscribeToPanoramaNews();
 
     await _platform.postStart();
   }
@@ -139,8 +142,11 @@ class Bot {
     _platform.setupCommand(Command(
         command: 'updatemessage', description: '[A] Post update message', wrapper: _cm.adminCommand, successCallback: _postUpdateMessage));
 
-    _platform.setupCommand(
-        Command(command: 'sendnews', description: '[U] Send news to the chat', wrapper: _cm.userCommand, successCallback: _sendNewsToChat));
+    _platform.setupCommand(Command(
+        command: 'sendnews',
+        description: '[U] Send news to the chat',
+        wrapper: _cm.userCommand,
+        successCallback: _panoramaManager.sendNewsToChat));
 
     _platform.setupCommand(
         Command(command: 'sendjoke', description: '[U] Send joke to the chat', wrapper: _cm.userCommand, successCallback: _sendJokeToChat));
@@ -233,22 +239,6 @@ class Bot {
     });
   }
 
-  // TODO: add news_enabled flag and send news to all the enabled chats
-  void _subscribeToPanoramaNews() {
-    var panoramaStream = _panoramaNews.panoramaStream;
-
-    panoramaStream.listen((event) async {
-      var allChats = await _chatManager.getAllChatIdsForPlatform(ChatPlatform.telegram);
-
-      allChats.forEach((chatId) {
-        var fakeEvent = MessageEvent(
-            platform: ChatPlatform.telegram, chatId: chatId, userId: '', isBot: false, otherUserIds: [], parameters: [], rawMessage: '');
-
-        _sendNewsToChat(fakeEvent);
-      });
-    });
-  }
-
   Future<void> _updateUsersPremiumStatus() async {
     var allPlatformChatIds = await _chatManager.getAllChatIdsForPlatform(platformName);
 
@@ -332,18 +322,6 @@ class Bot {
     var chatIds = await _chatManager.getAllChatIdsForPlatform(event.platform);
 
     chatIds.forEach((chatId) => _platform.sendMessage(chatId, updateMessage));
-  }
-
-  void _sendNewsToChat(MessageEvent event) async {
-    var news = await _panoramaNews.getNews(event.chatId);
-
-    if (news != null) {
-      var newsMessage = '${news.title}\n\nFull: ${news.url}';
-
-      await _platform.sendMessage(event.chatId, newsMessage);
-    } else {
-      await _platform.sendMessage(event.chatId, _chatManager.getText(event.chatId, 'general.something_went_wrong'));
-    }
   }
 
   void _sendJokeToChat(MessageEvent event) async {

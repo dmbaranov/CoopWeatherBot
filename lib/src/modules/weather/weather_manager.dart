@@ -61,9 +61,10 @@ class WeatherManager {
     var city = event.parameters[0];
     var temperature = await _weather.getWeatherForCity(city);
     var result = temperature != null;
-    var successfulMessage = chatManager.getText(chatId, 'weather.cities.temperature', {'city': city, 'temperature': temperature.toString()});
+    var successfulMessage =
+        chatManager.getText(chatId, 'weather.cities.temperature', {'city': city, 'temperature': temperature.toString()});
 
-    sendOperationMessage(chatId, platform: platform, operationResult: result, successfulMessage: successfulMessage)
+    sendOperationMessage(chatId, platform: platform, operationResult: result, successfulMessage: successfulMessage);
   }
 
   void setWeatherNotificationHour(MessageEvent event) async {
@@ -80,7 +81,7 @@ class WeatherManager {
   void createWeather(MessageEvent event) async {
     var chatId = event.chatId;
     var result = await _weather.createWeatherData(chatId);
-    var successfulMessage = chatManager.getText(chatId, 'general.success')
+    var successfulMessage = chatManager.getText(chatId, 'general.success');
 
     sendOperationMessage(chatId, platform: platform, operationResult: result, successfulMessage: successfulMessage);
   }

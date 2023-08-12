@@ -12,7 +12,7 @@ import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/modules/chat_manager.dart';
 import 'package:weather/src/modules/database-manager/database_manager.dart';
 import 'package:weather/src/modules/user_manager.dart';
-import 'package:weather/src/modules/weather_manager.dart';
+import 'package:weather/src/modules/weather/weather_manager.dart';
 import 'package:weather/src/modules/panorama.dart';
 import 'package:weather/src/modules/dadjokes.dart';
 import 'package:weather/src/modules/reputation.dart';
@@ -73,7 +73,7 @@ class Bot {
     _reputation = Reputation(dbManager: _dbManager);
     _reputation.initialize();
 
-    _weatherManager = WeatherManager(dbManager: _dbManager, openweatherKey: openweatherKey);
+    _weatherManager = WeatherManager(platform: _platform, chatManager: _chatManager, dbManager: _dbManager, openweatherKey: openweatherKey);
     await _weatherManager.initialize();
 
     _platform = Platform(
@@ -88,7 +88,7 @@ class Bot {
 
     _setupCommands();
     _subscribeToUserUpdates();
-    _subscribeToWeatherUpdates();
+    // _subscribeToWeatherUpdates(); // TODO: check if it works
     _subscribeToPanoramaNews();
 
     await _platform.postStart();
@@ -100,31 +100,34 @@ class Bot {
         description: '[U] Add city to the watchlist',
         wrapper: _cm.userCommand,
         withParameters: true,
-        successCallback: _addWeatherCity));
+        successCallback: _weatherManager.addCity));
 
     _platform.setupCommand(Command(
         command: 'removecity',
         description: '[U] Remove city from the watchlist',
         wrapper: _cm.userCommand,
         withParameters: true,
-        successCallback: _removeWeatherCity));
+        successCallback: _weatherManager.removeCity));
 
     _platform.setupCommand(Command(
-        command: 'watchlist', description: '[U] Get weather watchlist', wrapper: _cm.userCommand, successCallback: _getWeatherWatchlist));
+        command: 'watchlist',
+        description: '[U] Get weather watchlist',
+        wrapper: _cm.userCommand,
+        successCallback: _weatherManager.getWeatherWatchlist));
 
     _platform.setupCommand(Command(
         command: 'getweather',
         description: '[U] Get weather for city',
         wrapper: _cm.userCommand,
         withParameters: true,
-        successCallback: _getWeatherForCity));
+        successCallback: _weatherManager.getWeatherForCity));
 
     _platform.setupCommand(Command(
         command: 'setnotificationhour',
         description: '[M] Set time for weather notifications',
         wrapper: _cm.moderatorCommand,
         withParameters: true,
-        successCallback: _setWeatherNotificationHour));
+        successCallback: _weatherManager.setWeatherNotificationHour));
 
     _platform.setupCommand(Command(
         command: 'write',
@@ -214,7 +217,7 @@ class Bot {
         command: 'createweather',
         description: '[A] Activate weather module for the chat',
         wrapper: _cm.adminCommand,
-        successCallback: _createWeather));
+        successCallback: _weatherManager.createWeather));
 
     _platform.setupCommand(Command(
         command: 'setswearwordsconfig',
@@ -227,20 +230,6 @@ class Bot {
   void _subscribeToUserUpdates() {
     _userManager.userManagerStream.listen((_) async {
       await _updateUsersPremiumStatus();
-    });
-  }
-
-  void _subscribeToWeatherUpdates() {
-    var weatherStream = _weatherManager.weatherStream;
-
-    weatherStream.listen((weatherData) {
-      var message = '';
-
-      weatherData.weatherData.forEach((weatherData) {
-        message += 'In city: ${weatherData.city} the temperature is ${weatherData.temp}\n\n';
-      });
-
-      _platform.sendMessage(weatherData.chatId, message);
     });
   }
 
@@ -328,51 +317,6 @@ class Bot {
         await _platform.sendMessage(event.chatId, _chatManager.getText(event.chatId, 'general.something_went_wrong'));
         break;
     }
-  }
-
-  void _addWeatherCity(MessageEvent event) async {
-    if (!_parametersCheck(event)) return;
-
-    var cityToRemove = event.parameters[0];
-    var result = await _weatherManager.removeCity(event.chatId, event.parameters[0]);
-
-    _sendOperationMessage(event.chatId, result, _chatManager.getText(event.chatId, 'weather.cities.removed', {'city': cityToRemove}));
-  }
-
-  void _removeWeatherCity(MessageEvent event) async {
-    if (!_parametersCheck(event)) return;
-
-    var cityToRemove = event.parameters[0];
-    var result = await _weatherManager.removeCity(event.chatId, event.parameters[0]);
-
-    _sendOperationMessage(event.chatId, result, _chatManager.getText(event.chatId, 'weather.cities.removed', {'city': cityToRemove}));
-  }
-
-  void _getWeatherWatchlist(MessageEvent event) async {
-    var cities = await _weatherManager.getWatchList(event.chatId);
-    var citiesString = cities.join('\n');
-
-    await _platform.sendMessage(event.chatId, citiesString);
-  }
-
-  void _getWeatherForCity(MessageEvent event) async {
-    if (!_parametersCheck(event)) return;
-
-    var city = event.parameters[0];
-    var temperature = await _weatherManager.getWeatherForCity(city);
-
-    _sendOperationMessage(event.chatId, temperature != null,
-        _chatManager.getText(event.chatId, 'weather.cities.temperature', {'city': city, 'temperature': temperature.toString()}));
-  }
-
-  void _setWeatherNotificationHour(MessageEvent event) async {
-    if (!_parametersCheck(event)) return;
-
-    var nextHour = event.parameters[0];
-    var result = await _weatherManager.setNotificationHour(event.chatId, int.parse(nextHour));
-
-    _sendOperationMessage(
-        event.chatId, result, _chatManager.getText(event.chatId, 'weather.other.notification_hour_set', {'hour': nextHour}));
   }
 
   void _writeToChat(MessageEvent event) async {
@@ -524,12 +468,6 @@ class Bot {
     if (!_userIdsCheck(event)) return;
 
     var result = await _reputation.createReputationData(event.chatId, event.otherUserIds[0]);
-
-    _sendOperationMessage(event.chatId, result, _chatManager.getText(event.chatId, 'general.success'));
-  }
-
-  void _createWeather(MessageEvent event) async {
-    var result = await _weatherManager.createWeatherData(event.chatId);
 
     _sendOperationMessage(event.chatId, result, _chatManager.getText(event.chatId, 'general.success'));
   }

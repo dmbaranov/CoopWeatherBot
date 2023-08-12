@@ -23,10 +23,10 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   final String adminId;
   final ChatManager chatManager;
   final Youtube youtube;
+  final Debouncer<TeleDartInlineQuery?> _debouncer = Debouncer(Duration(seconds: 1), initialValue: null);
 
   late TeleDart _bot;
   late Telegram _telegram;
-  late Debouncer<TeleDartInlineQuery?> _debouncer = Debouncer(Duration(seconds: 1), initialValue: null);
   late AccordionPoll _accordionPoll;
 
   TelegramPlatform({required this.token, required this.adminId, required this.chatManager, required this.youtube});
@@ -117,12 +117,14 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   }
 
   @override
-  Future<Message> sendMessage(String chatId, String message) async {
-    if (message.isEmpty) {
-      return _telegram.sendMessage(chatId, 'something_went_wrong');
+  Future<Message> sendMessage(String chatId, {String? message, String? translation}) async {
+    if (message != null) {
+      return _telegram.sendMessage(chatId, message);
+    } else if (translation != null) {
+      return _telegram.sendMessage(chatId, chatManager.getText(chatId, translation));
     }
 
-    return _telegram.sendMessage(chatId, message);
+    return _telegram.sendMessage(chatId, chatManager.getText(chatId, 'something_went_wrong'));
   }
 
   @override

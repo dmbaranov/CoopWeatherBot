@@ -52,11 +52,17 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
   }
 
   @override
-  Future<IMessage> sendMessage(String chatId, String message) async {
+  Future<IMessage> sendMessage(String chatId, {String? message, String? translation}) async {
     var guild = await bot.httpEndpoints.fetchGuild(Snowflake(chatId));
     var channelId = guild.systemChannel?.id.toString() ?? '';
 
-    return bot.httpEndpoints.sendMessage(Snowflake(channelId), MessageBuilder.content(message));
+    if (message != null) {
+      return bot.httpEndpoints.sendMessage(Snowflake(channelId), MessageBuilder.content(message));
+    } else if (translation != null) {
+      return bot.httpEndpoints.sendMessage(Snowflake(channelId), MessageBuilder.content(chatManager.getText(chatId, translation)));
+    }
+
+    return bot.httpEndpoints.sendMessage(Snowflake(channelId), MessageBuilder.content(chatManager.getText(chatId, 'something_went_wrong')));
   }
 
   @override

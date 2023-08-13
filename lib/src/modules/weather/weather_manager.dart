@@ -1,21 +1,21 @@
 import 'package:weather/src/globals/message_event.dart';
-import 'package:weather/src/modules/database_manager/database_manager.dart';
 import 'package:weather/src/platform/platform.dart';
-import 'package:weather/src/modules/chat_manager.dart';
+import 'package:weather/src/core/database.dart';
+import 'package:weather/src/core/chat.dart';
 
 import '../utils.dart';
 import './weather.dart';
 
 class WeatherManager {
   final Platform platform;
-  final ChatManager chatManager;
-  final DatabaseManager dbManager;
+  final Chat chat;
+  final Database db;
   final String openweatherKey;
 
   late Weather _weather;
 
-  WeatherManager({required this.platform, required this.chatManager, required this.dbManager, required this.openweatherKey}) {
-    _weather = Weather(dbManager: dbManager, openweatherKey: openweatherKey);
+  WeatherManager({required this.platform, required this.chat, required this.db, required this.openweatherKey}) {
+    _weather = Weather(db: db, openweatherKey: openweatherKey);
   }
 
   Future<void> initialize() async {
@@ -30,7 +30,7 @@ class WeatherManager {
     var chatId = event.chatId;
     var cityToAdd = event.parameters[0];
     var result = await _weather.addCity(chatId, cityToAdd);
-    var successfulMessage = chatManager.getText(chatId, 'weather.cities.added', {'city': cityToAdd});
+    var successfulMessage = chat.getText(chatId, 'weather.cities.added', {'city': cityToAdd});
 
     sendOperationMessage(chatId, platform: platform, operationResult: result, successfulMessage: successfulMessage);
   }
@@ -41,7 +41,7 @@ class WeatherManager {
     var chatId = event.chatId;
     var cityToRemove = event.parameters[0];
     var result = await _weather.removeCity(chatId, cityToRemove);
-    var successfulMessage = chatManager.getText(chatId, 'weather.cities.removed', {'city': cityToRemove});
+    var successfulMessage = chat.getText(chatId, 'weather.cities.removed', {'city': cityToRemove});
 
     sendOperationMessage(chatId, platform: platform, operationResult: result, successfulMessage: successfulMessage);
   }
@@ -61,8 +61,7 @@ class WeatherManager {
     var city = event.parameters[0];
     var temperature = await _weather.getWeatherForCity(city);
     var result = temperature != null;
-    var successfulMessage =
-        chatManager.getText(chatId, 'weather.cities.temperature', {'city': city, 'temperature': temperature.toString()});
+    var successfulMessage = chat.getText(chatId, 'weather.cities.temperature', {'city': city, 'temperature': temperature.toString()});
 
     sendOperationMessage(chatId, platform: platform, operationResult: result, successfulMessage: successfulMessage);
   }
@@ -73,7 +72,7 @@ class WeatherManager {
     var chatId = event.chatId;
     var hour = event.parameters[0];
     var result = await _weather.setNotificationHour(chatId, int.parse(hour));
-    var successfulMessage = chatManager.getText(chatId, 'weather.other.notification_hour_set', {'hour': hour});
+    var successfulMessage = chat.getText(chatId, 'weather.other.notification_hour_set', {'hour': hour});
 
     sendOperationMessage(chatId, platform: platform, operationResult: result, successfulMessage: successfulMessage);
   }
@@ -81,7 +80,7 @@ class WeatherManager {
   void createWeather(MessageEvent event) async {
     var chatId = event.chatId;
     var result = await _weather.createWeatherData(chatId);
-    var successfulMessage = chatManager.getText(chatId, 'general.success');
+    var successfulMessage = chat.getText(chatId, 'general.success');
 
     sendOperationMessage(chatId, platform: platform, operationResult: result, successfulMessage: successfulMessage);
   }

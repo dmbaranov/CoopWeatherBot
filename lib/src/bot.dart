@@ -19,7 +19,7 @@ import 'package:weather/src/modules/user_manager.dart';
 import 'package:weather/src/modules/weather/weather_manager.dart';
 import 'package:weather/src/modules/panorama/panorama_manager.dart';
 import 'package:weather/src/modules/dadjokes.dart';
-import 'package:weather/src/modules/reputation.dart';
+import 'package:weather/src/modules/reputation/reputation_manager.dart';
 import 'package:weather/src/modules/youtube.dart';
 import 'package:weather/src/modules/conversator.dart';
 import 'package:weather/src/modules/commands_manager.dart';
@@ -45,7 +45,7 @@ class Bot {
   late WeatherManager _weatherManager;
   late DadJokes _dadJokes;
   late PanoramaManager _panoramaManager;
-  late Reputation _reputation;
+  late ReputationManager _reputationManager;
   late Youtube _youtube;
   late Conversator _conversator;
   late ChatManager _chatManager;
@@ -83,10 +83,10 @@ class Bot {
     _userManager = UserManager(dbManager: _dbManager);
     _userManager.initialize();
 
-    _reputation = Reputation(dbManager: _dbManager);
-    _reputation.initialize();
+    _reputationManager = ReputationManager(platform: _platform, db: _db, chat: _chat);
+    _reputationManager.initialize();
 
-    _weatherManager = WeatherManager(platform: _platform, chatManager: _chatManager, dbManager: _dbManager, openweatherKey: openweatherKey);
+    _weatherManager = WeatherManager(platform: _platform, chat: _chat, db: _db, openweatherKey: openweatherKey);
     await _weatherManager.initialize();
 
     _platform = Platform(
@@ -174,20 +174,20 @@ class Bot {
         description: '[U] Increase reputation for the user',
         wrapper: _cm.userCommand,
         withOtherUserIds: true,
-        successCallback: _increaseReputation));
+        successCallback: _reputationManager.increaseReputation));
 
     _platform.setupCommand(Command(
         command: 'decrep',
         description: '[U] Decrease reputation for the user',
         wrapper: _cm.userCommand,
         withOtherUserIds: true,
-        successCallback: _decreaseReputation));
+        successCallback: _reputationManager.decreaseReputation));
 
     _platform.setupCommand(Command(
         command: 'replist',
         description: '[U] Send reputation list to the chat',
         wrapper: _cm.userCommand,
-        successCallback: _sendReputationList));
+        successCallback: _reputationManager.sendReputationList));
 
     _platform.setupCommand(Command(
         command: 'searchsong',
@@ -231,7 +231,7 @@ class Bot {
         description: '[A] Create reputation for the user',
         wrapper: _cm.adminCommand,
         withOtherUserIds: true,
-        successCallback: _createReputation));
+        successCallback: _reputationManager.createReputation));
 
     _platform.setupCommand(Command(
         command: 'createweather',
@@ -300,29 +300,6 @@ class Bot {
     }
   }
 
-  void _handleReputationChange(MessageEvent event, ReputationChangeResult result) async {
-    switch (result) {
-      case ReputationChangeResult.increaseSuccess:
-        await _platform.sendMessage(event.chatId, _chatManager.getText(event.chatId, 'reputation.change.increase_success'));
-        break;
-      case ReputationChangeResult.decreaseSuccess:
-        await _platform.sendMessage(event.chatId, _chatManager.getText(event.chatId, 'reputation.change.decrease_success'));
-        break;
-      case ReputationChangeResult.userNotFound:
-        await _platform.sendMessage(event.chatId, _chatManager.getText(event.chatId, 'reputation.change.user_not_found'));
-        break;
-      case ReputationChangeResult.selfUpdate:
-        await _platform.sendMessage(event.chatId, _chatManager.getText(event.chatId, 'reputation.change.self_update'));
-        break;
-      case ReputationChangeResult.notEnoughOptions:
-        await _platform.sendMessage(event.chatId, _chatManager.getText(event.chatId, 'reputation.change.not_enough_options'));
-        break;
-      case ReputationChangeResult.systemError:
-        await _platform.sendMessage(event.chatId, _chatManager.getText(event.chatId, 'general.something_went_wrong'));
-        break;
-    }
-  }
-
   void _writeToChat(MessageEvent event) async {
     if (!_parametersCheck(event)) return;
 
@@ -350,43 +327,6 @@ class Bot {
     var formattedLink = event.parameters[0].replaceAll('music.', '');
 
     await _platform.sendMessage(event.chatId, formattedLink);
-  }
-
-  void _increaseReputation(MessageEvent event) async {
-    if (!_userIdsCheck(event)) return;
-
-    var fromUserId = event.userId;
-    var toUserId = event.otherUserIds[0];
-
-    var result = await _reputation.updateReputation(
-        chatId: event.chatId, fromUserId: fromUserId, toUserId: toUserId, change: ReputationChangeOption.increase);
-
-    _handleReputationChange(event, result);
-  }
-
-  void _decreaseReputation(MessageEvent event) async {
-    if (!_userIdsCheck(event)) return;
-
-    var fromUserId = event.userId;
-    var toUserId = event.otherUserIds[0];
-
-    var result = await _reputation.updateReputation(
-        chatId: event.chatId, fromUserId: fromUserId, toUserId: toUserId, change: ReputationChangeOption.decrease);
-
-    _handleReputationChange(event, result);
-  }
-
-  void _sendReputationList(MessageEvent event) async {
-    var reputationData = await _reputation.getReputationData(event.chatId);
-    var reputationMessage = '';
-
-    reputationData.forEach((reputation) {
-      reputationMessage += _chatManager
-          .getText(event.chatId, 'reputation.other.line', {'name': reputation.name, 'reputation': reputation.reputation.toString()});
-    });
-
-    _sendOperationMessage(event.chatId, reputationMessage.isNotEmpty,
-        _chatManager.getText(event.chatId, 'reputation.other.list', {'reputation': reputationMessage}));
   }
 
   void _searchYoutubeTrack(MessageEvent event) async {
@@ -440,14 +380,6 @@ class Bot {
     var removeResult = await _userManager.removeUser(event.chatId, event.otherUserIds[0]);
 
     _sendOperationMessage(event.chatId, removeResult, _chatManager.getText(event.chatId, 'user.user_removed'));
-  }
-
-  void _createReputation(MessageEvent event) async {
-    if (!_userIdsCheck(event)) return;
-
-    var result = await _reputation.createReputationData(event.chatId, event.otherUserIds[0]);
-
-    _sendOperationMessage(event.chatId, result, _chatManager.getText(event.chatId, 'general.success'));
   }
 
   void _setSwearwordsConfig(MessageEvent event) async {

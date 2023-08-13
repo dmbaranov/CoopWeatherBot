@@ -1,20 +1,21 @@
 import 'dart:io';
 import 'dart:convert';
 import 'package:weather/src/globals/chat_platform.dart';
-import 'database_manager/database_manager.dart';
 
-class ChatManager {
-  final DatabaseManager dbManager;
+import './database.dart';
+
+class Chat {
+  final Database db;
   final Map<String, Map<String, dynamic>> _chatToSwearwordsConfig = {};
 
-  ChatManager({required this.dbManager});
+  Chat({required this.db});
 
   Future<void> initialize() async {
     await _updateSwearwordsConfigs();
   }
 
   Future<bool> createChat({required String id, required String name, required ChatPlatform platform}) async {
-    var creationResult = await dbManager.chat.createChat(id, name, platform.value);
+    var creationResult = await db.chat.createChat(id, name, platform.value);
 
     await _updateSwearwordsConfigs();
 
@@ -22,7 +23,7 @@ class ChatManager {
   }
 
   Future<List<String>> getAllChatIdsForPlatform(ChatPlatform platform) {
-    return dbManager.chat.getAllChatIds(platform.value);
+    return db.chat.getAllChatIds(platform.value);
   }
 
   String getText(String chatId, String path, [Map<String, String>? replacements]) {
@@ -52,7 +53,7 @@ class ChatManager {
       return false;
     }
 
-    var updateResult = await dbManager.chat.setChatSwearwordsConfig(chatId, config);
+    var updateResult = await db.chat.setChatSwearwordsConfig(chatId, config);
 
     if (updateResult != 1) {
       return false;
@@ -65,7 +66,7 @@ class ChatManager {
 
   // TODO: instead of this function, check _config every time check _config first, if not found, then fetch from database and update _config
   Future<void> _updateSwearwordsConfigs() async {
-    var allChats = await dbManager.chat.getAllChats();
+    var allChats = await db.chat.getAllChats();
 
     await Future.forEach(allChats, (chat) async {
       var chatConfig = await File('assets/swearwords/swearwords.${chat.swearwordsConfig}.json').readAsString();

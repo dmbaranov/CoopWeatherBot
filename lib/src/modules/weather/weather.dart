@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:cron/cron.dart';
 
-import 'package:weather/src/modules/database-manager/database_manager.dart';
+import 'package:weather/src/modules/database_manager/database_manager.dart';
 
 class OpenWeatherData {
   final String city;
@@ -51,8 +51,7 @@ class Weather {
       return false;
     }
 
-    List<String> updatedCitiesList = List.from(chatCities)..add(city);
-
+    var updatedCitiesList = List<String>.from(chatCities)..add(city);
     var updateResult = await dbManager.weather.updateCities(chatId, updatedCitiesList);
 
     return updateResult == 1;
@@ -65,8 +64,7 @@ class Weather {
       return false;
     }
 
-    List<String> updatedCitiesList = chatCities.where((existingCity) => existingCity != city).toList();
-
+    var updatedCitiesList = chatCities.where((existingCity) => existingCity != city).toList();
     var updateResult = await dbManager.weather.updateCities(chatId, updatedCitiesList);
 
     return updateResult == 1;

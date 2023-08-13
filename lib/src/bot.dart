@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:collection/collection.dart';
 import 'package:postgres/postgres.dart';
 import 'package:http/http.dart' as http;
+import 'package:weather/src/core/database.dart';
 
 import 'package:weather/src/platform/platform.dart';
 
@@ -9,11 +10,13 @@ import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/command.dart';
 import 'package:weather/src/globals/message_event.dart';
 
-import 'package:weather/src/modules/chat_manager.dart';
-import 'package:weather/src/modules/database-manager/database_manager.dart';
+import 'package:weather/src/core/chat.dart';
+
+// import 'package:weather/src/modules/chat_manager.dart';
+import 'package:weather/src/modules/chat/chat_manager.dart';
+import 'package:weather/src/modules/database_manager/database_manager.dart';
 import 'package:weather/src/modules/user_manager.dart';
 import 'package:weather/src/modules/weather/weather_manager.dart';
-
 import 'package:weather/src/modules/panorama/panorama_manager.dart';
 import 'package:weather/src/modules/dadjokes.dart';
 import 'package:weather/src/modules/reputation.dart';
@@ -32,11 +35,13 @@ class Bot {
   final PostgreSQLConnection dbConnection;
 
   late Platform _platform;
-  late DatabaseManager _dbManager;
+  late Chat _chat;
+  late Database _db;
+
   late UserManager _userManager;
+
   late WeatherManager _weatherManager;
   late DadJokes _dadJokes;
-
   late PanoramaManager _panoramaManager;
   late Reputation _reputation;
   late Youtube _youtube;
@@ -55,15 +60,17 @@ class Bot {
       required this.dbConnection});
 
   Future<void> startBot() async {
-    _dbManager = DatabaseManager(dbConnection);
-    await _dbManager.initialize();
+    _db = Database(dbConnection);
+    await _db.initialize();
+
+    _chat = Chat(db: _db);
 
     _dadJokes = DadJokes();
     _youtube = Youtube(youtubeKey);
     _conversator = Conversator(dbManager: _dbManager, conversatorApiKey: conversatorKey);
     _cm = CommandsManager(adminId: adminId, dbManager: _dbManager);
 
-    _chatManager = ChatManager(dbManager: _dbManager);
+    _chatManager = ChatManager(platform: _platform, db: _db);
     await _chatManager.initialize();
 
     _panoramaManager = PanoramaManager(platform: _platform, chatManager: _chatManager, dbManager: _dbManager);
@@ -196,7 +203,10 @@ class Bot {
         Command(command: 'na', description: '[U] Check if bot is alive', wrapper: _cm.userCommand, successCallback: _healthCheck));
 
     _platform.setupCommand(Command(
-        command: 'initialize', description: '[A] Initialize new chat', wrapper: _cm.adminCommand, successCallback: _initializeChat));
+        command: 'initialize',
+        description: '[A] Initialize new chat',
+        wrapper: _cm.adminCommand,
+        successCallback: _chatManager.createChat));
 
     _platform.setupCommand(Command(
         command: 'adduser',
@@ -407,20 +417,6 @@ class Bot {
 
   void _healthCheck(MessageEvent event) async {
     await _platform.sendMessage(event.chatId, _chatManager.getText(event.chatId, 'general.bot_is_alive'));
-  }
-
-  void _initializeChat(MessageEvent event) async {
-    var chatName = 'Unknown';
-
-    if (event.platform == ChatPlatform.telegram) {
-      chatName = event.rawMessage.chat.title.toString();
-    } else if (event.platform == ChatPlatform.discord) {
-      chatName = event.rawMessage.guild.name.toString();
-    }
-
-    var result = await _chatManager.createChat(id: event.chatId, name: chatName, platform: event.platform);
-
-    _sendOperationMessage(event.chatId, result, _chatManager.getText(event.chatId, 'chat.initialization.success'));
   }
 
   void _addUser(MessageEvent event) async {

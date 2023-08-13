@@ -1,4 +1,4 @@
-import 'package:weather/src/modules/database-manager/database_manager.dart';
+import 'package:weather/src/modules/database_manager/database_manager.dart';
 import 'package:weather/src/globals/message_event.dart';
 
 // TODO: instead of querying database every time, use a cache

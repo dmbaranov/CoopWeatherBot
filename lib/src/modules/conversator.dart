@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart';
-import 'package:weather/src/modules/database-manager/database_manager.dart';
-import 'package:weather/src/modules/database-manager/entities/conversator_chat_entity.dart';
+import 'package:weather/src/modules/database_manager/database_manager.dart';
+import 'package:weather/src/modules/database_manager/entities/conversator_chat_entity.dart';
 
 const String _converstorApiURL = 'https://api.openai.com/v1/chat/completions';
 const String _conversatorModel = 'gpt-3.5-turbo';

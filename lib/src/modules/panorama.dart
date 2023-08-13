@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as parser;
 import 'package:cron/cron.dart';
-import 'package:weather/src/modules/database-manager/database_manager.dart';
+import 'package:weather/src/modules/database_manager/database_manager.dart';
 
 const String _panoramaBaseUrl = 'https://panorama.pub';
 

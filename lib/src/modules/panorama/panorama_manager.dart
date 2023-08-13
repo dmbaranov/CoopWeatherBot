@@ -2,7 +2,7 @@ import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/modules/chat_manager.dart';
-import 'package:weather/src/modules/database-manager/database_manager.dart';
+import 'package:weather/src/modules/database_manager/database_manager.dart';
 
 import './panorama.dart';
 

@@ -7,14 +7,14 @@ import 'package:weather/src/core/database.dart';
 import 'package:weather/src/platform/platform.dart';
 
 import 'package:weather/src/globals/chat_platform.dart';
-import 'package:weather/src/globals/command.dart';
+import 'package:weather/src/globals/bot_command.dart';
 import 'package:weather/src/globals/message_event.dart';
 
 import 'package:weather/src/core/chat.dart';
+import 'package:weather/src/core/command.dart';
+import 'package:weather/src/core/user.dart';
 
-// import 'package:weather/src/modules/chat_manager.dart';
 import 'package:weather/src/modules/chat/chat_manager.dart';
-import 'package:weather/src/modules/database_manager/database_manager.dart';
 import 'package:weather/src/modules/user_manager.dart';
 import 'package:weather/src/modules/weather/weather_manager.dart';
 import 'package:weather/src/modules/panorama/panorama_manager.dart';
@@ -37,6 +37,8 @@ class Bot {
   late Platform _platform;
   late Chat _chat;
   late Database _db;
+  late Command _command;
+  late User _user;
 
   late UserManager _userManager;
 
@@ -64,6 +66,8 @@ class Bot {
     await _db.initialize();
 
     _chat = Chat(db: _db);
+    _command = Command(adminId: adminId, db: _db);
+    _user = User(db: _db);
 
     _dadJokes = DadJokes();
     _youtube = Youtube(youtubeKey);

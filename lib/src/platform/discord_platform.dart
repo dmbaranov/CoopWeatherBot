@@ -8,7 +8,7 @@ import 'package:uuid/uuid.dart';
 import 'package:cron/cron.dart';
 
 import 'package:weather/src/globals/chat_platform.dart';
-import 'package:weather/src/globals/command.dart';
+import 'package:weather/src/globals/bot_command.dart';
 import 'package:weather/src/globals/message_event.dart';
 
 import 'package:weather/src/modules/commands_manager.dart';

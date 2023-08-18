@@ -13,7 +13,7 @@ import 'package:weather/src/globals/bot_command.dart';
 
 import 'package:weather/src/modules/commands_manager.dart';
 import 'package:weather/src/modules/chat_manager.dart';
-import 'package:weather/src/modules/accordion_poll.dart';
+import 'package:weather/src/modules/accordion_poll/accordion_poll.dart';
 
 import 'package:weather/src/platform/platform.dart';
 

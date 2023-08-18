@@ -333,10 +333,10 @@ class Bot {
   void _addWeatherCity(MessageEvent event) async {
     if (!_parametersCheck(event)) return;
 
-    var cityToRemove = event.parameters[0];
-    var result = await _weatherManager.removeCity(event.chatId, event.parameters[0]);
+    var cityToAdd = event.parameters[0];
+    var result = await _weatherManager.addCity(event.chatId, event.parameters[0]);
 
-    _sendOperationMessage(event.chatId, result, _chatManager.getText(event.chatId, 'weather.cities.removed', {'city': cityToRemove}));
+    _sendOperationMessage(event.chatId, result, _chatManager.getText(event.chatId, 'weather.cities.added', {'city': cityToAdd}));
   }
 
   void _removeWeatherCity(MessageEvent event) async {

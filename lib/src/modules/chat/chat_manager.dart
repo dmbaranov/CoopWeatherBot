@@ -30,7 +30,7 @@ class ChatManager {
   }
 
   void writeToChat(MessageEvent event) {
-    if (messageEventParametersCheck(platform, event)) return;
+    if (!messageEventParametersCheck(platform, event)) return;
 
     var chatId = event.chatId;
     var message = event.parameters.join(' ');
@@ -39,7 +39,7 @@ class ChatManager {
   }
 
   void setSwearwordsConfig(MessageEvent event) async {
-    if (messageEventParametersCheck(platform, event)) return;
+    if (!messageEventParametersCheck(platform, event)) return;
 
     var chatId = event.chatId;
     var config = event.parameters[0];

@@ -62,8 +62,10 @@ class Bot {
     await _db.initialize();
 
     _chat = Chat(db: _db);
+    await _chat.initialize();
+
     _command = Command(adminId: adminId, db: _db);
-    _user = User(db: _db);
+    _user = User(db: _db)..initialize();
 
     _platform = Platform(chatPlatform: platformName, token: botToken, adminId: adminId, chat: _chat, user: _user);
     await _platform.initializePlatform();

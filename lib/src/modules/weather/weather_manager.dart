@@ -49,7 +49,7 @@ class WeatherManager {
     var cities = await _weather.getWatchList(chatId);
     var citiesString = cities.join('\n');
 
-    await platform.sendMessage(chatId, message: citiesString);
+    sendOperationMessage(chatId, platform: platform, operationResult: citiesString.isNotEmpty, successfulMessage: citiesString);
   }
 
   void getWeatherForCity(MessageEvent event) async {

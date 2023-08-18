@@ -18,7 +18,7 @@ import 'package:weather/src/modules/chat/chat_manager.dart';
 import 'package:weather/src/modules/user/user_manager.dart';
 import 'package:weather/src/modules/weather/weather_manager.dart';
 import 'package:weather/src/modules/panorama/panorama_manager.dart';
-import 'package:weather/src/modules/dadjokes.dart';
+import 'package:weather/src/modules/dadjokes/dadjokes_manager.dart';
 import 'package:weather/src/modules/reputation/reputation_manager.dart';
 import 'package:weather/src/modules/youtube/youtube_manager.dart';
 import 'package:weather/src/modules/conversator.dart';
@@ -43,7 +43,7 @@ class Bot {
   late UserManager _userManager;
 
   late WeatherManager _weatherManager;
-  late DadJokes _dadJokes;
+  late DadJokesManager _dadJokesManager;
   late PanoramaManager _panoramaManager;
   late ReputationManager _reputationManager;
   late YoutubeManager _youtubeManager;
@@ -69,7 +69,7 @@ class Bot {
     _command = Command(adminId: adminId, db: _db);
     _user = User(db: _db);
 
-    _dadJokes = DadJokes();
+    _dadJokesManager = DadJokesManager(platform: platform);
     _youtubeManager = YoutubeManager(platform: _platform, apiKey: youtubeKey);
     _conversator = Conversator(dbManager: _dbManager, conversatorApiKey: conversatorKey);
     _cm = CommandsManager(adminId: adminId, dbManager: _dbManager);
@@ -154,8 +154,11 @@ class Bot {
         wrapper: _cm.userCommand,
         successCallback: _panoramaManager.sendNewsToChat));
 
-    _platform.setupCommand(
-        Command(command: 'sendjoke', description: '[U] Send joke to the chat', wrapper: _cm.userCommand, successCallback: _sendJokeToChat));
+    _platform.setupCommand(Command(
+        command: 'sendjoke',
+        description: '[U] Send joke to the chat',
+        wrapper: _cm.userCommand,
+        successCallback: _dadJokesManager.sendJoke));
 
     _platform.setupCommand(Command(
         command: 'increp',
@@ -276,12 +279,6 @@ class Bot {
     var chatIds = await _chatManager.getAllChatIdsForPlatform(event.platform);
 
     chatIds.forEach((chatId) => _platform.sendMessage(chatId, updateMessage));
-  }
-
-  void _sendJokeToChat(MessageEvent event) async {
-    var joke = await _dadJokes.getJoke();
-
-    await _platform.sendMessage(event.chatId, joke.joke);
   }
 
   void _askConversator(MessageEvent event) async {

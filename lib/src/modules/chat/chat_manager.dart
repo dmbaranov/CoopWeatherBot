@@ -9,22 +9,15 @@ import '../utils.dart';
 class ChatManager {
   final Platform platform;
   final Database db;
+  final Chat chat;
 
-  late Chat _chat;
-
-  ChatManager({required this.platform, required this.db}) {
-    _chat = Chat(db: db);
-  }
-
-  Future<void> initialize() async {
-    await _chat.initialize();
-  }
+  ChatManager({required this.platform, required this.db, required this.chat});
 
   void createChat(MessageEvent event) async {
     var chatId = event.chatId;
     var chatName = _getNewChatName(event);
-    var result = await _chat.createChat(id: chatId, name: chatName, platform: event.platform);
-    var successfulMessage = _chat.getText(chatId, 'chat.initialization.success');
+    var result = await chat.createChat(id: chatId, name: chatName, platform: event.platform);
+    var successfulMessage = chat.getText(chatId, 'chat.initialization.success');
 
     sendOperationMessage(chatId, platform: platform, operationResult: result, successfulMessage: successfulMessage);
   }
@@ -43,8 +36,8 @@ class ChatManager {
 
     var chatId = event.chatId;
     var config = event.parameters[0];
-    var result = await _chat.setSwearwordsConfig(chatId, config);
-    var successfulMessage = _chat.getText(chatId, 'general.success');
+    var result = await chat.setSwearwordsConfig(chatId, config);
+    var successfulMessage = chat.getText(chatId, 'general.success');
 
     sendOperationMessage(chatId, platform: platform, operationResult: result, successfulMessage: successfulMessage);
   }

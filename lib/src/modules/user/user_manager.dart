@@ -8,16 +8,12 @@ import 'package:weather/src/core/chat.dart';
 class UserManager {
   final Platform platform;
   final Database db;
-  final User _user;
-  final Chat _chat;
+  final Chat chat;
+  final User user;
 
-  UserManager({required this.platform, required this.db})
-      : _user = User(db: db),
-        _chat = Chat(db: db);
+  UserManager({required this.platform, required this.db, required this.chat, required this.user});
 
   void initialize() {
-    _user.initialize();
-
     _subscribeToUserUpdates();
   }
 
@@ -28,8 +24,8 @@ class UserManager {
     var userId = event.otherUserIds[0];
     var username = event.parameters[0];
     var isPremium = event.parameters[1] == 'true';
-    var result = await _user.addUser(userId: userId, chatId: chatId, name: username, isPremium: isPremium);
-    var successfulMessage = _chat.getText(chatId, 'user.user_added');
+    var result = await user.addUser(userId: userId, chatId: chatId, name: username, isPremium: isPremium);
+    var successfulMessage = chat.getText(chatId, 'user.user_added');
 
     sendOperationMessage(chatId, platform: platform, operationResult: result, successfulMessage: successfulMessage);
   }
@@ -39,23 +35,23 @@ class UserManager {
 
     var chatId = event.chatId;
     var userId = event.otherUserIds[0];
-    var result = await _user.removeUser(chatId, userId);
-    var successfulMessage = _chat.getText(chatId, 'user.user_removed');
+    var result = await user.removeUser(chatId, userId);
+    var successfulMessage = chat.getText(chatId, 'user.user_removed');
 
     sendOperationMessage(chatId, platform: platform, operationResult: result, successfulMessage: successfulMessage);
   }
 
   void _subscribeToUserUpdates() {
-    _user.userManagerStream.listen((_) {
+    user.userManagerStream.listen((_) {
       _updateUsersPremiumStatus();
     });
   }
 
   Future<void> _updateUsersPremiumStatus() async {
-    var allPlatformChatIds = await _chat.getAllChatIdsForPlatform(platform.chatPlatform);
+    var allPlatformChatIds = await chat.getAllChatIdsForPlatform(platform.chatPlatform);
 
     await Future.forEach(allPlatformChatIds, (chatId) async {
-      var chatUsers = await _user.getUsersForChat(chatId);
+      var chatUsers = await user.getUsersForChat(chatId);
 
       await Future.forEach(chatUsers, (chatUser) async {
         await Future.delayed(Duration(seconds: 1));
@@ -65,7 +61,7 @@ class UserManager {
         if (chatUser.isPremium != platformUserPremiumStatus) {
           print('Updating premium status for ${chatUser.id}');
 
-          await _user.updatePremiumStatus(chatUser.id, platformUserPremiumStatus);
+          await user.updatePremiumStatus(chatUser.id, platformUserPremiumStatus);
         }
       });
     });

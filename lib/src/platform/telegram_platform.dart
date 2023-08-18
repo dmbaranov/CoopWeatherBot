@@ -149,7 +149,7 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   }
 
   @override
-  String getMessageId(TeleDartMessage message) {
+  String getMessageId(Message message) {
     return message.messageId.toString();
   }
 

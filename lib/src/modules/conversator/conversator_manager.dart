@@ -29,6 +29,6 @@ class ConversatorManager {
     var conversationId = await _conversator.getConversationId(chatId, parentMessageId);
 
     await _conversator.saveConversationMessage(
-        chatId: chatId, conversationId: conversationId, currentMessageId: conversatorResponseMessageId, message: message, fromUser: false);
+        chatId: chatId, conversationId: conversationId, currentMessageId: conversatorResponseMessageId, message: response, fromUser: false);
   }
 }

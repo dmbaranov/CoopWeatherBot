@@ -15,7 +15,7 @@ class General {
   }
 
   Future<String> getLastCommitMessage() async {
-    var commitApiUrl = '$_baseGithubApiUrl/repos/$repositoryUrl/commits';
+    var commitApiUrl = '$_baseGithubApiUrl/repos$repositoryUrl/commits';
     var response = await http.get(Uri.parse(commitApiUrl));
     var responseJson = jsonDecode(response.body);
     var updateMessage = responseJson[0]['commit']['message'];

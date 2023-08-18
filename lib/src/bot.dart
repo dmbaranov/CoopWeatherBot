@@ -65,29 +65,23 @@ class Bot {
     _command = Command(adminId: adminId, db: _db);
     _user = User(db: _db);
 
+    _platform = Platform(chatPlatform: platformName, token: botToken, adminId: adminId, chat: _chat, user: _user);
+    await _platform.initializePlatform();
+    _platform.setupPlatformSpecificCommands(_command);
+
     _dadJokesManager = DadJokesManager(platform: _platform);
     _youtubeManager = YoutubeManager(platform: _platform, apiKey: youtubeKey);
     _conversatorManager = ConversatorManager(platform: _platform, db: _db, conversatorApiKey: conversatorKey);
     _generalManager = GeneralManager(platform: _platform, chat: _chat, repositoryUrl: repoUrl);
+    _panoramaManager = PanoramaManager(platform: _platform, chat: _chat, db: _db)..initialize();
+    _userManager = UserManager(platform: _platform, db: _db)..initialize();
+    _reputationManager = ReputationManager(platform: _platform, db: _db, chat: _chat)..initialize();
 
     _chatManager = ChatManager(platform: _platform, db: _db);
     await _chatManager.initialize();
 
-    _panoramaManager = PanoramaManager(platform: _platform, chat: _chat, db: _db);
-    _panoramaManager.initialize();
-
-    _userManager = UserManager(platform: _platform, db: _db);
-    _userManager.initialize();
-
-    _reputationManager = ReputationManager(platform: _platform, db: _db, chat: _chat);
-    _reputationManager.initialize();
-
     _weatherManager = WeatherManager(platform: _platform, chat: _chat, db: _db, openweatherKey: openweatherKey);
     await _weatherManager.initialize();
-
-    _platform = Platform(chatPlatform: platformName, token: botToken, adminId: adminId, chat: _chat, user: _user);
-    await _platform.initializePlatform();
-    _platform.setupPlatformSpecificCommands(_command);
 
     _setupCommands();
     // TODO: check if these work

@@ -15,15 +15,13 @@ abstract class Platform<T> {
 
   factory Platform(
       {required ChatManager chatManager,
-      required Youtube youtube,
       required UserManager userManager,
       required String token,
       required String adminId,
       required ChatPlatform chatPlatform}) {
     switch (chatPlatform) {
       case ChatPlatform.telegram:
-        return TelegramPlatform(
-            chatPlatform: ChatPlatform.telegram, token: token, adminId: adminId, chatManager: chatManager, youtube: youtube);
+        return TelegramPlatform(chatPlatform: ChatPlatform.telegram, token: token, adminId: adminId, chatManager: chatManager);
       case ChatPlatform.discord:
         return DiscordPlatform(
             chatPlatform: ChatPlatform.discord, token: token, adminId: adminId, chatManager: chatManager, userManager: userManager);

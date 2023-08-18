@@ -20,7 +20,7 @@ import 'package:weather/src/modules/weather/weather_manager.dart';
 import 'package:weather/src/modules/panorama/panorama_manager.dart';
 import 'package:weather/src/modules/dadjokes.dart';
 import 'package:weather/src/modules/reputation/reputation_manager.dart';
-import 'package:weather/src/modules/youtube.dart';
+import 'package:weather/src/modules/youtube/youtube_manager.dart';
 import 'package:weather/src/modules/conversator.dart';
 import 'package:weather/src/modules/commands_manager.dart';
 
@@ -46,7 +46,7 @@ class Bot {
   late DadJokes _dadJokes;
   late PanoramaManager _panoramaManager;
   late ReputationManager _reputationManager;
-  late Youtube _youtube;
+  late YoutubeManager _youtubeManager;
   late Conversator _conversator;
   late ChatManager _chatManager;
   late CommandsManager _cm;
@@ -70,7 +70,7 @@ class Bot {
     _user = User(db: _db);
 
     _dadJokes = DadJokes();
-    _youtube = Youtube(youtubeKey);
+    _youtubeManager = YoutubeManager(platform: _platform, apiKey: youtubeKey);
     _conversator = Conversator(dbManager: _dbManager, conversatorApiKey: conversatorKey);
     _cm = CommandsManager(adminId: adminId, dbManager: _dbManager);
 
@@ -89,13 +89,8 @@ class Bot {
     _weatherManager = WeatherManager(platform: _platform, chat: _chat, db: _db, openweatherKey: openweatherKey);
     await _weatherManager.initialize();
 
-    _platform = Platform(
-        chatPlatform: platformName,
-        token: botToken,
-        adminId: adminId,
-        chatManager: _chatManager,
-        youtube: _youtube,
-        userManager: _userManager);
+    _platform =
+        Platform(chatPlatform: platformName, token: botToken, adminId: adminId, chatManager: _chatManager, userManager: _userManager);
     await _platform.initializePlatform();
     _platform.setupPlatformSpecificCommands(_cm);
 
@@ -163,13 +158,6 @@ class Bot {
         Command(command: 'sendjoke', description: '[U] Send joke to the chat', wrapper: _cm.userCommand, successCallback: _sendJokeToChat));
 
     _platform.setupCommand(Command(
-        command: 'sendrealmusic',
-        description: '[U] Convert link from YouTube Music to YouTube',
-        wrapper: _cm.userCommand,
-        withParameters: true,
-        successCallback: _sendRealMusicToChat));
-
-    _platform.setupCommand(Command(
         command: 'increp',
         description: '[U] Increase reputation for the user',
         wrapper: _cm.userCommand,
@@ -194,7 +182,7 @@ class Bot {
         description: '[U] Search song on YouTube',
         wrapper: _cm.userCommand,
         withParameters: true,
-        successCallback: _searchYoutubeTrack));
+        successCallback: _youtubeManager.searchSong));
 
     _platform.setupCommand(Command(
         command: 'ask',
@@ -294,22 +282,6 @@ class Bot {
     var joke = await _dadJokes.getJoke();
 
     await _platform.sendMessage(event.chatId, joke.joke);
-  }
-
-  void _sendRealMusicToChat(MessageEvent event) async {
-    if (!_parametersCheck(event)) return;
-
-    var formattedLink = event.parameters[0].replaceAll('music.', '');
-
-    await _platform.sendMessage(event.chatId, formattedLink);
-  }
-
-  void _searchYoutubeTrack(MessageEvent event) async {
-    if (!_parametersCheck(event)) return;
-
-    var videoUrl = await _youtube.getYoutubeVideoUrl(event.parameters.join(' '));
-
-    _sendOperationMessage(event.chatId, videoUrl.isNotEmpty, videoUrl);
   }
 
   void _askConversator(MessageEvent event) async {

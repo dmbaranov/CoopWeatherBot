@@ -12,9 +12,7 @@ class ReputationManager {
 
   late Reputation _reputation;
 
-  ReputationManager({required this.platform, required this.db, required this.chat}) {
-    _reputation = Reputation(db: db);
-  }
+  ReputationManager({required this.platform, required this.db, required this.chat}) : _reputation = Reputation(db: db);
 
   void initialize() {
     _reputation.initialize();

@@ -13,7 +13,6 @@ import 'package:weather/src/globals/bot_command.dart';
 
 import 'package:weather/src/modules/commands_manager.dart';
 import 'package:weather/src/modules/chat_manager.dart';
-import 'package:weather/src/modules/youtube.dart';
 import 'package:weather/src/modules/accordion_poll.dart';
 
 import 'package:weather/src/platform/platform.dart';
@@ -24,15 +23,13 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   final String token;
   final String adminId;
   final ChatManager chatManager;
-  final Youtube youtube;
   final Debouncer<TeleDartInlineQuery?> _debouncer = Debouncer(Duration(seconds: 1), initialValue: null);
 
   late TeleDart _bot;
   late Telegram _telegram;
   late AccordionPoll _accordionPoll;
 
-  TelegramPlatform(
-      {required this.chatPlatform, required this.token, required this.adminId, required this.chatManager, required this.youtube});
+  TelegramPlatform({required this.chatPlatform, required this.token, required this.adminId, required this.chatManager});
 
   @override
   Future<void> initializePlatform() async {
@@ -60,12 +57,12 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
     var bullyTagUserRegexp = bullyTagUserRegexpRaw.replaceAll('\n', '');
 
     _bot.onMessage(keyword: RegExp(bullyTagUserRegexp, caseSensitive: false)).listen((event) => _bullyTagUser(event));
-    _bot.onInlineQuery().listen((query) {
-      _debouncer.value = query;
-    });
-    _debouncer.values.listen((query) {
-      _searchYoutubeTrackInline(query as TeleDartInlineQuery);
-    });
+    // _bot.onInlineQuery().listen((query) {
+    //   _debouncer.value = query;
+    // });
+    // _debouncer.values.listen((query) {
+    //   _searchYoutubeTrackInline(query as TeleDartInlineQuery);
+    // });
   }
 
   @override
@@ -269,26 +266,27 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
     }
   }
 
-  Future<void> _searchYoutubeTrackInline(TeleDartInlineQuery query) async {
-    var searchResults = await youtube.getYoutubeSearchResults(query.query);
-    List items = searchResults['items'];
-    var inlineQueryResult = [];
-
-    items.forEach((searchResult) {
-      var videoId = searchResult['id']['videoId'];
-      var videoData = searchResult['snippet'];
-      var videoUrl = 'https://www.youtube.com/watch?v=$videoId';
-
-      inlineQueryResult.add(InlineQueryResultVideo(
-          id: videoId,
-          title: videoData['title'],
-          thumbUrl: videoData['thumbnails']['high']['url'],
-          mimeType: 'video/mp4',
-          videoDuration: 600,
-          videoUrl: videoUrl,
-          inputMessageContent: InputTextMessageContent(messageText: videoUrl, disableWebPagePreview: false)));
-    });
-
-    await _bot.answerInlineQuery(query.id, [...inlineQueryResult], cacheTime: 10);
-  }
+// TODO: temporarily disabled, figure out the way how to provide YouTube to the platform
+// Future<void> _searchYoutubeTrackInline(TeleDartInlineQuery query) async {
+//   var searchResults = await youtube.getYoutubeSearchResults(query.query);
+//   List items = searchResults['items'];
+//   var inlineQueryResult = [];
+//
+//   items.forEach((searchResult) {
+//     var videoId = searchResult['id']['videoId'];
+//     var videoData = searchResult['snippet'];
+//     var videoUrl = 'https://www.youtube.com/watch?v=$videoId';
+//
+//     inlineQueryResult.add(InlineQueryResultVideo(
+//         id: videoId,
+//         title: videoData['title'],
+//         thumbUrl: videoData['thumbnails']['high']['url'],
+//         mimeType: 'video/mp4',
+//         videoDuration: 600,
+//         videoUrl: videoUrl,
+//         inputMessageContent: InputTextMessageContent(messageText: videoUrl, disableWebPagePreview: false)));
+//   });
+//
+//   await _bot.answerInlineQuery(query.id, [...inlineQueryResult], cacheTime: 10);
+// }
 }

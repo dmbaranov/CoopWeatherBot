@@ -12,15 +12,14 @@ class UserManager {
   late User _user;
   late Chat _chat;
 
-  UserManager({required this.platform, required this.db}) {
-    _user = User(db: db);
-    _chat = Chat(db: db);
-  }
+  UserManager({required this.platform, required this.db})
+      : _user = User(db: db),
+        _chat = Chat(db: db);
 
   void initialize() {
     _user.initialize();
 
-    _subscribeToUserUpdates()
+    _subscribeToUserUpdates();
   }
 
   void addUser(MessageEvent event) async {
@@ -41,7 +40,7 @@ class UserManager {
 
     var chatId = event.chatId;
     var userId = event.otherUserIds[0];
-    var result = await _user.removeUser(userId);
+    var result = await _user.removeUser(chatId, userId);
     var successfulMessage = _chat.getText(chatId, 'user.user_removed');
 
     sendOperationMessage(chatId, platform: platform, operationResult: result, successfulMessage: successfulMessage);

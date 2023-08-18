@@ -14,9 +14,8 @@ class WeatherManager {
 
   late Weather _weather;
 
-  WeatherManager({required this.platform, required this.chat, required this.db, required this.openweatherKey}) {
-    _weather = Weather(db: db, openweatherKey: openweatherKey);
-  }
+  WeatherManager({required this.platform, required this.chat, required this.db, required this.openweatherKey})
+      : _weather = Weather(db: db, openweatherKey: openweatherKey);
 
   Future<void> initialize() async {
     await _weather.initialize();

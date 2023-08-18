@@ -13,9 +13,8 @@ class PanoramaManager {
 
   late PanoramaNews _panoramaNews;
 
-  PanoramaManager({required this.platform, required this.chatManager, required this.dbManager}) {
-    _panoramaNews = PanoramaNews(dbManager: dbManager);
-  }
+  PanoramaManager({required this.platform, required this.chatManager, required this.dbManager})
+      : _panoramaNews = PanoramaNews(dbManager: dbManager);
 
   void initialize() {
     _panoramaNews.initialize();

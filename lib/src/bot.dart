@@ -378,7 +378,7 @@ class Bot {
   void _writeToChat(MessageEvent event) async {
     if (!_parametersCheck(event)) return;
 
-    await _platform.sendMessage(event.chatId, event.parameters.join());
+    await _platform.sendMessage(event.chatId, event.parameters.join(' '));
   }
 
   void _postUpdateMessage(MessageEvent event) async {

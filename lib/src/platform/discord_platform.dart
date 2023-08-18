@@ -139,8 +139,8 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
   }
 
   @override
-  String getMessageId(message) {
-    return (message as IMessage).id.toString();
+  String getMessageId(dynamic message) {
+    return message.id.toString();
   }
 
   CommandsPlugin _setupDiscordCommands() {

@@ -84,10 +84,6 @@ class Bot {
     await _weatherManager.initialize();
 
     _setupCommands();
-    // TODO: check if these work
-    // _subscribeToUserUpdates();
-    // _subscribeToWeatherUpdates();
-    // _subscribeToPanoramaNews();
 
     await _platform.postStart();
   }

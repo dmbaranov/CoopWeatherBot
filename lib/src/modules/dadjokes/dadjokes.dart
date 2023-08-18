@@ -16,11 +16,9 @@ class DadJokes {
   final String _apiBaseUrl = 'https://icanhazdadjoke.com/';
 
   Future<DadJokesJoke> getJoke() async {
-    var response = await http.get(Uri.parse(_apiBaseUrl));
+    var response = await http.get(Uri.parse(_apiBaseUrl), headers: {'Accept': 'application/json'});
     var responseJson = jsonDecode(response.body);
-    // TODO: is this needed?
-    var rawJoke = {'joke': responseJson['joke']};
 
-    return DadJokesJoke.fromJson(rawJoke);
+    return DadJokesJoke.fromJson(responseJson);
   }
 }

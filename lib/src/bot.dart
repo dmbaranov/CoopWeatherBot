@@ -21,7 +21,7 @@ import 'package:weather/src/modules/panorama/panorama_manager.dart';
 import 'package:weather/src/modules/dadjokes/dadjokes_manager.dart';
 import 'package:weather/src/modules/reputation/reputation_manager.dart';
 import 'package:weather/src/modules/youtube/youtube_manager.dart';
-import 'package:weather/src/modules/conversator.dart';
+import 'package:weather/src/modules/conversator/conversator_manager.dart';
 import 'package:weather/src/modules/commands_manager.dart';
 
 class Bot {
@@ -47,7 +47,7 @@ class Bot {
   late PanoramaManager _panoramaManager;
   late ReputationManager _reputationManager;
   late YoutubeManager _youtubeManager;
-  late Conversator _conversator;
+  late ConversatorManager _conversatorManager;
   late ChatManager _chatManager;
   late CommandsManager _cm;
 
@@ -69,9 +69,9 @@ class Bot {
     _command = Command(adminId: adminId, db: _db);
     _user = User(db: _db);
 
-    _dadJokesManager = DadJokesManager(platform: platform);
+    _dadJokesManager = DadJokesManager(platform: _platform);
     _youtubeManager = YoutubeManager(platform: _platform, apiKey: youtubeKey);
-    _conversator = Conversator(dbManager: _dbManager, conversatorApiKey: conversatorKey);
+    _conversatorManager = ConversatorManager(platform: _platform, db: _db, conversatorApiKey: conversatorKey);
     _cm = CommandsManager(adminId: adminId, dbManager: _dbManager);
 
     _chatManager = ChatManager(platform: _platform, db: _db);
@@ -192,7 +192,7 @@ class Bot {
         description: '[U] Ask for advice or anything else from the Conversator',
         wrapper: _cm.userCommand,
         conversatorCommand: true,
-        successCallback: _askConversator));
+        successCallback: _conversatorManager.getConversationReply));
 
     _platform.setupCommand(
         Command(command: 'na', description: '[U] Check if bot is alive', wrapper: _cm.userCommand, successCallback: _healthCheck));
@@ -279,28 +279,6 @@ class Bot {
     var chatIds = await _chatManager.getAllChatIdsForPlatform(event.platform);
 
     chatIds.forEach((chatId) => _platform.sendMessage(chatId, updateMessage));
-  }
-
-  void _askConversator(MessageEvent event) async {
-    if (!_parametersCheck(event)) return;
-
-    var parentMessageId = event.parameters[0];
-    var currentMessageId = event.parameters[1];
-    var message = event.parameters[2];
-
-    var response = await _conversator.getConversationReply(
-        chatId: event.chatId, parentMessageId: parentMessageId, currentMessageId: currentMessageId, message: message);
-
-    var conversatorResponseMessage = await _platform.sendMessage(event.chatId, response);
-    var conversatorResponseMessageId = _platform.getMessageId(conversatorResponseMessage);
-    var conversationId = await _conversator.getConversationId(event.chatId, parentMessageId);
-
-    await _conversator.saveConversationMessage(
-        chatId: event.chatId,
-        conversationId: conversationId,
-        currentMessageId: conversatorResponseMessageId,
-        message: response,
-        fromUser: false);
   }
 
   void _healthCheck(MessageEvent event) async {

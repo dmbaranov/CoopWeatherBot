@@ -1,29 +1,24 @@
-import 'package:meta/meta.dart';
+import 'package:weather/src/core/chat.dart';
+import 'package:weather/src/core/user.dart';
+import 'package:weather/src/core/command.dart';
+
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/message_event.dart';
-import 'package:weather/src/globals/command.dart';
-
-import 'package:weather/src/modules/commands_manager.dart';
-import 'package:weather/src/modules/chat_manager.dart';
-import 'package:weather/src/modules/youtube.dart';
-import 'package:weather/src/modules/user_manager.dart';
+import 'package:weather/src/globals/bot_command.dart';
 
 import 'package:weather/src/platform/telegram_platform.dart';
 import 'package:weather/src/platform/discord_platform.dart';
 
 abstract class Platform<T> {
+  late ChatPlatform chatPlatform;
+
   factory Platform(
-      {required ChatManager chatManager,
-      required Youtube youtube,
-      required UserManager userManager,
-      required String token,
-      required String adminId,
-      required ChatPlatform chatPlatform}) {
+      {required Chat chat, required User user, required String token, required String adminId, required ChatPlatform chatPlatform}) {
     switch (chatPlatform) {
       case ChatPlatform.telegram:
-        return TelegramPlatform(token: token, adminId: adminId, chatManager: chatManager, youtube: youtube);
+        return TelegramPlatform(chatPlatform: ChatPlatform.telegram, token: token, adminId: adminId, chat: chat);
       case ChatPlatform.discord:
-        return DiscordPlatform(token: token, adminId: adminId, chatManager: chatManager, userManager: userManager);
+        return DiscordPlatform(chatPlatform: ChatPlatform.discord, token: token, adminId: adminId, chat: chat, user: user);
       default:
         throw Exception('Platform $chatPlatform is not supported');
     }
@@ -31,7 +26,7 @@ abstract class Platform<T> {
 
   Future<void> initializePlatform();
 
-  void setupPlatformSpecificCommands(CommandsManager cm);
+  void setupPlatformSpecificCommands(Command command);
 
   Future<void> postStart();
 
@@ -43,9 +38,9 @@ abstract class Platform<T> {
 
   MessageEvent transformPlatformMessageToConversatorMessageEvent(T message, [List<String>? otherParameters]);
 
-  void setupCommand(Command command);
+  void setupCommand(BotCommand command);
 
-  Future sendMessage(String chatId, String message);
+  Future sendMessage(String chatId, {String? message, String? translation});
 
   Future sendNoAccessMessage(MessageEvent event);
 

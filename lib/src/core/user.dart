@@ -1,8 +1,9 @@
 import 'dart:async';
 import 'package:cron/cron.dart';
-import 'database-manager/database_manager.dart';
 
-class UMUser {
+import './database.dart';
+
+class BotUser {
   final String id;
   final bool isPremium;
   final bool deleted;
@@ -11,7 +12,7 @@ class UMUser {
 
   String name;
 
-  UMUser(
+  BotUser(
       {required this.id,
       required this.name,
       required this.isPremium,
@@ -28,13 +29,13 @@ class UMUser {
   }
 }
 
-class UserManager {
-  final DatabaseManager dbManager;
+class User {
+  final Database db;
 
   late StreamController<int> _userManagerStreamController;
   ScheduledTask? _userManagerCronTask;
 
-  UserManager({required this.dbManager});
+  User({required this.db});
 
   Stream<int> get userManagerStream => _userManagerStreamController.stream;
 
@@ -43,11 +44,11 @@ class UserManager {
     _updateUserManagerStream();
   }
 
-  Future<List<UMUser>> getUsersForChat(String chatId) async {
-    var users = await dbManager.user.getAllUsersForChat(chatId);
+  Future<List<BotUser>> getUsersForChat(String chatId) async {
+    var users = await db.user.getAllUsersForChat(chatId);
 
     return users
-        .map((dbUser) => UMUser(
+        .map((dbUser) => BotUser(
             id: dbUser.id,
             name: dbUser.name,
             isPremium: dbUser.isPremium,
@@ -58,7 +59,7 @@ class UserManager {
   }
 
   Future<bool> addUser({required String userId, required String chatId, required String name, bool isPremium = false}) async {
-    var creationResult = await dbManager.user.createUser(userId: userId, chatId: chatId, name: name, isPremium: isPremium);
+    var creationResult = await db.user.createUser(userId: userId, chatId: chatId, name: name, isPremium: isPremium);
 
     if (creationResult >= 1) {
       _userManagerStreamController.sink.add(0);
@@ -70,7 +71,7 @@ class UserManager {
   }
 
   Future<bool> removeUser(String chatId, String userId) async {
-    var deletionResult = await dbManager.user.deleteUser(chatId, userId);
+    var deletionResult = await db.user.deleteUser(chatId, userId);
 
     if (deletionResult == 1) {
       _userManagerStreamController.sink.add(0);
@@ -82,7 +83,7 @@ class UserManager {
   }
 
   Future<bool> updatePremiumStatus(String userId, bool isPremium) async {
-    var updateResult = await dbManager.user.updatePremiumStatus(userId, isPremium);
+    var updateResult = await db.user.updatePremiumStatus(userId, isPremium);
 
     return updateResult == 1;
   }

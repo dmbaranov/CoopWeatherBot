@@ -7,7 +7,7 @@ import 'entities/weather_entity.dart';
 import 'entities/news_entity.dart';
 import 'entities/conversator_chat_entity.dart';
 
-class DatabaseManager {
+class Database {
   final PostgreSQLConnection dbConnection;
   final BotUserEntity user;
   final ChatEntity chat;
@@ -16,7 +16,7 @@ class DatabaseManager {
   final NewsEntity news;
   final ConversatorChatEntity conversatorChat;
 
-  DatabaseManager(this.dbConnection)
+  Database(this.dbConnection)
       : user = BotUserEntity(dbConnection: dbConnection),
         chat = ChatEntity(dbConnection: dbConnection),
         reputation = ReputationEntity(dbConnection: dbConnection),

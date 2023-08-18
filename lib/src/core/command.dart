@@ -1,15 +1,15 @@
-import 'package:weather/src/modules/database-manager/database_manager.dart';
 import 'package:weather/src/globals/message_event.dart';
+import './database.dart';
 
 // TODO: instead of querying database every time, use a cache
-class CommandsManager {
+class Command {
   final String adminId;
-  final DatabaseManager dbManager;
+  final Database db;
 
-  CommandsManager({required this.adminId, required this.dbManager});
+  Command({required this.adminId, required this.db});
 
   void userCommand(MessageEvent event, {required Function onFailure, Function? onSuccess, Function? onSuccessCustom}) async {
-    var user = await dbManager.user.getSingleUserForChat(event.chatId, event.userId);
+    var user = await db.user.getSingleUserForChat(event.chatId, event.userId);
 
     if (event.userId != adminId) {
       if (user == null) {
@@ -29,7 +29,7 @@ class CommandsManager {
   }
 
   void moderatorCommand(MessageEvent event, {required Function onFailure, Function? onSuccess, Function? onSuccessCustom}) async {
-    var user = await dbManager.user.getSingleUserForChat(event.chatId, event.userId);
+    var user = await db.user.getSingleUserForChat(event.chatId, event.userId);
 
     if (event.userId != adminId) {
       if (user == null || (!user.moderator && user.id != adminId)) {

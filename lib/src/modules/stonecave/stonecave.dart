@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:io' as io;
 import 'package:crypto/crypto.dart';
 
+// This is not used anymore and is left here for history purposes
+
 class Stone {
   final Map<String, dynamic> data;
   late int timestamp;
@@ -94,7 +96,7 @@ class StoneCave {
       if (currentStone.stoneHash != currentStone.generateOwnHash()) {
         return false;
       }
-      
+
       if (currentStone.prevStoneHash != previousStone.stoneHash) {
         return false;
       }

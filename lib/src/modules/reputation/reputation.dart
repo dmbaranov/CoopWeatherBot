@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:cron/cron.dart';
-import 'database-manager/database_manager.dart';
-import 'database-manager/entities/reputation_entity.dart' show SingleReputationData, ChatReputationData;
+import 'package:weather/src/core/database.dart';
+import 'package:weather/src/core/entities/reputation_entity.dart' show SingleReputationData, ChatReputationData;
 
 enum ReputationChangeOption { increase, decrease }
 
@@ -10,9 +10,9 @@ enum ReputationChangeResult { increaseSuccess, decreaseSuccess, userNotFound, se
 const numberOfVoteOptions = 3;
 
 class Reputation {
-  final DatabaseManager dbManager;
+  final Database db;
 
-  Reputation({required this.dbManager});
+  Reputation({required this.db});
 
   void initialize() {
     _startResetVotesJob();
@@ -20,7 +20,7 @@ class Reputation {
 
   void _startResetVotesJob() {
     Cron().schedule(Schedule.parse('0 0 * * *'), () async {
-      var result = await dbManager.reputation.resetChangeOptions(numberOfVoteOptions);
+      var result = await db.reputation.resetChangeOptions(numberOfVoteOptions);
 
       if (result == 0) {
         print('Something went wrong with resetting reputation change options');
@@ -32,8 +32,8 @@ class Reputation {
 
   Future<ReputationChangeResult> updateReputation(
       {required String chatId, required ReputationChangeOption change, String? fromUserId, String? toUserId}) async {
-    var fromUser = await dbManager.reputation.getSingleReputationData(chatId, fromUserId ?? '');
-    var toUser = await dbManager.reputation.getSingleReputationData(chatId, toUserId ?? '');
+    var fromUser = await db.reputation.getSingleReputationData(chatId, fromUserId ?? '');
+    var toUser = await db.reputation.getSingleReputationData(chatId, toUserId ?? '');
 
     if (fromUser == null || toUser == null) {
       return ReputationChangeResult.userNotFound;
@@ -78,25 +78,25 @@ class Reputation {
 
   Future<bool> createReputationData(String chatId, String userId) async {
     // TODO: add 6 options for premium users
-    var result = await dbManager.reputation.createReputationData(chatId, userId, numberOfVoteOptions);
+    var result = await db.reputation.createReputationData(chatId, userId, numberOfVoteOptions);
 
     return result == 1;
   }
 
   Future<List<ChatReputationData>> getReputationData(String chatId) async {
-    var reputation = await dbManager.reputation.getReputationForChat(chatId);
+    var reputation = await db.reputation.getReputationForChat(chatId);
 
     return reputation;
   }
 
   Future<bool> _updateReputation(String chatId, String userId, int reputation) async {
-    var result = await dbManager.reputation.updateReputation(chatId, userId, reputation);
+    var result = await db.reputation.updateReputation(chatId, userId, reputation);
 
     return result == 1;
   }
 
   Future<bool> _updateChangeOptions(String chatId, String userId, int increaseOptions, int decreaseOptions) async {
-    var result = await dbManager.reputation.updateChangeOptions(chatId, userId, increaseOptions, decreaseOptions);
+    var result = await db.reputation.updateChangeOptions(chatId, userId, increaseOptions, decreaseOptions);
 
     return result == 1;
   }

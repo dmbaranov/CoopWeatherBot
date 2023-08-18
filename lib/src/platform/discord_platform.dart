@@ -7,29 +7,31 @@ import 'package:nyxx_commands/nyxx_commands.dart';
 import 'package:uuid/uuid.dart';
 import 'package:cron/cron.dart';
 
-import 'package:weather/src/globals/chat_platform.dart';
-import 'package:weather/src/globals/command.dart';
-import 'package:weather/src/globals/message_event.dart';
+import 'package:weather/src/core/chat.dart';
+import 'package:weather/src/core/user.dart';
+import 'package:weather/src/core/command.dart';
 
-import 'package:weather/src/modules/commands_manager.dart';
-import 'package:weather/src/modules/chat_manager.dart';
-import 'package:weather/src/modules/user_manager.dart';
+import 'package:weather/src/globals/chat_platform.dart';
+import 'package:weather/src/globals/bot_command.dart';
+import 'package:weather/src/globals/message_event.dart';
 
 import 'package:weather/src/platform/platform.dart';
 
 const uuid = Uuid();
 
 class DiscordPlatform<T extends IChatContext> implements Platform<T> {
+  @override
+  late ChatPlatform chatPlatform;
   final String token;
   final String adminId;
-  final ChatManager chatManager;
-  final UserManager userManager;
+  final Chat chat;
+  final User user;
 
   final List<ChatCommand> _commands = [];
 
   late INyxxWebsocket bot;
 
-  DiscordPlatform({required this.token, required this.adminId, required this.chatManager, required this.userManager});
+  DiscordPlatform({required this.chatPlatform, required this.token, required this.adminId, required this.chat, required this.user});
 
   @override
   Future<void> initializePlatform() async {
@@ -52,25 +54,31 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
   }
 
   @override
-  Future<IMessage> sendMessage(String chatId, String message) async {
+  Future<IMessage> sendMessage(String chatId, {String? message, String? translation}) async {
     var guild = await bot.httpEndpoints.fetchGuild(Snowflake(chatId));
     var channelId = guild.systemChannel?.id.toString() ?? '';
 
-    return bot.httpEndpoints.sendMessage(Snowflake(channelId), MessageBuilder.content(message));
+    if (message != null) {
+      return bot.httpEndpoints.sendMessage(Snowflake(channelId), MessageBuilder.content(message));
+    } else if (translation != null) {
+      return bot.httpEndpoints.sendMessage(Snowflake(channelId), MessageBuilder.content(chat.getText(chatId, translation)));
+    }
+
+    return bot.httpEndpoints.sendMessage(Snowflake(channelId), MessageBuilder.content(chat.getText(chatId, 'something_went_wrong')));
   }
 
   @override
   Future<void> sendNoAccessMessage(MessageEvent event) async {
-    await sendMessage(event.chatId, chatManager.getText(event.chatId, 'general.no_access'));
+    await sendMessage(event.chatId, translation: 'general.no_access');
   }
 
   @override
   Future<void> sendErrorMessage(MessageEvent event) async {
-    await sendMessage(event.chatId, chatManager.getText(event.chatId, 'general.something_went_wrong'));
+    await sendMessage(event.chatId, translation: 'general.something_went_wrong');
   }
 
   @override
-  void setupCommand(Command command) {
+  void setupCommand(BotCommand command) {
     if (command.withParameters) {
       _setupCommandWithParameters(command);
     } else if (command.withOtherUserIds) {
@@ -83,12 +91,12 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
   }
 
   @override
-  void setupPlatformSpecificCommands(CommandsManager cm) {
+  void setupPlatformSpecificCommands(Command command) {
     _commands.add(ChatCommand('moveall', 'Move all users from one voice channel to another',
         (IChatContext context, IChannel fromChannel, IChannel toChannel) async {
       await context.respond(MessageBuilder.empty());
 
-      cm.moderatorCommand(transformPlatformMessageToGeneralMessageEvent(context),
+      command.moderatorCommand(transformPlatformMessageToGeneralMessageEvent(context),
           onSuccessCustom: () => _moveAll(context, fromChannel, toChannel), onFailure: sendNoAccessMessage);
     }));
   }
@@ -96,7 +104,7 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
   @override
   MessageEvent transformPlatformMessageToGeneralMessageEvent(IChatContext event) {
     return MessageEvent(
-        platform: ChatPlatform.discord,
+        platform: chatPlatform,
         // TODO: replace guildId with channelId?
         chatId: event.guild?.id.toString() ?? '',
         userId: event.user.id.toString(),
@@ -131,8 +139,8 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
   }
 
   @override
-  String getMessageId(message) {
-    return (message as IMessage).id.toString();
+  String getMessageId(dynamic message) {
+    return message.id.toString();
   }
 
   CommandsPlugin _setupDiscordCommands() {
@@ -143,7 +151,7 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
     return commands;
   }
 
-  void _setupSimpleCommand(Command command) {
+  void _setupSimpleCommand(BotCommand command) {
     _commands.add(ChatCommand(command.command, command.description, (IChatContext context) async {
       await context.respond(MessageBuilder.empty());
 
@@ -152,7 +160,7 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
     }));
   }
 
-  void _setupCommandWithParameters(Command command) {
+  void _setupCommandWithParameters(BotCommand command) {
     _commands.add(ChatCommand(command.command, command.description, (IChatContext context, String what) async {
       await context.respond(MessageBuilder.content(what));
 
@@ -163,7 +171,7 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
     }));
   }
 
-  void _setupCommandWithOtherUserIds(Command command) {
+  void _setupCommandWithOtherUserIds(BotCommand command) {
     _commands.add(ChatCommand(command.command, command.description, (IChatContext context, IMember who) async {
       var user = await who.user.getOrDownload();
       var isPremium = who.boostingSince != null ? 'true' : 'false';
@@ -178,7 +186,7 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
     }));
   }
 
-  void _setupCommandForConversator(Command command) {
+  void _setupCommandForConversator(BotCommand command) {
     _commands.add(ChatCommand(command.command, command.description, (IChatContext context, String what, [String? conversationId]) async {
       await context.respond(MessageBuilder.content(what));
 
@@ -195,7 +203,7 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
   void _startHeroCheckJob() {
     // TODO: onlineUsers are returned for a single chat only. Fix this + make this job configurable per chat
     Cron().schedule(Schedule.parse('0 5 * * 6,0'), () async {
-      var authorizedChats = await chatManager.getAllChatIdsForPlatform(ChatPlatform.discord);
+      var authorizedChats = await chat.getAllChatIdsForPlatform(chatPlatform);
 
       await Process.run('${Directory.current.path}/generate-online', []);
 
@@ -204,11 +212,11 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
 
       await Future.forEach(authorizedChats, (chatId) async {
         if (onlineUsers.isEmpty) {
-          return sendMessage(chatId, chatManager.getText(chatId, 'hero.users_at_five.no_users'));
+          return sendMessage(chatId, translation: 'hero.users_at_five.no_users');
         }
 
-        var heroesMessage = chatManager.getText(chatId, 'hero.users_at_five.list');
-        var chatUsers = await userManager.getUsersForChat(chatId);
+        var heroesMessage = chat.getText(chatId, 'hero.users_at_five.list');
+        var chatUsers = await user.getUsersForChat(chatId);
 
         onlineUsers.forEach((userId) {
           var onlineUser = chatUsers.firstWhereOrNull((user) => user.id == userId);
@@ -219,7 +227,7 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
           }
         });
 
-        await sendMessage(chatId, heroesMessage);
+        await sendMessage(chatId, message: heroesMessage);
       });
 
       await onlineFile.delete();

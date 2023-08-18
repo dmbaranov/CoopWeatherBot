@@ -17,17 +17,6 @@ class AccordionPoll {
     _userId = userId;
   }
 
-  void startPoll(String userId) {
-    _isVoteActive = true;
-    _userId = userId;
-  }
-
-  void _stopPoll() {
-    _isVoteActive = false;
-    _userId = null;
-    _voteResult = {};
-  }
-
   AccordionVoteResults endVoteAndGetResults() {
     var recordedOptions = _voteResult;
 
@@ -49,5 +38,16 @@ class AccordionPoll {
         recordedOptions.entries.toList().reduce((currentVote, nextVote) => currentVote.value > nextVote.value ? currentVote : nextVote).key;
 
     return messages[winnerOption]!;
+  }
+
+  void startPoll(String userId) {
+    _isVoteActive = true;
+    _userId = userId;
+  }
+
+  void _stopPoll() {
+    _isVoteActive = false;
+    _userId = null;
+    _voteResult = {};
   }
 }

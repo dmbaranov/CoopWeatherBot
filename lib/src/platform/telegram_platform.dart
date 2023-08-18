@@ -2,17 +2,18 @@ import 'dart:math';
 import 'dart:io' as io;
 
 import 'package:collection/collection.dart';
-import 'package:teledart/model.dart';
+
+import 'package:teledart/model.dart' show TeleDartMessage, Message;
 import 'package:teledart/teledart.dart';
 import 'package:teledart/telegram.dart';
-import 'package:debounce_throttle/debounce_throttle.dart';
+
+import 'package:weather/src/core/chat.dart';
+import 'package:weather/src/core/command.dart';
 
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/globals/bot_command.dart';
 
-import 'package:weather/src/modules/commands_manager.dart';
-import 'package:weather/src/modules/chat_manager.dart';
 import 'package:weather/src/modules/accordion_poll/accordion_poll.dart';
 
 import 'package:weather/src/platform/platform.dart';
@@ -22,14 +23,15 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   late ChatPlatform chatPlatform;
   final String token;
   final String adminId;
-  final ChatManager chatManager;
-  final Debouncer<TeleDartInlineQuery?> _debouncer = Debouncer(Duration(seconds: 1), initialValue: null);
+  final Chat chat;
+
+  // final Debouncer<TeleDartInlineQuery?> _debouncer = Debouncer(Duration(seconds: 1), initialValue: null);
 
   late TeleDart _bot;
   late Telegram _telegram;
   late AccordionPoll _accordionPoll;
 
-  TelegramPlatform({required this.chatPlatform, required this.token, required this.adminId, required this.chatManager});
+  TelegramPlatform({required this.chatPlatform, required this.token, required this.adminId, required this.chat});
 
   @override
   Future<void> initializePlatform() async {
@@ -45,11 +47,11 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   }
 
   @override
-  void setupPlatformSpecificCommands(CommandsManager cm) async {
-    setupCommand(Command(
+  void setupPlatformSpecificCommands(Command command) async {
+    setupCommand(BotCommand(
         command: 'accordion',
         description: 'Start vote for the freshness of the content',
-        wrapper: cm.userCommand,
+        wrapper: command.userCommand,
         withOtherUserIds: true,
         successCallback: _startTelegramAccordionPoll));
 
@@ -108,7 +110,7 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   }
 
   @override
-  void setupCommand(Command command) {
+  void setupCommand(BotCommand command) {
     var eventMapper = _getEventMapper(command);
 
     _bot
@@ -121,20 +123,22 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
     if (message != null) {
       return _telegram.sendMessage(chatId, message);
     } else if (translation != null) {
-      return _telegram.sendMessage(chatId, chatManager.getText(chatId, translation));
+      return _telegram.sendMessage(chatId, chat.getText(chatId, translation));
     }
 
-    return _telegram.sendMessage(chatId, chatManager.getText(chatId, 'something_went_wrong'));
+    return _telegram.sendMessage(chatId, chat.getText(chatId, 'something_went_wrong'));
   }
 
   @override
   Future<void> sendNoAccessMessage(MessageEvent event) async {
-    await sendMessage(event.chatId, chatManager.getText(event.chatId, 'general.no_access'));
+    var chatId = event.chatId;
+
+    await sendMessage(chatId, translation: 'general.no_access');
   }
 
   @override
   Future<void> sendErrorMessage(MessageEvent event) async {
-    await sendMessage(event.chatId, chatManager.getText(event.chatId, 'general.something_went_wrong'));
+    await sendMessage(event.chatId, translation: 'general.something_went_wrong');
   }
 
   @override
@@ -153,21 +157,21 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
     var chatId = event.chatId;
     const pollTime = 180;
     var pollOptions = [
-      chatManager.getText(chatId, 'accordion.options.yes'),
-      chatManager.getText(chatId, 'accordion.options.no'),
-      chatManager.getText(chatId, 'accordion.options.maybe')
+      chat.getText(chatId, 'accordion.options.yes'),
+      chat.getText(chatId, 'accordion.options.no'),
+      chat.getText(chatId, 'accordion.options.maybe')
     ];
 
     if (_accordionPoll.isVoteActive) {
-      await sendMessage(chatId, chatManager.getText(chatId, 'accordion.other.accordion_vote_in_progress'));
+      await sendMessage(chatId, translation: 'accordion.other.accordion_vote_in_progress');
 
       return;
     } else if (event.otherUserIds.isEmpty) {
-      await sendMessage(chatId, chatManager.getText(chatId, 'accordion.other.message_not_chosen'));
+      await sendMessage(chatId, translation: 'accordion.other.message_not_chosen');
 
       return;
     } else if (event.isBot) {
-      await sendMessage(chatId, chatManager.getText(chatId, 'accordion.other.bot_vote_attempt'));
+      await sendMessage(chatId, translation: 'accordion.other.bot_vote_attempt');
 
       return;
     }
@@ -176,9 +180,9 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
 
     var createdPoll = await _telegram.sendPoll(
       chatId,
-      chatManager.getText(chatId, 'accordion.other.title'),
+      chat.getText(chatId, 'accordion.other.title'),
       pollOptions,
-      explanation: chatManager.getText(chatId, 'accordion.other.explanation'),
+      explanation: chat.getText(chatId, 'accordion.other.explanation'),
       type: 'quiz',
       correctOptionId: Random().nextInt(pollOptions.length),
       openPeriod: pollTime,
@@ -206,16 +210,16 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
 
     switch (voteResult) {
       case AccordionVoteResults.yes:
-        await sendMessage(chatId, chatManager.getText(chatId, 'accordion.results.yes'));
+        await sendMessage(chatId, translation: 'accordion.results.yes');
         break;
       case AccordionVoteResults.no:
-        await sendMessage(chatId, chatManager.getText(chatId, 'accordion.results.no'));
+        await sendMessage(chatId, translation: 'accordion.results.no');
         break;
       case AccordionVoteResults.maybe:
-        await sendMessage(chatId, chatManager.getText(chatId, 'accordion.results.maybe'));
+        await sendMessage(chatId, translation: 'accordion.results.maybe');
         break;
       case AccordionVoteResults.noResults:
-        await sendMessage(chatId, chatManager.getText(chatId, 'accordion.results.noResults'));
+        await sendMessage(chatId, translation: 'accordion.results.noResults');
         break;
     }
 
@@ -241,7 +245,7 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
     return [fullUsername, repliedUser.isPremium?.toString() ?? 'false'];
   }
 
-  Function _getEventMapper(Command command) {
+  Function _getEventMapper(BotCommand command) {
     if (command.withParameters) {
       return transformPlatformMessageToMessageEventWithParameters;
     } else if (command.withOtherUserIds) {
@@ -260,9 +264,9 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
     var chatId = message.chat.id.toString();
 
     if (messageAuthorId == adminId) {
-      await sendMessage(chatId, '@daimonil');
+      await sendMessage(chatId, message: '@daimonil');
     } else if (messageAuthorId == denisId) {
-      await sendMessage(chatId, '@dmbaranov_io');
+      await sendMessage(chatId, message: '@dmbaranov_io');
     }
   }
 

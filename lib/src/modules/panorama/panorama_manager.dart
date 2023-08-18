@@ -10,8 +10,7 @@ class PanoramaManager {
   final Platform platform;
   final Chat chat;
   final Database db;
-
-  late PanoramaNews _panoramaNews;
+  final PanoramaNews _panoramaNews;
 
   PanoramaManager({required this.platform, required this.chat, required this.db}) : _panoramaNews = PanoramaNews(db: db);
 

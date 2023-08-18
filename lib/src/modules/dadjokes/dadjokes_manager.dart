@@ -5,8 +5,7 @@ import './dadjokes.dart';
 
 class DadJokesManager {
   final Platform platform;
-
-  late DadJokes _dadjokes;
+  final DadJokes _dadjokes;
 
   DadJokesManager({required this.platform}) : _dadjokes = DadJokes();
 

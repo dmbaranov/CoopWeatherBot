@@ -1,3 +1,4 @@
+import 'package:weather/src/core/entities/reputation_entity.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/core/database.dart';
@@ -9,8 +10,7 @@ class ReputationManager {
   final Platform platform;
   final Database db;
   final Chat chat;
-
-  late Reputation _reputation;
+  final Reputation _reputation;
 
   ReputationManager({required this.platform, required this.db, required this.chat}) : _reputation = Reputation(db: db);
 
@@ -92,7 +92,7 @@ class ReputationManager {
     }
   }
 
-  String _buildReputationListMessage(String chatId, List<ReputationData> reputationData) {
+  String _buildReputationListMessage(String chatId, List<ChatReputationData> reputationData) {
     var reputationMessage = '';
 
     reputationData.forEach((reputation) {

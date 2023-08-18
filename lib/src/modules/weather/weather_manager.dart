@@ -11,8 +11,7 @@ class WeatherManager {
   final Chat chat;
   final Database db;
   final String openweatherKey;
-
-  late Weather _weather;
+  final Weather _weather;
 
   WeatherManager({required this.platform, required this.chat, required this.db, required this.openweatherKey})
       : _weather = Weather(db: db, openweatherKey: openweatherKey);

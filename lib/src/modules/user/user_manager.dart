@@ -8,9 +8,8 @@ import 'package:weather/src/core/chat.dart';
 class UserManager {
   final Platform platform;
   final Database db;
-
-  late User _user;
-  late Chat _chat;
+  final User _user;
+  final Chat _chat;
 
   UserManager({required this.platform, required this.db})
       : _user = User(db: db),

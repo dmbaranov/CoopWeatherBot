@@ -1,10 +1,7 @@
 import 'dart:async';
 import 'package:cron/cron.dart';
-
 import 'package:weather/src/core/database.dart';
-
-// import 'database-manager/database_manager.dart';
-// import 'database-manager/entities/reputation_entity.dart' show SingleReputationData, ChatReputationData;
+import 'package:weather/src/core/entities/reputation_entity.dart' show SingleReputationData, ChatReputationData;
 
 enum ReputationChangeOption { increase, decrease }
 

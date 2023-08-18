@@ -20,6 +20,8 @@ import 'package:weather/src/platform/platform.dart';
 const uuid = Uuid();
 
 class DiscordPlatform<T extends IChatContext> implements Platform<T> {
+  @override
+  late ChatPlatform chatPlatform;
   final String token;
   final String adminId;
   final ChatManager chatManager;
@@ -29,7 +31,8 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
 
   late INyxxWebsocket bot;
 
-  DiscordPlatform({required this.token, required this.adminId, required this.chatManager, required this.userManager});
+  DiscordPlatform(
+      {required this.chatPlatform, required this.token, required this.adminId, required this.chatManager, required this.userManager});
 
   @override
   Future<void> initializePlatform() async {
@@ -102,7 +105,7 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
   @override
   MessageEvent transformPlatformMessageToGeneralMessageEvent(IChatContext event) {
     return MessageEvent(
-        platform: ChatPlatform.discord,
+        platform: platform,
         // TODO: replace guildId with channelId?
         chatId: event.guild?.id.toString() ?? '',
         userId: event.user.id.toString(),
@@ -201,7 +204,7 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
   void _startHeroCheckJob() {
     // TODO: onlineUsers are returned for a single chat only. Fix this + make this job configurable per chat
     Cron().schedule(Schedule.parse('0 5 * * 6,0'), () async {
-      var authorizedChats = await chatManager.getAllChatIdsForPlatform(ChatPlatform.discord);
+      var authorizedChats = await chatManager.getAllChatIdsForPlatform(chatPlatform);
 
       await Process.run('${Directory.current.path}/generate-online', []);
 

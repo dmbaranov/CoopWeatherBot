@@ -11,6 +11,8 @@ import 'package:weather/src/platform/telegram_platform.dart';
 import 'package:weather/src/platform/discord_platform.dart';
 
 abstract class Platform<T> {
+  late ChatPlatform chatPlatform;
+
   factory Platform(
       {required ChatManager chatManager,
       required Youtube youtube,
@@ -20,9 +22,11 @@ abstract class Platform<T> {
       required ChatPlatform chatPlatform}) {
     switch (chatPlatform) {
       case ChatPlatform.telegram:
-        return TelegramPlatform(token: token, adminId: adminId, chatManager: chatManager, youtube: youtube);
+        return TelegramPlatform(
+            chatPlatform: ChatPlatform.telegram, token: token, adminId: adminId, chatManager: chatManager, youtube: youtube);
       case ChatPlatform.discord:
-        return DiscordPlatform(token: token, adminId: adminId, chatManager: chatManager, userManager: userManager);
+        return DiscordPlatform(
+            chatPlatform: ChatPlatform.discord, token: token, adminId: adminId, chatManager: chatManager, userManager: userManager);
       default:
         throw Exception('Platform $chatPlatform is not supported');
     }

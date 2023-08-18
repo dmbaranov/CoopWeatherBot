@@ -19,6 +19,8 @@ import 'package:weather/src/modules/accordion_poll.dart';
 import 'package:weather/src/platform/platform.dart';
 
 class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
+  @override
+  late ChatPlatform chatPlatform;
   final String token;
   final String adminId;
   final ChatManager chatManager;
@@ -29,7 +31,8 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   late Telegram _telegram;
   late AccordionPoll _accordionPoll;
 
-  TelegramPlatform({required this.token, required this.adminId, required this.chatManager, required this.youtube});
+  TelegramPlatform(
+      {required this.chatPlatform, required this.token, required this.adminId, required this.chatManager, required this.youtube});
 
   @override
   Future<void> initializePlatform() async {
@@ -73,7 +76,7 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   @override
   MessageEvent transformPlatformMessageToGeneralMessageEvent(TeleDartMessage message) {
     return MessageEvent(
-        platform: ChatPlatform.telegram,
+        platform: chatPlatform,
         chatId: message.chat.id.toString(),
         userId: message.from?.id.toString() ?? '',
         isBot: message.replyToMessage?.from?.isBot ?? false,

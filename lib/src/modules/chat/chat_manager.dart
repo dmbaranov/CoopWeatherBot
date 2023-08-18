@@ -29,6 +29,26 @@ class ChatManager {
     sendOperationMessage(chatId, platform: platform, operationResult: result, successfulMessage: successfulMessage);
   }
 
+  void writeToChat(MessageEvent event) {
+    if (messageEventParametersCheck(platform, event)) return;
+
+    var chatId = event.chatId;
+    var message = event.parameters.join(' ');
+
+    sendOperationMessage(chatId, platform: platform, operationResult: message.isNotEmpty, successfulMessage: message);
+  }
+
+  void setSwearwordsConfig(MessageEvent event) async {
+    if (messageEventParametersCheck(platform, event)) return;
+
+    var chatId = event.chatId;
+    var config = event.parameters[0];
+    var result = await _chat.setSwearwordsConfig(chatId, config);
+    var successfulMessage = _chat.getText(chatId, 'general.success');
+
+    sendOperationMessage(chatId, platform: platform, operationResult: result, successfulMessage: successfulMessage);
+  }
+
   String _getNewChatName(MessageEvent event) {
     if (event.platform == ChatPlatform.telegram) {
       return event.rawMessage.chat.title.toString();

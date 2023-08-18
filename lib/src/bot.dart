@@ -1,14 +1,10 @@
-import 'dart:convert';
-import 'package:collection/collection.dart';
 import 'package:postgres/postgres.dart';
-import 'package:http/http.dart' as http;
 import 'package:weather/src/core/database.dart';
 
 import 'package:weather/src/platform/platform.dart';
 
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/bot_command.dart';
-import 'package:weather/src/globals/message_event.dart';
 
 import 'package:weather/src/core/chat.dart';
 import 'package:weather/src/core/command.dart';
@@ -22,7 +18,7 @@ import 'package:weather/src/modules/dadjokes/dadjokes_manager.dart';
 import 'package:weather/src/modules/reputation/reputation_manager.dart';
 import 'package:weather/src/modules/youtube/youtube_manager.dart';
 import 'package:weather/src/modules/conversator/conversator_manager.dart';
-import 'package:weather/src/modules/commands_manager.dart';
+import 'package:weather/src/modules/general/general_manager.dart';
 
 class Bot {
   final ChatPlatform platformName;
@@ -49,7 +45,7 @@ class Bot {
   late YoutubeManager _youtubeManager;
   late ConversatorManager _conversatorManager;
   late ChatManager _chatManager;
-  late CommandsManager _cm;
+  late GeneralManager _generalManager;
 
   Bot(
       {required this.platformName,
@@ -72,15 +68,15 @@ class Bot {
     _dadJokesManager = DadJokesManager(platform: _platform);
     _youtubeManager = YoutubeManager(platform: _platform, apiKey: youtubeKey);
     _conversatorManager = ConversatorManager(platform: _platform, db: _db, conversatorApiKey: conversatorKey);
-    _cm = CommandsManager(adminId: adminId, dbManager: _dbManager);
+    _generalManager = GeneralManager(platform: _platform, chat: _chat, repositoryUrl: repoUrl);
 
     _chatManager = ChatManager(platform: _platform, db: _db);
     await _chatManager.initialize();
 
-    _panoramaManager = PanoramaManager(platform: _platform, chatManager: _chatManager, dbManager: _dbManager);
+    _panoramaManager = PanoramaManager(platform: _platform, chat: _chat, db: _db);
     _panoramaManager.initialize();
 
-    _userManager = UserManager(dbManager: _dbManager);
+    _userManager = UserManager(platform: _platform, db: _db);
     _userManager.initialize();
 
     _reputationManager = ReputationManager(platform: _platform, db: _db, chat: _chat);
@@ -89,10 +85,9 @@ class Bot {
     _weatherManager = WeatherManager(platform: _platform, chat: _chat, db: _db, openweatherKey: openweatherKey);
     await _weatherManager.initialize();
 
-    _platform =
-        Platform(chatPlatform: platformName, token: botToken, adminId: adminId, chatManager: _chatManager, userManager: _userManager);
+    _platform = Platform(chatPlatform: platformName, token: botToken, adminId: adminId, chat: _chat, user: _user);
     await _platform.initializePlatform();
-    _platform.setupPlatformSpecificCommands(_cm);
+    _platform.setupPlatformSpecificCommands(_command);
 
     _setupCommands();
     // TODO: check if these work
@@ -104,192 +99,143 @@ class Bot {
   }
 
   void _setupCommands() {
-    _platform.setupCommand(Command(
+    _platform.setupCommand(BotCommand(
         command: 'addcity',
         description: '[U] Add city to the watchlist',
-        wrapper: _cm.userCommand,
+        wrapper: _command.userCommand,
         withParameters: true,
         successCallback: _weatherManager.addCity));
 
-    _platform.setupCommand(Command(
+    _platform.setupCommand(BotCommand(
         command: 'removecity',
         description: '[U] Remove city from the watchlist',
-        wrapper: _cm.userCommand,
+        wrapper: _command.userCommand,
         withParameters: true,
         successCallback: _weatherManager.removeCity));
 
-    _platform.setupCommand(Command(
+    _platform.setupCommand(BotCommand(
         command: 'watchlist',
         description: '[U] Get weather watchlist',
-        wrapper: _cm.userCommand,
+        wrapper: _command.userCommand,
         successCallback: _weatherManager.getWeatherWatchlist));
 
-    _platform.setupCommand(Command(
+    _platform.setupCommand(BotCommand(
         command: 'getweather',
         description: '[U] Get weather for city',
-        wrapper: _cm.userCommand,
+        wrapper: _command.userCommand,
         withParameters: true,
         successCallback: _weatherManager.getWeatherForCity));
 
-    _platform.setupCommand(Command(
+    _platform.setupCommand(BotCommand(
         command: 'setnotificationhour',
         description: '[M] Set time for weather notifications',
-        wrapper: _cm.moderatorCommand,
+        wrapper: _command.moderatorCommand,
         withParameters: true,
         successCallback: _weatherManager.setWeatherNotificationHour));
 
-    _platform.setupCommand(Command(
+    _platform.setupCommand(BotCommand(
         command: 'write',
         description: '[M] Write message to the chat on behalf of the bot',
-        wrapper: _cm.moderatorCommand,
+        wrapper: _command.moderatorCommand,
         withParameters: true,
-        successCallback: _writeToChat));
+        successCallback: _chatManager.writeToChat));
 
-    _platform.setupCommand(Command(
-        command: 'updatemessage', description: '[A] Post update message', wrapper: _cm.adminCommand, successCallback: _postUpdateMessage));
+    _platform.setupCommand(BotCommand(
+        command: 'updatemessage',
+        description: '[A] Post update message',
+        wrapper: _command.adminCommand,
+        successCallback: _generalManager.postUpdateMessage));
 
-    _platform.setupCommand(Command(
+    _platform.setupCommand(BotCommand(
         command: 'sendnews',
         description: '[U] Send news to the chat',
-        wrapper: _cm.userCommand,
+        wrapper: _command.userCommand,
         successCallback: _panoramaManager.sendNewsToChat));
 
-    _platform.setupCommand(Command(
+    _platform.setupCommand(BotCommand(
         command: 'sendjoke',
         description: '[U] Send joke to the chat',
-        wrapper: _cm.userCommand,
+        wrapper: _command.userCommand,
         successCallback: _dadJokesManager.sendJoke));
 
-    _platform.setupCommand(Command(
+    _platform.setupCommand(BotCommand(
         command: 'increp',
         description: '[U] Increase reputation for the user',
-        wrapper: _cm.userCommand,
+        wrapper: _command.userCommand,
         withOtherUserIds: true,
         successCallback: _reputationManager.increaseReputation));
 
-    _platform.setupCommand(Command(
+    _platform.setupCommand(BotCommand(
         command: 'decrep',
         description: '[U] Decrease reputation for the user',
-        wrapper: _cm.userCommand,
+        wrapper: _command.userCommand,
         withOtherUserIds: true,
         successCallback: _reputationManager.decreaseReputation));
 
-    _platform.setupCommand(Command(
+    _platform.setupCommand(BotCommand(
         command: 'replist',
         description: '[U] Send reputation list to the chat',
-        wrapper: _cm.userCommand,
+        wrapper: _command.userCommand,
         successCallback: _reputationManager.sendReputationList));
 
-    _platform.setupCommand(Command(
+    _platform.setupCommand(BotCommand(
         command: 'searchsong',
         description: '[U] Search song on YouTube',
-        wrapper: _cm.userCommand,
+        wrapper: _command.userCommand,
         withParameters: true,
         successCallback: _youtubeManager.searchSong));
 
-    _platform.setupCommand(Command(
+    _platform.setupCommand(BotCommand(
         command: 'ask',
         description: '[U] Ask for advice or anything else from the Conversator',
-        wrapper: _cm.userCommand,
+        wrapper: _command.userCommand,
         conversatorCommand: true,
         successCallback: _conversatorManager.getConversationReply));
 
-    _platform.setupCommand(
-        Command(command: 'na', description: '[U] Check if bot is alive', wrapper: _cm.userCommand, successCallback: _healthCheck));
+    _platform.setupCommand(BotCommand(
+        command: 'na',
+        description: '[U] Check if bot is alive',
+        wrapper: _command.userCommand,
+        successCallback: _generalManager.postHealthCheck));
 
-    _platform.setupCommand(Command(
+    _platform.setupCommand(BotCommand(
         command: 'initialize',
         description: '[A] Initialize new chat',
-        wrapper: _cm.adminCommand,
+        wrapper: _command.adminCommand,
         successCallback: _chatManager.createChat));
 
-    _platform.setupCommand(Command(
+    _platform.setupCommand(BotCommand(
         command: 'adduser',
         description: '[M] Add new user to the bot',
-        wrapper: _cm.moderatorCommand,
+        wrapper: _command.moderatorCommand,
         withOtherUserIds: true,
         successCallback: _userManager.addUser));
 
-    _platform.setupCommand(Command(
+    _platform.setupCommand(BotCommand(
         command: 'removeuser',
         description: '[M] Remove user from the bot',
-        wrapper: _cm.moderatorCommand,
+        wrapper: _command.moderatorCommand,
         withOtherUserIds: true,
         successCallback: _userManager.removeUser));
 
-    _platform.setupCommand(Command(
+    _platform.setupCommand(BotCommand(
         command: 'createreputation',
         description: '[A] Create reputation for the user',
-        wrapper: _cm.adminCommand,
+        wrapper: _command.adminCommand,
         withOtherUserIds: true,
         successCallback: _reputationManager.createReputation));
 
-    _platform.setupCommand(Command(
+    _platform.setupCommand(BotCommand(
         command: 'createweather',
         description: '[A] Activate weather module for the chat',
-        wrapper: _cm.adminCommand,
+        wrapper: _command.adminCommand,
         successCallback: _weatherManager.createWeather));
 
-    _platform.setupCommand(Command(
+    _platform.setupCommand(BotCommand(
         command: 'setswearwordsconfig',
         description: '[A] Set swearwords config for the chat',
-        wrapper: _cm.adminCommand,
+        wrapper: _command.adminCommand,
         withParameters: true,
-        successCallback: _setSwearwordsConfig));
-  }
-
-  bool _parametersCheck(MessageEvent event, [int numberOfParameters = 1]) {
-    if (event.parameters.whereNot((parameter) => parameter.isEmpty).length < numberOfParameters) {
-      _platform.sendMessage(event.chatId, _chatManager.getText(event.chatId, 'general.something_went_wrong'));
-
-      return false;
-    }
-
-    return true;
-  }
-
-  bool _userIdsCheck(MessageEvent event, [int numberOfIds = 1]) {
-    if (event.otherUserIds.whereNot((id) => id.isEmpty).length < numberOfIds) {
-      _platform.sendMessage(event.chatId, _chatManager.getText(event.chatId, 'general.something_went_wrong'));
-
-      return false;
-    }
-
-    return true;
-  }
-
-  void _sendOperationMessage(String chatId, bool operationResult, String successfulMessage) {
-    if (operationResult) {
-      _platform.sendMessage(chatId, successfulMessage);
-    } else {
-      _platform.sendMessage(chatId, _chatManager.getText(chatId, 'general.something_went_wrong'));
-    }
-  }
-
-  void _writeToChat(MessageEvent event) async {
-    if (!_parametersCheck(event)) return;
-
-    await _platform.sendMessage(event.chatId, event.parameters.join(' '));
-  }
-
-  void _postUpdateMessage(MessageEvent event) async {
-    var commitApiUrl = Uri.https('api.github.com', '/repos$repoUrl/commits');
-    var response = await http.read(commitApiUrl).then(json.decode);
-    var updateMessage = response[0]['commit']['message'];
-    var chatIds = await _chatManager.getAllChatIdsForPlatform(event.platform);
-
-    chatIds.forEach((chatId) => _platform.sendMessage(chatId, updateMessage));
-  }
-
-  void _healthCheck(MessageEvent event) async {
-    await _platform.sendMessage(event.chatId, _chatManager.getText(event.chatId, 'general.bot_is_alive'));
-  }
-
-  void _setSwearwordsConfig(MessageEvent event) async {
-    if (!_parametersCheck(event)) return;
-
-    var result = await _chatManager.setSwearwordsConfig(event.chatId, event.parameters[0]);
-
-    _sendOperationMessage(event.chatId, result, _chatManager.getText(event.chatId, 'general.success'));
+        successCallback: _chatManager.setSwearwordsConfig));
   }
 }

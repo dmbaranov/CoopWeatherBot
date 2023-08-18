@@ -1,4 +1,5 @@
 import 'package:weather/src/globals/message_event.dart';
+import 'package:weather/src/modules/utils.dart';
 import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/core/database.dart';
 import 'package:weather/src/core/user.dart';
@@ -20,6 +21,30 @@ class UserManager {
     _user.initialize();
 
     _subscribeToUserUpdates()
+  }
+
+  void addUser(MessageEvent event) async {
+    if (!messageEventParametersCheck(platform, event)) return;
+
+    var chatId = event.chatId;
+    var userId = event.otherUserIds[0];
+    var username = event.parameters[0];
+    var isPremium = event.parameters[1] == 'true';
+    var result = await _user.addUser(userId: userId, chatId: chatId, name: username, isPremium: isPremium);
+    var successfulMessage = _chat.getText(chatId, 'user.user_added');
+
+    sendOperationMessage(chatId, platform: platform, operationResult: result, successfulMessage: successfulMessage);
+  }
+
+  void removeUser(MessageEvent event) async {
+    if (!messageEventParametersCheck(platform, event)) return;
+
+    var chatId = event.chatId;
+    var userId = event.otherUserIds[0];
+    var result = await _user.removeUser(userId);
+    var successfulMessage = _chat.getText(chatId, 'user.user_removed');
+
+    sendOperationMessage(chatId, platform: platform, operationResult: result, successfulMessage: successfulMessage);
   }
 
   void _subscribeToUserUpdates() {

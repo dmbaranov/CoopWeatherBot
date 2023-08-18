@@ -15,7 +15,7 @@ import 'package:weather/src/core/command.dart';
 import 'package:weather/src/core/user.dart';
 
 import 'package:weather/src/modules/chat/chat_manager.dart';
-import 'package:weather/src/modules/user_manager.dart';
+import 'package:weather/src/modules/user/user_manager.dart';
 import 'package:weather/src/modules/weather/weather_manager.dart';
 import 'package:weather/src/modules/panorama/panorama_manager.dart';
 import 'package:weather/src/modules/dadjokes.dart';
@@ -101,7 +101,7 @@ class Bot {
 
     _setupCommands();
     // TODO: check if these work
-    _subscribeToUserUpdates();
+    // _subscribeToUserUpdates();
     // _subscribeToWeatherUpdates();
     // _subscribeToPanoramaNews();
 
@@ -217,14 +217,14 @@ class Bot {
         description: '[M] Add new user to the bot',
         wrapper: _cm.moderatorCommand,
         withOtherUserIds: true,
-        successCallback: _addUser));
+        successCallback: _userManager.addUser));
 
     _platform.setupCommand(Command(
         command: 'removeuser',
         description: '[M] Remove user from the bot',
         wrapper: _cm.moderatorCommand,
         withOtherUserIds: true,
-        successCallback: _removeUser));
+        successCallback: _userManager.removeUser));
 
     _platform.setupCommand(Command(
         command: 'createreputation',
@@ -245,31 +245,6 @@ class Bot {
         wrapper: _cm.adminCommand,
         withParameters: true,
         successCallback: _setSwearwordsConfig));
-  }
-
-  void _subscribeToUserUpdates() {
-    _userManager.userManagerStream.listen((_) async {
-      await _updateUsersPremiumStatus();
-    });
-  }
-
-  Future<void> _updateUsersPremiumStatus() async {
-    var allPlatformChatIds = await _chatManager.getAllChatIdsForPlatform(platformName);
-
-    await Future.forEach(allPlatformChatIds, (chatId) async {
-      var chatUsers = await _userManager.getUsersForChat(chatId);
-
-      await Future.forEach(chatUsers, (chatUser) async {
-        await Future.delayed(Duration(seconds: 1));
-
-        var platformUserPremiumStatus = await _platform.getUserPremiumStatus(chatId, chatUser.id);
-
-        if (chatUser.isPremium != platformUserPremiumStatus) {
-          print('Updating premium status for ${chatUser.id}');
-          await _userManager.updatePremiumStatus(chatUser.id, platformUserPremiumStatus);
-        }
-      });
-    });
   }
 
   bool _parametersCheck(MessageEvent event, [int numberOfParameters = 1]) {
@@ -361,25 +336,6 @@ class Bot {
 
   void _healthCheck(MessageEvent event) async {
     await _platform.sendMessage(event.chatId, _chatManager.getText(event.chatId, 'general.bot_is_alive'));
-  }
-
-  void _addUser(MessageEvent event) async {
-    if (!_userIdsCheck(event) && !_parametersCheck(event)) return;
-
-    var username = event.parameters[0];
-    var isPremium = event.parameters[1] == 'true';
-
-    var addResult = await _userManager.addUser(userId: event.otherUserIds[0], chatId: event.chatId, name: username, isPremium: isPremium);
-
-    _sendOperationMessage(event.chatId, addResult, _chatManager.getText(event.chatId, 'user.user_added'));
-  }
-
-  void _removeUser(MessageEvent event) async {
-    if (!_userIdsCheck(event)) return;
-
-    var removeResult = await _userManager.removeUser(event.chatId, event.otherUserIds[0]);
-
-    _sendOperationMessage(event.chatId, removeResult, _chatManager.getText(event.chatId, 'user.user_removed'));
   }
 
   void _setSwearwordsConfig(MessageEvent event) async {

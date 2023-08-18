@@ -1,5 +1,4 @@
 import 'package:postgres/postgres.dart';
-import 'package:weather/src/core/access.dart';
 
 import 'package:weather/src/core/database.dart';
 import 'package:weather/src/core/chat.dart';

@@ -18,7 +18,7 @@ class UserManager {
   }
 
   void addUser(MessageEvent event) async {
-    if (!messageEventParametersCheck(platform, event)) return;
+    if (!messageEventParametersCheck(platform, event) || !userIdsCheck(platform, event)) return;
 
     var chatId = event.chatId;
     var userId = event.otherUserIds[0];

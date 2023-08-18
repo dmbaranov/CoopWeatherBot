@@ -8,8 +8,6 @@ class DadJokesJoke {
   DadJokesJoke(this.joke);
 
   DadJokesJoke.fromJson(Map<String, dynamic> json) : joke = json['joke'];
-
-  Map<String, dynamic> toJson() => {'joke': joke};
 }
 
 class DadJokes {

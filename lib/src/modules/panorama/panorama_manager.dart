@@ -2,6 +2,7 @@ import 'package:weather/src/core/chat.dart';
 import 'package:weather/src/core/database.dart';
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/message_event.dart';
+import 'package:weather/src/modules/utils.dart';
 import 'package:weather/src/platform/platform.dart';
 
 import './panorama.dart';
@@ -22,14 +23,9 @@ class PanoramaManager {
   void sendNewsToChat(MessageEvent event) async {
     var chatId = event.chatId;
     var news = await _panoramaNews.getNews(chatId);
+    var successfulMessage = '${news?.title}\n\nFull: ${news?.url}';
 
-    if (news != null) {
-      var newsMessage = '${news.title}\n\nFull: ${news.url}';
-
-      await platform.sendMessage(chatId, message: newsMessage);
-    } else {
-      await platform.sendMessage(chatId, translation: 'general.something_went_wrong');
-    }
+    sendOperationMessage(chatId, platform: platform, operationResult: news != null, successfulMessage: successfulMessage);
   }
 
   // TODO: add news_enabled flag and send news to all the enabled chats

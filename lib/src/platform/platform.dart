@@ -13,20 +13,24 @@ abstract class Platform<T> {
   late ChatPlatform chatPlatform;
 
   factory Platform(
-      {required Chat chat, required User user, required String token, required String adminId, required ChatPlatform chatPlatform}) {
+      {required Chat chat,
+      required User user,
+      required String token,
+      required Command command,
+      required String adminId,
+      required ChatPlatform chatPlatform}) {
     switch (chatPlatform) {
       case ChatPlatform.telegram:
-        return TelegramPlatform(chatPlatform: ChatPlatform.telegram, token: token, adminId: adminId, chat: chat);
+        return TelegramPlatform(chatPlatform: ChatPlatform.telegram, token: token, adminId: adminId, command: command, chat: chat);
       case ChatPlatform.discord:
-        return DiscordPlatform(chatPlatform: ChatPlatform.discord, token: token, adminId: adminId, chat: chat, user: user);
+        return DiscordPlatform(
+            chatPlatform: ChatPlatform.discord, token: token, adminId: adminId, command: command, chat: chat, user: user);
       default:
         throw Exception('Platform $chatPlatform is not supported');
     }
   }
 
-  Future<void> initializePlatform();
-
-  void setupPlatformSpecificCommands(Command command);
+  Future<void> initialize();
 
   Future<void> postStart();
 

@@ -24,6 +24,7 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
   late ChatPlatform chatPlatform;
   final String token;
   final String adminId;
+  final Command command;
   final Chat chat;
   final User user;
 
@@ -31,11 +32,19 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
 
   late INyxxWebsocket bot;
 
-  DiscordPlatform({required this.chatPlatform, required this.token, required this.adminId, required this.chat, required this.user});
+  DiscordPlatform(
+      {required this.chatPlatform,
+      required this.token,
+      required this.adminId,
+      required this.command,
+      required this.chat,
+      required this.user});
 
   @override
-  Future<void> initializePlatform() async {
+  Future<void> initialize() async {
     bot = NyxxFactory.createNyxxWebsocket(token, GatewayIntents.all);
+
+    _setupPlatformSpecificCommands();
   }
 
   @override
@@ -91,17 +100,6 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
   }
 
   @override
-  void setupPlatformSpecificCommands(Command command) {
-    _commands.add(ChatCommand('moveall', 'Move all users from one voice channel to another',
-        (IChatContext context, IChannel fromChannel, IChannel toChannel) async {
-      await context.respond(MessageBuilder.empty());
-
-      command.moderatorCommand(transformPlatformMessageToGeneralMessageEvent(context),
-          onSuccessCustom: () => _moveAll(context, fromChannel, toChannel), onFailure: sendNoAccessMessage);
-    }));
-  }
-
-  @override
   MessageEvent transformPlatformMessageToGeneralMessageEvent(IChatContext event) {
     return MessageEvent(
         platform: chatPlatform,
@@ -141,6 +139,16 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
   @override
   String getMessageId(dynamic message) {
     return message.id.toString();
+  }
+
+  void _setupPlatformSpecificCommands() {
+    _commands.add(ChatCommand('moveall', 'Move all users from one voice channel to another',
+        (IChatContext context, IChannel fromChannel, IChannel toChannel) async {
+      await context.respond(MessageBuilder.empty());
+
+      command.moderatorCommand(transformPlatformMessageToGeneralMessageEvent(context),
+          onSuccessCustom: () => _moveAll(context, fromChannel, toChannel), onFailure: sendNoAccessMessage);
+    }));
   }
 
   CommandsPlugin _setupDiscordCommands() {

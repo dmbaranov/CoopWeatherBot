@@ -21,6 +21,7 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   late ChatPlatform chatPlatform;
   final String token;
   final String adminId;
+  final Command command;
   final Chat chat;
 
   // final Debouncer<TeleDartInlineQuery?> _debouncer = Debouncer(Duration(seconds: 1), initialValue: null);
@@ -29,40 +30,21 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   late Telegram _telegram;
   late AccordionPoll _accordionPoll;
 
-  TelegramPlatform({required this.chatPlatform, required this.token, required this.adminId, required this.chat});
+  TelegramPlatform({required this.chatPlatform, required this.token, required this.adminId, required this.command, required this.chat});
 
   @override
-  Future<void> initializePlatform() async {
+  Future<void> initialize() async {
     var botName = (await Telegram(token).getMe()).username;
 
     _telegram = Telegram(token);
     _bot = TeleDart(token, Event(botName!), fetcher: LongPolling(Telegram(token), limit: 100, timeout: 50));
     _accordionPoll = AccordionPoll();
 
+    _setupPlatformSpecificCommands();
+
     _bot.start();
 
     print('Telegram platform has been started!');
-  }
-
-  @override
-  void setupPlatformSpecificCommands(Command command) async {
-    setupCommand(BotCommand(
-        command: 'accordion',
-        description: 'Start vote for the freshness of the content',
-        wrapper: command.userCommand,
-        withOtherUserIds: true,
-        successCallback: _startTelegramAccordionPoll));
-
-    var bullyTagUserRegexpRaw = await io.File('assets/misc/bully_tag_user.txt').readAsString();
-    var bullyTagUserRegexp = bullyTagUserRegexpRaw.replaceAll('\n', '');
-
-    _bot.onMessage(keyword: RegExp(bullyTagUserRegexp, caseSensitive: false)).listen((event) => _bullyTagUser(event));
-    // _bot.onInlineQuery().listen((query) {
-    //   _debouncer.value = query;
-    // });
-    // _debouncer.values.listen((query) {
-    //   _searchYoutubeTrackInline(query as TeleDartInlineQuery);
-    // });
   }
 
   @override
@@ -149,6 +131,26 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   @override
   String getMessageId(Message message) {
     return message.messageId.toString();
+  }
+
+  void _setupPlatformSpecificCommands() async {
+    setupCommand(BotCommand(
+        command: 'accordion',
+        description: 'Start vote for the freshness of the content',
+        wrapper: command.userCommand,
+        withOtherUserIds: true,
+        successCallback: _startTelegramAccordionPoll));
+
+    var bullyTagUserRegexpRaw = await io.File('assets/misc/bully_tag_user.txt').readAsString();
+    var bullyTagUserRegexp = bullyTagUserRegexpRaw.replaceAll('\n', '');
+
+    _bot.onMessage(keyword: RegExp(bullyTagUserRegexp, caseSensitive: false)).listen((event) => _bullyTagUser(event));
+    // _bot.onInlineQuery().listen((query) {
+    //   _debouncer.value = query;
+    // });
+    // _debouncer.values.listen((query) {
+    //   _searchYoutubeTrackInline(query as TeleDartInlineQuery);
+    // });
   }
 
   void _startTelegramAccordionPoll(MessageEvent event) async {

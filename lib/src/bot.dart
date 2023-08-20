@@ -66,9 +66,8 @@ class Bot {
     _command = Command(adminId: adminId, db: _db);
     _user = User(db: _db)..initialize();
 
-    _platform = Platform(chatPlatform: platformName, token: botToken, adminId: adminId, chat: _chat, user: _user);
-    await _platform.initializePlatform();
-    _platform.setupPlatformSpecificCommands(_command);
+    _platform = Platform(chatPlatform: platformName, token: botToken, adminId: adminId, command: _command, chat: _chat, user: _user);
+    await _platform.initialize();
 
     _dadJokesManager = DadJokesManager(platform: _platform);
     _youtubeManager = YoutubeManager(platform: _platform, apiKey: youtubeKey);

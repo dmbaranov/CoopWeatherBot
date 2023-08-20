@@ -1,10 +1,10 @@
+import 'package:weather/src/core/database.dart';
+import 'package:weather/src/core/weather.dart';
+import 'package:weather/src/core/chat.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/platform/platform.dart';
-import 'package:weather/src/core/database.dart';
-import 'package:weather/src/core/chat.dart';
 
-import '../utils.dart';
-import './weather.dart';
+import './utils.dart';
 
 class WeatherManager {
   final Platform platform;

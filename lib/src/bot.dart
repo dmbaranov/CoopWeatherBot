@@ -5,19 +5,19 @@ import 'package:weather/src/core/chat.dart';
 import 'package:weather/src/core/command.dart';
 import 'package:weather/src/core/user.dart';
 
-import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/bot_command.dart';
+import 'package:weather/src/platform/platform.dart';
 
-import 'package:weather/src/modules/chat/chat_manager.dart';
-import 'package:weather/src/modules/user/user_manager.dart';
-import 'package:weather/src/modules/weather/weather_manager.dart';
-import 'package:weather/src/modules/panorama/panorama_manager.dart';
-import 'package:weather/src/modules/dadjokes/dadjokes_manager.dart';
-import 'package:weather/src/modules/reputation/reputation_manager.dart';
-import 'package:weather/src/modules/youtube/youtube_manager.dart';
-import 'package:weather/src/modules/conversator/conversator_manager.dart';
-import 'package:weather/src/modules/general/general_manager.dart';
+import 'package:weather/src/modules/chat_manager.dart';
+import 'package:weather/src/modules/user_manager.dart';
+import 'package:weather/src/modules/weather_manager.dart';
+import 'package:weather/src/modules/panorama_manager.dart';
+import 'package:weather/src/modules/dadjokes_manager.dart';
+import 'package:weather/src/modules/reputation_manager.dart';
+import 'package:weather/src/modules/youtube_manager.dart';
+import 'package:weather/src/modules/conversator_manager.dart';
+import 'package:weather/src/modules/general_manager.dart';
 
 class Bot {
   final ChatPlatform platformName;

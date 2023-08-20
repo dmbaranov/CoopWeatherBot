@@ -2,19 +2,17 @@ import 'dart:math';
 import 'dart:io' as io;
 
 import 'package:collection/collection.dart';
-
 import 'package:teledart/model.dart' show TeleDartMessage, Message;
 import 'package:teledart/teledart.dart';
 import 'package:teledart/telegram.dart';
 
 import 'package:weather/src/core/chat.dart';
 import 'package:weather/src/core/command.dart';
+import 'package:weather/src/core/accordion_poll.dart';
 
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/globals/bot_command.dart';
-
-import 'package:weather/src/modules/accordion_poll/accordion_poll.dart';
 
 import 'package:weather/src/platform/platform.dart';
 

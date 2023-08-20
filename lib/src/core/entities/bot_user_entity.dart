@@ -1,28 +1,11 @@
 import 'package:postgres/postgres.dart';
-
+import '../user.dart' show BotUser;
 import 'entity.dart';
-
-class BotUserData {
-  final String id;
-  final String name;
-  final bool isPremium;
-  final bool deleted;
-  final bool banned;
-  final bool moderator;
-
-  BotUserData(
-      {required this.id,
-      required this.name,
-      required this.isPremium,
-      required this.deleted,
-      required this.banned,
-      required this.moderator});
-}
 
 class BotUserEntity extends Entity {
   BotUserEntity({required super.dbConnection}) : super(entityName: 'bot_user');
 
-  Future<List<BotUserData>> getAllUsersForChat(String chatId) async {
+  Future<List<BotUser>> getAllUsersForChat(String chatId) async {
     var rawUsers = await executeQuery(queriesMap['get_all_bot_users_for_chat'], {'chatId': chatId});
 
     if (rawUsers == null || rawUsers.isEmpty) {
@@ -32,7 +15,7 @@ class BotUserEntity extends Entity {
     return rawUsers.map(_mapUser).toList();
   }
 
-  Future<BotUserData?> getSingleUserForChat(String chatId, String userId) async {
+  Future<BotUser?> getSingleUserForChat(String chatId, String userId) async {
     var rawUser = await executeQuery(queriesMap['get_single_user_for_chat'], {'chatId': chatId, 'userId': userId});
 
     if (rawUser == null || rawUser.isEmpty) {
@@ -60,8 +43,8 @@ class BotUserEntity extends Entity {
     return executeTransaction(queriesMap['update_premium_status'], {'userId': userId, 'isPremium': isPremium});
   }
 
-  BotUserData _mapUser(PostgreSQLResultRow foundUser) {
-    return BotUserData(
+  BotUser _mapUser(PostgreSQLResultRow foundUser) {
+    return BotUser(
         id: foundUser[0],
         name: foundUser[1],
         isPremium: foundUser[2],

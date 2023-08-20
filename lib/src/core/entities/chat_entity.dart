@@ -1,14 +1,6 @@
 import 'package:weather/src/globals/chat_platform.dart';
+import '../chat.dart' show ChatData;
 import 'entity.dart';
-
-class ChatData {
-  final String id;
-  final String name;
-  final ChatPlatform platform;
-  final String swearwordsConfig;
-
-  ChatData({required this.id, required this.name, required this.platform, required this.swearwordsConfig});
-}
 
 class ChatEntity extends Entity {
   ChatEntity({required super.dbConnection}) : super(entityName: 'chat');

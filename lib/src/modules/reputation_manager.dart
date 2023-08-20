@@ -1,4 +1,3 @@
-import 'package:weather/src/core/entities/reputation_entity.dart';
 import 'package:weather/src/core/database.dart';
 import 'package:weather/src/core/chat.dart';
 import 'package:weather/src/core/reputation.dart';

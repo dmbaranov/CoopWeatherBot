@@ -1,11 +1,17 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:weather/src/core/database.dart';
-import 'package:weather/src/core/entities/conversator_chat_entity.dart' show ConversatorChatMessage;
 
 const String _converstorApiURL = 'https://api.openai.com/v1/chat/completions';
 const String _conversatorModel = 'gpt-3.5-turbo';
 const int maxTokens = 4096;
+
+class ConversatorChatMessage {
+  final String message;
+  final bool fromUser;
+
+  ConversatorChatMessage({required this.message, required this.fromUser});
+}
 
 class Conversator {
   final Database db;

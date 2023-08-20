@@ -1,13 +1,28 @@
 import 'dart:async';
 import 'package:cron/cron.dart';
 import 'package:weather/src/core/database.dart';
-import 'package:weather/src/core/entities/reputation_entity.dart' show SingleReputationData, ChatReputationData;
 
 enum ReputationChangeOption { increase, decrease }
 
 enum ReputationChangeResult { increaseSuccess, decreaseSuccess, userNotFound, selfUpdate, notEnoughOptions, systemError }
 
 const numberOfVoteOptions = 3;
+
+class SingleReputationData {
+  final String id;
+  final int reputation;
+  final int increaseOptionsLeft;
+  final int decreaseOptionsLeft;
+
+  SingleReputationData({required this.id, required this.reputation, required this.increaseOptionsLeft, required this.decreaseOptionsLeft});
+}
+
+class ChatReputationData {
+  final String name;
+  final int reputation;
+
+  ChatReputationData({required this.name, required this.reputation});
+}
 
 class Reputation {
   final Database db;

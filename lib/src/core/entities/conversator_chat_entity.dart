@@ -1,11 +1,5 @@
+import '../conversator.dart' show ConversatorChatMessage;
 import 'entity.dart';
-
-class ConversatorChatMessage {
-  final String message;
-  final bool fromUser;
-
-  ConversatorChatMessage({required this.message, required this.fromUser});
-}
 
 class ConversatorChatEntity extends Entity {
   ConversatorChatEntity({required super.dbConnection}) : super(entityName: 'conversator_chat');

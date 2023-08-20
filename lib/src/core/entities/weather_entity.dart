@@ -1,11 +1,5 @@
+import '../weather.dart' show ChatNotificationHour;
 import 'entity.dart';
-
-class ChatNotificationHour {
-  final String chatId;
-  final int notificationHour;
-
-  ChatNotificationHour({required this.chatId, required this.notificationHour});
-}
 
 class WeatherEntity extends Entity {
   WeatherEntity({required super.dbConnection}) : super(entityName: 'weather');

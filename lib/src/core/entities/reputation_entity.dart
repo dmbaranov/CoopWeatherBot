@@ -1,20 +1,5 @@
+import '../reputation.dart' show SingleReputationData, ChatReputationData;
 import 'entity.dart';
-
-class SingleReputationData {
-  final String id;
-  final int reputation;
-  final int increaseOptionsLeft;
-  final int decreaseOptionsLeft;
-
-  SingleReputationData({required this.id, required this.reputation, required this.increaseOptionsLeft, required this.decreaseOptionsLeft});
-}
-
-class ChatReputationData {
-  final String name;
-  final int reputation;
-
-  ChatReputationData({required this.name, required this.reputation});
-}
 
 class ReputationEntity extends Entity {
   ReputationEntity({required super.dbConnection}) : super(entityName: 'reputation');

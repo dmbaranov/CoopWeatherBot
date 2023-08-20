@@ -38,10 +38,10 @@ class Weather {
 
   Stream<ChatWeatherData> get weatherStream => _weatherStreamController.stream;
 
-  Future<void> initialize() async {
+  void initialize() {
     _weatherStreamController = StreamController<ChatWeatherData>.broadcast();
 
-    await _updateWeatherStream();
+    _updateWeatherStream();
   }
 
   Future<bool> createWeatherData(String chatId) async {

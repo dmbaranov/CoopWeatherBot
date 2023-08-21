@@ -83,17 +83,31 @@ class WeatherManager {
     sendOperationMessage(chatId, platform: platform, operationResult: result, successfulMessage: successfulMessage);
   }
 
+  void getWatchlistWeather(MessageEvent event) async {
+    var chatId = event.chatId;
+    var watchlistCities = await _weather.getWatchList(chatId);
+    var weatherData = await _weather.getWeatherForCities(watchlistCities);
+    var weatherMessage = _buildWatchlistWeatherMessage(weatherData);
+
+    sendOperationMessage(chatId, platform: platform, operationResult: weatherMessage.isNotEmpty, successfulMessage: weatherMessage);
+  }
+
+  String _buildWatchlistWeatherMessage(List<OpenWeatherData> weatherData) {
+    return weatherData.map((data) => 'In city: ${data.city} the temperature is ${data.temp}\n\n').join();
+  }
+
   void _subscribeToWeatherUpdates() {
-    var weatherStream = _weather.weatherStream;
+    _weather.weatherStream.listen((weatherData) {
+      var fakeEvent = MessageEvent(
+          platform: platform.chatPlatform,
+          chatId: weatherData.chatId,
+          userId: '',
+          isBot: false,
+          otherUserIds: [],
+          parameters: [],
+          rawMessage: '');
 
-    weatherStream.listen((weatherData) {
-      var message = '';
-
-      weatherData.weatherData.forEach((weatherData) {
-        message += 'In city: ${weatherData.city} the temperature is ${weatherData.temp}\n\n';
-      });
-
-      platform.sendMessage(weatherData.chatId, message: message);
+      getWatchlistWeather(fakeEvent);
     });
   }
 }

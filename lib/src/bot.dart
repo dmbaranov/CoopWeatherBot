@@ -223,5 +223,11 @@ class Bot {
         wrapper: _command.adminCommand,
         withParameters: true,
         successCallback: _chatManager.setSwearwordsConfig));
+
+    _platform.setupCommand(BotCommand(
+        command: 'watchlistweather',
+        description: '[U] Get weather for each city in the watchlist',
+        wrapper: _command.userCommand,
+        successCallback: _weatherManager.getWatchlistWeather));
   }
 }

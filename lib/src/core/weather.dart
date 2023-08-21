@@ -107,6 +107,24 @@ class Weather {
     return false;
   }
 
+  Future<List<OpenWeatherData>> getWeatherForCities(List<String> cities) async {
+    List<OpenWeatherData> result = [];
+
+    await Future.forEach(cities, (city) async {
+      try {
+        var weather = await _getCurrentWeather(city);
+
+        result.add(OpenWeatherData(weather.city, weather.temp));
+
+        await Future.delayed(Duration(milliseconds: 500));
+      } catch (err) {
+        print("Can't get weather for city $city");
+      }
+    });
+
+    return result;
+  }
+
   Future<OpenWeatherData> _getCurrentWeather(String city) async {
     var url = '$_apiBaseUrl/weather?q=$city&appid=$openweatherKey&units=metric';
 
@@ -126,29 +144,11 @@ class Weather {
               var cities = await db.weather.getCities(config.chatId);
 
               if (cities != null) {
-                var weatherData = await _getWeatherForCities(cities);
+                var weatherData = await getWeatherForCities(cities);
 
                 _weatherStreamController.sink.add(ChatWeatherData(chatId: config.chatId, weatherData: weatherData));
               }
             }))
         .toList();
-  }
-
-  Future<List<OpenWeatherData>> _getWeatherForCities(List<String> cities) async {
-    List<OpenWeatherData> result = [];
-
-    await Future.forEach(cities, (city) async {
-      try {
-        var weather = await _getCurrentWeather(city);
-
-        result.add(OpenWeatherData(weather.city, weather.temp));
-
-        await Future.delayed(Duration(milliseconds: 500));
-      } catch (err) {
-        print("Can't get weather for city $city");
-      }
-    });
-
-    return result;
   }
 }

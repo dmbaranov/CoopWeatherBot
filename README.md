@@ -26,4 +26,14 @@ evolved a lot ever since. Now available for Discord as well!
 - And some much more
     - And many more to come, stay tuned;
 
+## How to start
+
+If you want to try out this bot yourself, you'd need to have [Dart](https://dart.dev/)
+and [PostgreSQL](https://www.postgresql.org/) installed and running. Once ready, follow these steps:
+
+1. `cp .env.example .env`
+2. Update variables in the .env file
+3. `dart pub get`
+3. `dart bin/main.dart -p telegram` or `dart bin/main.dart -p discord`
+
 [Private tools](https://github.com/dmbaranov/CoopWeatherBot-tools)

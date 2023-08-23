@@ -29,6 +29,10 @@ class PanoramaManager {
 
   // TODO: add news_enabled flag and send news to all the enabled chats
   void _subscribeToPanoramaNews() {
+    if (platform.chatPlatform != ChatPlatform.telegram) {
+      return;
+    }
+
     var panoramaStream = _panoramaNews.panoramaStream;
 
     panoramaStream.listen((event) async {

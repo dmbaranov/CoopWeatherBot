@@ -34,6 +34,7 @@ class Reputation {
 
   void initialize() {
     _startResetVotesJob();
+    _listenToAccordionPolls();
   }
 
   Future<ReputationChangeResult> updateReputation(
@@ -82,18 +83,18 @@ class Reputation {
     return change == ReputationChangeOption.increase ? ReputationChangeResult.increaseSuccess : ReputationChangeResult.decreaseSuccess;
   }
 
-  // Future<bool> forceUpdateReputation(String chatId, String userId, int reputation) async {
-  //   // This method is intended to be used only by the system
-  //   var userToUpdate = await db.reputation.getSingleReputationData(chatId, toUserId ?? '');
-  //
-  //   if (userToUpdate == null) {
-  //     return false;
-  //   }
-  //
-  //   var result = await db.reputation.updateReputation(chatId, userId, reputation);
-  //
-  //   return result == 1;
-  // }
+  Future<bool> forceUpdateReputation(String chatId, String userId, int reputation) async {
+    // This method is intended to be used only by the system
+    var existingUser = await db.reputation.getSingleReputationData(chatId, userId);
+    
+    if (existingUser == null) {
+      return false;
+    }
+
+    var result = await db.reputation.updateReputation(chatId, userId, reputation);
+
+    return result == 1;
+  }
 
   Future<bool> createReputationData(String chatId, String userId) async {
     // TODO: add 6 options for premium users
@@ -138,5 +139,18 @@ class Reputation {
         print('Reset reputation change options for $result rows');
       }
     });
+  }
+
+  void _listenToAccordionPolls() {
+    eventBus.on<PollCompletedYes>().listen((event) => _updateAccordionPollReputation(event.chatId, event.toUser.id));
+    eventBus.on<PollCompletedNo>().listen((event) => _updateAccordionPollReputation(event.chatId, event.fromUser.id));
+  }
+
+  void _updateAccordionPollReputation(String chatId, String userId) async {
+    var userReputationData = await db.reputation.getSingleReputationData(chatId, userId);
+
+    if (userReputationData != null) {
+      forceUpdateReputation(chatId, userId, userReputationData.reputation - 1);
+    }
   }
 }

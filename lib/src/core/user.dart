@@ -44,6 +44,17 @@ class User {
     _updateUserManagerStream();
   }
 
+  Future<BotUser?> getSingleUserForChat(String chatId, String userId) async {
+    var user = await db.user.getSingleUserForChat(chatId, userId);
+
+    if (user != null) {
+      return BotUser(
+          id: user.id, name: user.name, isPremium: user.isPremium, deleted: user.deleted, banned: user.banned, moderator: user.moderator);
+    }
+
+    return null;
+  }
+
   Future<List<BotUser>> getUsersForChat(String chatId) async {
     var users = await db.user.getAllUsersForChat(chatId);
 

@@ -24,7 +24,13 @@ abstract class Platform<T> {
     switch (chatPlatform) {
       case ChatPlatform.telegram:
         return TelegramPlatform(
-            chatPlatform: ChatPlatform.telegram, token: token, adminId: adminId, eventBus: eventBus, command: command, chat: chat);
+            chatPlatform: ChatPlatform.telegram,
+            token: token,
+            adminId: adminId,
+            eventBus: eventBus,
+            command: command,
+            chat: chat,
+            user: user);
       case ChatPlatform.discord:
         return DiscordPlatform(
             chatPlatform: ChatPlatform.discord,

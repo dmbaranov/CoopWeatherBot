@@ -1,14 +1,18 @@
 import './events/accordion_poll_events.dart';
 import './event_bus.dart';
+import './user.dart' show BotUser;
 
 enum AccordionVoteOption { yes, no, maybe }
 
 enum AccordionVoteResults { yes, no, maybe, noResults }
 
 class AccordionPoll {
-  EventBus eventBus;
+  final EventBus eventBus;
+
+  late BotUser _fromUser;
+  late BotUser _toUser;
+  late String _chatId;
   bool _isVoteActive = false;
-  String? _userId;
   Map<AccordionVoteOption, int> _voteResult = {};
 
   AccordionPoll({required this.eventBus});
@@ -16,11 +20,16 @@ class AccordionPoll {
   bool get isVoteActive => _isVoteActive;
 
   set voteResult(Map<AccordionVoteOption, int> updatedVoteResult) {
-    _voteResult = updatedVoteResult;
+    if (_isVoteActive) {
+      _voteResult = updatedVoteResult;
+    }
   }
 
-  set userId(String userId) {
-    _userId = userId;
+  void startPoll(BotUser fromUser, BotUser toUser, String chatId) {
+    _isVoteActive = true;
+    _fromUser = fromUser;
+    _toUser = toUser;
+    _chatId = chatId;
   }
 
   AccordionVoteResults endVoteAndGetResults() {
@@ -43,17 +52,17 @@ class AccordionPoll {
     var winnerOption =
         recordedOptions.entries.toList().reduce((currentVote, nextVote) => currentVote.value > nextVote.value ? currentVote : nextVote).key;
 
-    return messages[winnerOption]!;
-  }
+    if (winnerOption == AccordionVoteOption.yes) {
+      eventBus.fire(PollCompletedYes(fromUser: _fromUser, toUser: _toUser, chatId: _chatId));
+    } else if (winnerOption == AccordionVoteOption.no) {
+      eventBus.fire(PollCompletedNo(fromUser: _fromUser, toUser: _toUser, chatId: _chatId));
+    }
 
-  void startPoll(String userId) {
-    _isVoteActive = true;
-    _userId = userId;
+    return messages[winnerOption]!;
   }
 
   void _stopPoll() {
     _isVoteActive = false;
-    _userId = null;
     _voteResult = {};
   }
 }

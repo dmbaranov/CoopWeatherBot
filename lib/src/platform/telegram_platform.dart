@@ -10,6 +10,7 @@ import 'package:weather/src/core/chat.dart';
 import 'package:weather/src/core/command.dart';
 import 'package:weather/src/core/event_bus.dart';
 import 'package:weather/src/core/accordion_poll.dart';
+import 'package:weather/src/core/user.dart';
 
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/message_event.dart';
@@ -25,6 +26,7 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   final EventBus eventBus;
   final Command command;
   final Chat chat;
+  final User user;
 
   // final Debouncer<TeleDartInlineQuery?> _debouncer = Debouncer(Duration(seconds: 1), initialValue: null);
 
@@ -38,7 +40,8 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
       required this.adminId,
       required this.eventBus,
       required this.command,
-      required this.chat});
+      required this.chat,
+      required this.user});
 
   @override
   Future<void> initialize() async {
@@ -161,6 +164,7 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
     // });
   }
 
+  // TODO: move to manager, create if platform==telegram condition
   void _startTelegramAccordionPoll(MessageEvent event) async {
     var chatId = event.chatId;
     const pollTime = 180;
@@ -184,7 +188,16 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
       return;
     }
 
-    _accordionPoll.startPoll(event.otherUserIds[0]);
+    var fromUser = await user.getSingleUserForChat(chatId, event.userId);
+    var toUser = await user.getSingleUserForChat(chatId, event.otherUserIds[0]);
+
+    if (fromUser == null || toUser == null) {
+      await sendMessage(chatId, translation: 'general.something_went_wrong');
+
+      return;
+    }
+
+    _accordionPoll.startPoll(fromUser, toUser, chatId);
 
     var createdPoll = await _telegram.sendPoll(
       chatId,

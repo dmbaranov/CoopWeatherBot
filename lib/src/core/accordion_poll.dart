@@ -86,7 +86,12 @@ class AccordionPoll {
   }
 
   void _stopPoll() {
+    var emptyUser = BotUser(id: '0', name: '', isPremium: false, deleted: false, banned: false, moderator: false);
+
     _isVoteActive = false;
     _voteResult = {};
+    _fromUser = emptyUser;
+    _toUser = emptyUser;
+    _chatId = '';
   }
 }

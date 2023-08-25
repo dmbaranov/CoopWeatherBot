@@ -10,6 +10,7 @@ import 'package:cron/cron.dart';
 import 'package:weather/src/core/chat.dart';
 import 'package:weather/src/core/user.dart';
 import 'package:weather/src/core/command.dart';
+import 'package:weather/src/core/event_bus.dart';
 
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/bot_command.dart';
@@ -24,6 +25,7 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
   late ChatPlatform chatPlatform;
   final String token;
   final String adminId;
+  final EventBus eventBus;
   final Command command;
   final Chat chat;
   final User user;
@@ -36,6 +38,7 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
       {required this.chatPlatform,
       required this.token,
       required this.adminId,
+      required this.eventBus,
       required this.command,
       required this.chat,
       required this.user});

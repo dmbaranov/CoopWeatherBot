@@ -1,11 +1,17 @@
+import './events/accordion_poll_events.dart';
+import './event_bus.dart';
+
 enum AccordionVoteOption { yes, no, maybe }
 
 enum AccordionVoteResults { yes, no, maybe, noResults }
 
 class AccordionPoll {
+  EventBus eventBus;
   bool _isVoteActive = false;
   String? _userId;
   Map<AccordionVoteOption, int> _voteResult = {};
+
+  AccordionPoll({required this.eventBus});
 
   bool get isVoteActive => _isVoteActive;
 

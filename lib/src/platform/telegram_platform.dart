@@ -8,6 +8,7 @@ import 'package:teledart/telegram.dart';
 
 import 'package:weather/src/core/chat.dart';
 import 'package:weather/src/core/command.dart';
+import 'package:weather/src/core/event_bus.dart';
 import 'package:weather/src/core/accordion_poll.dart';
 
 import 'package:weather/src/globals/chat_platform.dart';
@@ -21,6 +22,7 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   late ChatPlatform chatPlatform;
   final String token;
   final String adminId;
+  final EventBus eventBus;
   final Command command;
   final Chat chat;
 
@@ -30,7 +32,13 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   late Telegram _telegram;
   late AccordionPoll _accordionPoll;
 
-  TelegramPlatform({required this.chatPlatform, required this.token, required this.adminId, required this.command, required this.chat});
+  TelegramPlatform(
+      {required this.chatPlatform,
+      required this.token,
+      required this.adminId,
+      required this.eventBus,
+      required this.command,
+      required this.chat});
 
   @override
   Future<void> initialize() async {
@@ -38,7 +46,7 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
 
     _telegram = Telegram(token);
     _bot = TeleDart(token, Event(botName!), fetcher: LongPolling(Telegram(token), limit: 100, timeout: 50));
-    _accordionPoll = AccordionPoll();
+    _accordionPoll = AccordionPoll(eventBus: eventBus);
 
     _setupPlatformSpecificCommands();
 

@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:cron/cron.dart';
-import 'package:weather/src/core/database.dart';
+import './events/accordion_poll_events.dart';
+import './database.dart';
+import './event_bus.dart';
 
 enum ReputationChangeOption { increase, decrease }
 
@@ -26,23 +28,12 @@ class ChatReputationData {
 
 class Reputation {
   final Database db;
+  final EventBus eventBus;
 
-  Reputation({required this.db});
+  Reputation({required this.db, required this.eventBus});
 
   void initialize() {
     _startResetVotesJob();
-  }
-
-  void _startResetVotesJob() {
-    Cron().schedule(Schedule.parse('0 0 * * *'), () async {
-      var result = await db.reputation.resetChangeOptions(numberOfVoteOptions);
-
-      if (result == 0) {
-        print('Something went wrong with resetting reputation change options');
-      } else {
-        print('Reset reputation change options for $result rows');
-      }
-    });
   }
 
   Future<ReputationChangeResult> updateReputation(
@@ -91,6 +82,19 @@ class Reputation {
     return change == ReputationChangeOption.increase ? ReputationChangeResult.increaseSuccess : ReputationChangeResult.decreaseSuccess;
   }
 
+  // Future<bool> forceUpdateReputation(String chatId, String userId, int reputation) async {
+  //   // This method is intended to be used only by the system
+  //   var userToUpdate = await db.reputation.getSingleReputationData(chatId, toUserId ?? '');
+  //
+  //   if (userToUpdate == null) {
+  //     return false;
+  //   }
+  //
+  //   var result = await db.reputation.updateReputation(chatId, userId, reputation);
+  //
+  //   return result == 1;
+  // }
+
   Future<bool> createReputationData(String chatId, String userId) async {
     // TODO: add 6 options for premium users
     var result = await db.reputation.createReputationData(chatId, userId, numberOfVoteOptions);
@@ -122,5 +126,17 @@ class Reputation {
 
   bool _canDecreaseReputationCheck(SingleReputationData user) {
     return user.decreaseOptionsLeft > 0;
+  }
+
+  void _startResetVotesJob() {
+    Cron().schedule(Schedule.parse('0 0 * * *'), () async {
+      var result = await db.reputation.resetChangeOptions(numberOfVoteOptions);
+
+      if (result == 0) {
+        print('Something went wrong with resetting reputation change options');
+      } else {
+        print('Reset reputation change options for $result rows');
+      }
+    });
   }
 }

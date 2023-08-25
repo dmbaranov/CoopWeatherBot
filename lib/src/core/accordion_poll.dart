@@ -4,35 +4,50 @@ import './user.dart' show BotUser;
 
 enum AccordionVoteOption { yes, no, maybe }
 
-enum AccordionVoteResults { yes, no, maybe, noResults }
-
 class AccordionPoll {
   final EventBus eventBus;
-
+  final int pollTime;
   late BotUser _fromUser;
   late BotUser _toUser;
   late String _chatId;
   bool _isVoteActive = false;
   Map<AccordionVoteOption, int> _voteResult = {};
 
-  AccordionPoll({required this.eventBus});
+  AccordionPoll({required this.eventBus, required this.pollTime});
 
-  bool get isVoteActive => _isVoteActive;
-
-  set voteResult(Map<AccordionVoteOption, int> updatedVoteResult) {
+  String? startPoll({
+    required String chatId,
+    required bool isBot,
+    BotUser? fromUser,
+    BotUser? toUser,
+  }) {
     if (_isVoteActive) {
-      _voteResult = updatedVoteResult;
+      return 'accordion.other.accordion_vote_in_progress';
+    } else if (toUser == null) {
+      return 'accordion.other.message_not_chosen';
+    } else if (isBot) {
+      return 'accordion.other.bot_vote_attempt';
+    } else if (fromUser == null) {
+      return 'general.something_went_wrong';
     }
-  }
 
-  void startPoll(BotUser fromUser, BotUser toUser, String chatId) {
     _isVoteActive = true;
     _fromUser = fromUser;
     _toUser = toUser;
     _chatId = chatId;
+
+    return null;
   }
 
-  AccordionVoteResults endVoteAndGetResults() {
+  void updatePollResults(Map<AccordionVoteOption, int> results) {
+    if (_isVoteActive) {
+      _voteResult = results;
+    }
+  }
+
+  Future<String> endVoteAndGetResults() async {
+    await Future.delayed(Duration(seconds: pollTime));
+
     var recordedOptions = _voteResult;
 
     _stopPoll();
@@ -40,25 +55,24 @@ class AccordionPoll {
     var voteResultKeys = recordedOptions.keys.toList();
 
     if (voteResultKeys.isEmpty) {
-      return AccordionVoteResults.noResults;
+      return 'accordion.results.no_results';
     }
-
-    var messages = {
-      AccordionVoteOption.yes: AccordionVoteResults.yes,
-      AccordionVoteOption.no: AccordionVoteResults.no,
-      AccordionVoteOption.maybe: AccordionVoteResults.maybe
-    };
 
     var winnerOption =
         recordedOptions.entries.toList().reduce((currentVote, nextVote) => currentVote.value > nextVote.value ? currentVote : nextVote).key;
 
-    if (winnerOption == AccordionVoteOption.yes) {
-      eventBus.fire(PollCompletedYes(fromUser: _fromUser, toUser: _toUser, chatId: _chatId));
-    } else if (winnerOption == AccordionVoteOption.no) {
-      eventBus.fire(PollCompletedNo(fromUser: _fromUser, toUser: _toUser, chatId: _chatId));
-    }
+    switch (winnerOption) {
+      case AccordionVoteOption.yes:
+        eventBus.fire(PollCompletedYes(fromUser: _fromUser, toUser: _toUser, chatId: _chatId));
+        return 'accordion.results.yes';
 
-    return messages[winnerOption]!;
+      case AccordionVoteOption.no:
+        eventBus.fire(PollCompletedNo(fromUser: _fromUser, toUser: _toUser, chatId: _chatId));
+        return 'accordion.results.no';
+
+      case AccordionVoteOption.maybe:
+        return 'accordion.results.maybe';
+    }
   }
 
   void _stopPoll() {

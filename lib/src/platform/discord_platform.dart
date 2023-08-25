@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:collection/collection.dart';
@@ -142,6 +143,11 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
   @override
   String getMessageId(dynamic message) {
     return message.id.toString();
+  }
+
+  @override
+  startAccordionPoll(String chatId, List<String> pollOptions, int pollTime) {
+    throw "Not implemented";
   }
 
   void _setupPlatformSpecificCommands() {

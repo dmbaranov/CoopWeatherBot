@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:weather/src/core/chat.dart';
 import 'package:weather/src/core/user.dart';
 import 'package:weather/src/core/command.dart';
 import 'package:weather/src/core/event_bus.dart';
+import 'package:weather/src/core/accordion_poll.dart';
 
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/message_event.dart';
@@ -68,4 +71,6 @@ abstract class Platform<T> {
   Future<bool> getUserPremiumStatus(String chatId, String userId);
 
   String getMessageId(T message);
+
+  Future<StreamController<Map<AccordionVoteOption, int>>> startAccordionPoll(String chatId, List<String> pollOptions, int pollTime);
 }

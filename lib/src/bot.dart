@@ -19,6 +19,7 @@ import 'package:weather/src/modules/reputation_manager.dart';
 import 'package:weather/src/modules/youtube_manager.dart';
 import 'package:weather/src/modules/conversator_manager.dart';
 import 'package:weather/src/modules/general_manager.dart';
+import 'package:weather/src/modules/accordion_poll_manager.dart';
 
 class Bot {
   final ChatPlatform platformName;
@@ -47,6 +48,7 @@ class Bot {
   late ConversatorManager _conversatorManager;
   late ChatManager _chatManager;
   late GeneralManager _generalManager;
+  late AccordionPollManager _accordionPollManager;
 
   Bot(
       {required this.platformName,
@@ -83,6 +85,7 @@ class Bot {
     _userManager = UserManager(platform: _platform, db: _db, chat: _chat, user: _user)..initialize();
     _reputationManager = ReputationManager(platform: _platform, db: _db, eventBus: _eventBus, chat: _chat)..initialize();
     _weatherManager = WeatherManager(platform: _platform, chat: _chat, db: _db, openweatherKey: openweatherKey)..initialize();
+    _accordionPollManager = AccordionPollManager(platform: _platform, eventBus: _eventBus, user: _user, chat: _chat);
 
     _setupCommands();
 
@@ -234,5 +237,12 @@ class Bot {
         description: '[U] Get weather for each city in the watchlist',
         wrapper: _command.userCommand,
         successCallback: _weatherManager.getWatchlistWeather));
+
+    _platform.setupCommand(BotCommand(
+        command: 'accordion',
+        description: '[U] Start vote for the freshness of the content',
+        wrapper: _command.userCommand,
+        withOtherUserIds: true,
+        successCallback: _accordionPollManager.startAccordionPoll));
   }
 }

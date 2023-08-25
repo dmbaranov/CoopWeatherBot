@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 import 'dart:io' as io;
 
@@ -32,7 +33,6 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
 
   late TeleDart _bot;
   late Telegram _telegram;
-  late AccordionPoll _accordionPoll;
 
   TelegramPlatform(
       {required this.chatPlatform,
@@ -49,7 +49,6 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
 
     _telegram = Telegram(token);
     _bot = TeleDart(token, Event(botName!), fetcher: LongPolling(Telegram(token), limit: 100, timeout: 50));
-    _accordionPoll = AccordionPoll(eventBus: eventBus);
 
     _setupPlatformSpecificCommands();
 
@@ -145,13 +144,6 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   }
 
   void _setupPlatformSpecificCommands() async {
-    setupCommand(BotCommand(
-        command: 'accordion',
-        description: 'Start vote for the freshness of the content',
-        wrapper: command.userCommand,
-        withOtherUserIds: true,
-        successCallback: _startTelegramAccordionPoll));
-
     var bullyTagUserRegexpRaw = await io.File('assets/misc/bully_tag_user.txt').readAsString();
     var bullyTagUserRegexp = bullyTagUserRegexpRaw.replaceAll('\n', '');
 
@@ -164,87 +156,23 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
     // });
   }
 
-  // TODO: move to manager, create if platform==telegram condition
-  void _startTelegramAccordionPoll(MessageEvent event) async {
-    var chatId = event.chatId;
-    const pollTime = 180;
-    var pollOptions = [
-      chat.getText(chatId, 'accordion.options.yes'),
-      chat.getText(chatId, 'accordion.options.no'),
-      chat.getText(chatId, 'accordion.options.maybe')
-    ];
+  @override
+  Future<StreamController<Map<AccordionVoteOption, int>>> startAccordionPoll(String chatId, List<String> pollOptions, int pollTime) async {
+    var stream = StreamController<Map<AccordionVoteOption, int>>();
 
-    if (_accordionPoll.isVoteActive) {
-      await sendMessage(chatId, translation: 'accordion.other.accordion_vote_in_progress');
+    await _telegram.sendPoll(chatId, chat.getText(chatId, 'accordion.other.title'), pollOptions,
+        explanation: chat.getText(chatId, 'accordion.other.explanation'),
+        type: 'quiz',
+        correctOptionId: Random().nextInt(pollOptions.length),
+        openPeriod: pollTime);
 
-      return;
-    } else if (event.otherUserIds.isEmpty) {
-      await sendMessage(chatId, translation: 'accordion.other.message_not_chosen');
+    stream.addStream(_bot.onPoll().map((event) => ({
+          AccordionVoteOption.yes: event.options[0].voterCount,
+          AccordionVoteOption.no: event.options[1].voterCount,
+          AccordionVoteOption.maybe: event.options[2].voterCount
+        })));
 
-      return;
-    } else if (event.isBot) {
-      await sendMessage(chatId, translation: 'accordion.other.bot_vote_attempt');
-
-      return;
-    }
-
-    var fromUser = await user.getSingleUserForChat(chatId, event.userId);
-    var toUser = await user.getSingleUserForChat(chatId, event.otherUserIds[0]);
-
-    if (fromUser == null || toUser == null) {
-      await sendMessage(chatId, translation: 'general.something_went_wrong');
-
-      return;
-    }
-
-    _accordionPoll.startPoll(fromUser, toUser, chatId);
-
-    var createdPoll = await _telegram.sendPoll(
-      chatId,
-      chat.getText(chatId, 'accordion.other.title'),
-      pollOptions,
-      explanation: chat.getText(chatId, 'accordion.other.explanation'),
-      type: 'quiz',
-      correctOptionId: Random().nextInt(pollOptions.length),
-      openPeriod: pollTime,
-    );
-
-    var pollSubscription = _bot.onPoll().listen((poll) {
-      if (createdPoll.poll?.id != poll.id) {
-        print('Wrong poll');
-
-        return;
-      }
-
-      var currentPollResults = {
-        AccordionVoteOption.yes: poll.options[0].voterCount,
-        AccordionVoteOption.no: poll.options[1].voterCount,
-        AccordionVoteOption.maybe: poll.options[2].voterCount
-      };
-
-      _accordionPoll.voteResult = currentPollResults;
-    });
-
-    await Future.delayed(Duration(seconds: pollTime));
-
-    var voteResult = _accordionPoll.endVoteAndGetResults();
-
-    switch (voteResult) {
-      case AccordionVoteResults.yes:
-        await sendMessage(chatId, translation: 'accordion.results.yes');
-        break;
-      case AccordionVoteResults.no:
-        await sendMessage(chatId, translation: 'accordion.results.no');
-        break;
-      case AccordionVoteResults.maybe:
-        await sendMessage(chatId, translation: 'accordion.results.maybe');
-        break;
-      case AccordionVoteResults.noResults:
-        await sendMessage(chatId, translation: 'accordion.results.noResults');
-        break;
-    }
-
-    await pollSubscription.cancel();
+    return stream;
   }
 
   List<String> _getUserInfo(TeleDartMessage message) {

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:collection/collection.dart';
@@ -10,6 +11,7 @@ import 'package:cron/cron.dart';
 import 'package:weather/src/core/chat.dart';
 import 'package:weather/src/core/user.dart';
 import 'package:weather/src/core/command.dart';
+import 'package:weather/src/core/event_bus.dart';
 
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/bot_command.dart';
@@ -24,6 +26,7 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
   late ChatPlatform chatPlatform;
   final String token;
   final String adminId;
+  final EventBus eventBus;
   final Command command;
   final Chat chat;
   final User user;
@@ -36,6 +39,7 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
       {required this.chatPlatform,
       required this.token,
       required this.adminId,
+      required this.eventBus,
       required this.command,
       required this.chat,
       required this.user});
@@ -139,6 +143,11 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
   @override
   String getMessageId(dynamic message) {
     return message.id.toString();
+  }
+
+  @override
+  startAccordionPoll(String chatId, List<String> pollOptions, int pollTime) {
+    throw "Not implemented";
   }
 
   void _setupPlatformSpecificCommands() {

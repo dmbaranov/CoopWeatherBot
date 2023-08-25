@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io' as io;
 import 'package:crypto/crypto.dart';
 
-// This is not used anymore and is left here for history purposes
+// This is not used anymore and is left here for historical purposes
 
 class Stone {
   final Map<String, dynamic> data;

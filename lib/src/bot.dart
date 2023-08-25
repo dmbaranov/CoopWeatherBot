@@ -4,6 +4,7 @@ import 'package:weather/src/core/database.dart';
 import 'package:weather/src/core/chat.dart';
 import 'package:weather/src/core/command.dart';
 import 'package:weather/src/core/user.dart';
+import 'package:weather/src/core/event_bus.dart';
 
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/bot_command.dart';
@@ -18,6 +19,7 @@ import 'package:weather/src/modules/reputation_manager.dart';
 import 'package:weather/src/modules/youtube_manager.dart';
 import 'package:weather/src/modules/conversator_manager.dart';
 import 'package:weather/src/modules/general_manager.dart';
+import 'package:weather/src/modules/accordion_poll_manager.dart';
 
 class Bot {
   final ChatPlatform platformName;
@@ -30,8 +32,9 @@ class Bot {
   final PostgreSQLConnection dbConnection;
 
   late Platform _platform;
-  late Chat _chat;
   late Database _db;
+  late EventBus _eventBus;
+  late Chat _chat;
   late Command _command;
   late User _user;
 
@@ -45,6 +48,7 @@ class Bot {
   late ConversatorManager _conversatorManager;
   late ChatManager _chatManager;
   late GeneralManager _generalManager;
+  late AccordionPollManager _accordionPollManager;
 
   Bot(
       {required this.platformName,
@@ -60,13 +64,16 @@ class Bot {
     _db = Database(dbConnection);
     await _db.initialize();
 
+    _eventBus = EventBus();
+
     _chat = Chat(db: _db);
     await _chat.initialize();
 
     _command = Command(adminId: adminId, db: _db);
     _user = User(db: _db)..initialize();
 
-    _platform = Platform(chatPlatform: platformName, token: botToken, adminId: adminId, command: _command, chat: _chat, user: _user);
+    _platform = Platform(
+        chatPlatform: platformName, token: botToken, adminId: adminId, eventBus: _eventBus, command: _command, chat: _chat, user: _user);
     await _platform.initialize();
 
     _dadJokesManager = DadJokesManager(platform: _platform);
@@ -76,8 +83,9 @@ class Bot {
     _chatManager = ChatManager(platform: _platform, db: _db, chat: _chat);
     _panoramaManager = PanoramaManager(platform: _platform, chat: _chat, db: _db)..initialize();
     _userManager = UserManager(platform: _platform, db: _db, chat: _chat, user: _user)..initialize();
-    _reputationManager = ReputationManager(platform: _platform, db: _db, chat: _chat)..initialize();
+    _reputationManager = ReputationManager(platform: _platform, db: _db, eventBus: _eventBus, chat: _chat)..initialize();
     _weatherManager = WeatherManager(platform: _platform, chat: _chat, db: _db, openweatherKey: openweatherKey)..initialize();
+    _accordionPollManager = AccordionPollManager(platform: _platform, eventBus: _eventBus, user: _user, chat: _chat);
 
     _setupCommands();
 
@@ -229,5 +237,12 @@ class Bot {
         description: '[U] Get weather for each city in the watchlist',
         wrapper: _command.userCommand,
         successCallback: _weatherManager.getWatchlistWeather));
+
+    _platform.setupCommand(BotCommand(
+        command: 'accordion',
+        description: '[U] Start vote for the freshness of the content',
+        wrapper: _command.userCommand,
+        withOtherUserIds: true,
+        successCallback: _accordionPollManager.startAccordionPoll));
   }
 }

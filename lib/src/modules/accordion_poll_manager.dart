@@ -8,8 +8,6 @@ import 'package:weather/src/platform/platform.dart';
 
 import './utils.dart';
 
-const pollTime = 10;
-
 class AccordionPollManager {
   final Platform platform;
   final EventBus eventBus;
@@ -18,7 +16,7 @@ class AccordionPollManager {
   final AccordionPoll _accordionPoll;
 
   AccordionPollManager({required this.platform, required this.eventBus, required this.user, required this.chat})
-      : _accordionPoll = AccordionPoll(eventBus: eventBus, pollTime: pollTime);
+      : _accordionPoll = AccordionPoll(eventBus: eventBus, chat: chat);
 
   void startAccordionPoll(MessageEvent event) async {
     if (!userIdsCheck(platform, event)) return;
@@ -32,7 +30,6 @@ class AccordionPollManager {
     var chatId = event.chatId;
     var fromUser = await user.getSingleUserForChat(chatId, event.userId);
     var toUser = await user.getSingleUserForChat(chatId, event.otherUserIds[0]);
-
     var pollStartError = _accordionPoll.startPoll(chatId: chatId, fromUser: fromUser, toUser: toUser, isBot: event.isBot);
 
     if (pollStartError != null) {
@@ -41,12 +38,7 @@ class AccordionPollManager {
       return;
     }
 
-    var pollOptions = [
-      chat.getText(chatId, 'accordion.options.yes'),
-      chat.getText(chatId, 'accordion.options.no'),
-      chat.getText(chatId, 'accordion.options.maybe')
-    ];
-    var pollStream = await platform.startAccordionPoll(chatId, pollOptions, pollTime);
+    var pollStream = await platform.startAccordionPoll(chatId, _accordionPoll.pollOptions, _accordionPoll.pollTime);
 
     pollStream.stream.listen((pollResults) => _accordionPoll.updatePollResults(pollResults));
 

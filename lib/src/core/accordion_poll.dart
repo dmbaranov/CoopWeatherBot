@@ -1,19 +1,29 @@
 import './events/accordion_poll_events.dart';
 import './event_bus.dart';
+import './chat.dart';
 import './user.dart' show BotUser;
 
 enum AccordionVoteOption { yes, no, maybe }
 
 class AccordionPoll {
   final EventBus eventBus;
-  final int pollTime;
+  final Chat chat;
   late BotUser _fromUser;
   late BotUser _toUser;
   late String _chatId;
+  final int _pollTime = 180;
   bool _isVoteActive = false;
   Map<AccordionVoteOption, int> _voteResult = {};
 
-  AccordionPoll({required this.eventBus, required this.pollTime});
+  AccordionPoll({required this.eventBus, required this.chat});
+
+  get pollTime => _pollTime;
+
+  get pollOptions => [
+        chat.getText(_chatId, 'accordion.options.yes'),
+        chat.getText(_chatId, 'accordion.options.no'),
+        chat.getText(_chatId, 'accordion.options.maybe')
+      ];
 
   String? startPoll({
     required String chatId,

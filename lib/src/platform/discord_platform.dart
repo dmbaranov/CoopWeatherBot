@@ -10,8 +10,8 @@ import 'package:cron/cron.dart';
 
 import 'package:weather/src/core/chat.dart';
 import 'package:weather/src/core/user.dart';
-import 'package:weather/src/core/command.dart';
 import 'package:weather/src/core/event_bus.dart';
+import 'package:weather/src/core/access.dart';
 
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/bot_command.dart';
@@ -27,7 +27,7 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
   final String token;
   final String adminId;
   final EventBus eventBus;
-  final Command command;
+  final Access access;
   final Chat chat;
   final User user;
 
@@ -40,7 +40,7 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
       required this.token,
       required this.adminId,
       required this.eventBus,
-      required this.command,
+      required this.access,
       required this.chat,
       required this.user});
 
@@ -155,8 +155,9 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
         (IChatContext context, IChannel fromChannel, IChannel toChannel) async {
       await context.respond(MessageBuilder.empty());
 
-      command.moderatorCommand(transformPlatformMessageToGeneralMessageEvent(context),
-          onSuccessCustom: () => _moveAll(context, fromChannel, toChannel), onFailure: sendNoAccessMessage);
+      // access.execute(event: transformPlatformMessageToGeneralMessageEvent(context), accessLevel: AccessLevel.moderator, onSuccess: onSuccess, onFailure: onFailure)
+      // command.moderatorCommand(transformPlatformMessageToGeneralMessageEvent(context),
+      //     onSuccessCustom: () => _moveAll(context, fromChannel, toChannel), onFailure: sendNoAccessMessage);
     }));
   }
 
@@ -172,8 +173,11 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
     _commands.add(ChatCommand(command.command, command.description, (IChatContext context) async {
       await context.respond(MessageBuilder.empty());
 
-      command.wrapper(transformPlatformMessageToGeneralMessageEvent(context),
-          onSuccess: command.successCallback, onFailure: sendNoAccessMessage);
+      access.execute(
+          event: transformPlatformMessageToGeneralMessageEvent(context),
+          accessLevel: command.accessLevel,
+          onSuccess: command.onSuccess,
+          onFailure: sendNoAccessMessage);
     }));
   }
 
@@ -181,10 +185,11 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
     _commands.add(ChatCommand(command.command, command.description, (IChatContext context, String what) async {
       await context.respond(MessageBuilder.content(what));
 
-      command.wrapper(transformPlatformMessageToMessageEventWithParameters(context, [what]), onSuccess: command.successCallback,
-          onFailure: () {
-        print('no_access_message');
-      });
+      access.execute(
+          event: transformPlatformMessageToMessageEventWithParameters(context, [what]),
+          accessLevel: command.accessLevel,
+          onSuccess: command.onSuccess,
+          onFailure: sendNoAccessMessage);
     }));
   }
 
@@ -194,12 +199,12 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
       var isPremium = who.boostingSince != null ? 'true' : 'false';
       await context.respond(MessageBuilder.content(user.username));
 
-      command.wrapper(
-          transformPlatformMessageToMessageEventWithOtherUserIds(context, [who.user.id.toString()])
+      access.execute(
+          event: transformPlatformMessageToMessageEventWithOtherUserIds(context, [who.user.id.toString()])
             ..parameters.addAll([user.username, isPremium]),
-          onSuccess: command.successCallback, onFailure: () {
-        print('no_access_message');
-      });
+          accessLevel: command.accessLevel,
+          onSuccess: command.onSuccess,
+          onFailure: sendNoAccessMessage);
     }));
   }
 
@@ -210,10 +215,11 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
       conversationId ??= uuid.v4();
       var currentMessageId = uuid.v4();
 
-      command.wrapper(transformPlatformMessageToConversatorMessageEvent(context, [conversationId, currentMessageId, what]),
-          onSuccess: command.successCallback, onFailure: () {
-        print('no_access_message');
-      });
+      access.execute(
+          event: transformPlatformMessageToConversatorMessageEvent(context, [conversationId, currentMessageId, what]),
+          accessLevel: command.accessLevel,
+          onSuccess: command.onSuccess,
+          onFailure: sendNoAccessMessage);
     }));
   }
 

@@ -2,12 +2,13 @@ import 'package:postgres/postgres.dart';
 
 import 'package:weather/src/core/database.dart';
 import 'package:weather/src/core/chat.dart';
-import 'package:weather/src/core/command.dart';
 import 'package:weather/src/core/user.dart';
 import 'package:weather/src/core/event_bus.dart';
+import 'package:weather/src/core/access.dart';
 
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/bot_command.dart';
+import 'package:weather/src/globals/access_level.dart';
 import 'package:weather/src/platform/platform.dart';
 
 import 'package:weather/src/modules/chat_manager.dart';
@@ -35,11 +36,10 @@ class Bot {
   late Database _db;
   late EventBus _eventBus;
   late Chat _chat;
-  late Command _command;
   late User _user;
+  late Access _access;
 
   late UserManager _userManager;
-
   late WeatherManager _weatherManager;
   late DadJokesManager _dadJokesManager;
   late PanoramaManager _panoramaManager;
@@ -69,11 +69,11 @@ class Bot {
     _chat = Chat(db: _db);
     await _chat.initialize();
 
-    _command = Command(adminId: adminId, db: _db);
     _user = User(db: _db)..initialize();
+    _access = Access(db: _db, adminId: adminId);
 
     _platform = Platform(
-        chatPlatform: platformName, token: botToken, adminId: adminId, eventBus: _eventBus, command: _command, chat: _chat, user: _user);
+        chatPlatform: platformName, token: botToken, adminId: adminId, eventBus: _eventBus, access: _access, chat: _chat, user: _user);
     await _platform.initialize();
 
     _dadJokesManager = DadJokesManager(platform: _platform);
@@ -96,153 +96,149 @@ class Bot {
     _platform.setupCommand(BotCommand(
         command: 'addcity',
         description: '[U] Add city to the watchlist',
-        wrapper: _command.userCommand,
-        withParameters: true,
-        successCallback: _weatherManager.addCity));
+        accessLevel: AccessLevel.user,
+        onSuccess: _weatherManager.addCity));
 
     _platform.setupCommand(BotCommand(
         command: 'removecity',
         description: '[U] Remove city from the watchlist',
-        wrapper: _command.userCommand,
+        accessLevel: AccessLevel.user,
         withParameters: true,
-        successCallback: _weatherManager.removeCity));
+        onSuccess: _weatherManager.removeCity));
 
     _platform.setupCommand(BotCommand(
         command: 'watchlist',
         description: '[U] Get weather watchlist',
-        wrapper: _command.userCommand,
-        successCallback: _weatherManager.getWeatherWatchlist));
+        accessLevel: AccessLevel.user,
+        onSuccess: _weatherManager.getWeatherWatchlist));
 
     _platform.setupCommand(BotCommand(
         command: 'getweather',
         description: '[U] Get weather for city',
-        wrapper: _command.userCommand,
+        accessLevel: AccessLevel.user,
         withParameters: true,
-        successCallback: _weatherManager.getWeatherForCity));
+        onSuccess: _weatherManager.getWeatherForCity));
 
     _platform.setupCommand(BotCommand(
         command: 'setnotificationhour',
         description: '[M] Set time for weather notifications',
-        wrapper: _command.moderatorCommand,
+        accessLevel: AccessLevel.moderator,
         withParameters: true,
-        successCallback: _weatherManager.setWeatherNotificationHour));
+        onSuccess: _weatherManager.setWeatherNotificationHour));
 
     _platform.setupCommand(BotCommand(
         command: 'write',
         description: '[M] Write message to the chat on behalf of the bot',
-        wrapper: _command.moderatorCommand,
+        accessLevel: AccessLevel.moderator,
         withParameters: true,
-        successCallback: _chatManager.writeToChat));
+        onSuccess: _chatManager.writeToChat));
 
     _platform.setupCommand(BotCommand(
         command: 'updatemessage',
         description: '[A] Post update message',
-        wrapper: _command.adminCommand,
-        successCallback: _generalManager.postUpdateMessage));
+        accessLevel: AccessLevel.admin,
+        onSuccess: _generalManager.postUpdateMessage));
 
     _platform.setupCommand(BotCommand(
         command: 'sendnews',
         description: '[U] Send news to the chat',
-        wrapper: _command.userCommand,
-        successCallback: _panoramaManager.sendNewsToChat));
+        accessLevel: AccessLevel.user,
+        onSuccess: _panoramaManager.sendNewsToChat));
 
     _platform.setupCommand(BotCommand(
         command: 'sendjoke',
         description: '[U] Send joke to the chat',
-        wrapper: _command.userCommand,
-        successCallback: _dadJokesManager.sendJoke));
+        accessLevel: AccessLevel.user,
+        onSuccess: _dadJokesManager.sendJoke));
 
     _platform.setupCommand(BotCommand(
         command: 'increp',
         description: '[U] Increase reputation for the user',
-        wrapper: _command.userCommand,
+        accessLevel: AccessLevel.user,
         withOtherUserIds: true,
-        successCallback: _reputationManager.increaseReputation));
+        onSuccess: _reputationManager.increaseReputation));
 
     _platform.setupCommand(BotCommand(
         command: 'decrep',
         description: '[U] Decrease reputation for the user',
-        wrapper: _command.userCommand,
+        accessLevel: AccessLevel.user,
         withOtherUserIds: true,
-        successCallback: _reputationManager.decreaseReputation));
+        onSuccess: _reputationManager.decreaseReputation));
 
     _platform.setupCommand(BotCommand(
         command: 'replist',
         description: '[U] Send reputation list to the chat',
-        wrapper: _command.userCommand,
-        successCallback: _reputationManager.sendReputationList));
+        accessLevel: AccessLevel.user,
+        onSuccess: _reputationManager.sendReputationList));
 
     _platform.setupCommand(BotCommand(
         command: 'searchsong',
         description: '[U] Search song on YouTube',
-        wrapper: _command.userCommand,
+        accessLevel: AccessLevel.user,
         withParameters: true,
-        successCallback: _youtubeManager.searchSong));
+        onSuccess: _youtubeManager.searchSong));
 
     _platform.setupCommand(BotCommand(
         command: 'ask',
         description: '[U] Ask for advice or anything else from the Conversator',
-        wrapper: _command.userCommand,
+        accessLevel: AccessLevel.user,
         conversatorCommand: true,
-        successCallback: _conversatorManager.getConversationReply));
+        onSuccess: _conversatorManager.getConversationReply));
 
     _platform.setupCommand(BotCommand(
         command: 'na',
         description: '[U] Check if bot is alive',
-        wrapper: _command.userCommand,
-        successCallback: _generalManager.postHealthCheck));
+        accessLevel: AccessLevel.user,
+        onSuccess: _generalManager.postHealthCheck));
 
     _platform.setupCommand(BotCommand(
-        command: 'initialize',
-        description: '[A] Initialize new chat',
-        wrapper: _command.adminCommand,
-        successCallback: _chatManager.createChat));
+        command: 'initialize', description: '[A] Initialize new chat', accessLevel: AccessLevel.admin, onSuccess: _chatManager.createChat));
 
     _platform.setupCommand(BotCommand(
         command: 'adduser',
         description: '[M] Add new user to the bot',
-        wrapper: _command.moderatorCommand,
+        accessLevel: AccessLevel.moderator,
         withOtherUserIds: true,
-        successCallback: _userManager.addUser));
+        onSuccess: _userManager.addUser));
 
     _platform.setupCommand(BotCommand(
         command: 'removeuser',
         description: '[M] Remove user from the bot',
-        wrapper: _command.moderatorCommand,
+        accessLevel: AccessLevel.moderator,
         withOtherUserIds: true,
-        successCallback: _userManager.removeUser));
+        onSuccess: _userManager.removeUser));
 
     _platform.setupCommand(BotCommand(
         command: 'createreputation',
         description: '[A] Create reputation for the user',
-        wrapper: _command.adminCommand,
+        accessLevel: AccessLevel.admin,
         withOtherUserIds: true,
-        successCallback: _reputationManager.createReputation));
+        onSuccess: _reputationManager.createReputation));
 
     _platform.setupCommand(BotCommand(
         command: 'createweather',
         description: '[A] Activate weather module for the chat',
-        wrapper: _command.adminCommand,
-        successCallback: _weatherManager.createWeather));
+        accessLevel: AccessLevel.admin,
+        onSuccess: _weatherManager.createWeather));
 
     _platform.setupCommand(BotCommand(
         command: 'setswearwordsconfig',
         description: '[A] Set swearwords config for the chat',
-        wrapper: _command.adminCommand,
+        accessLevel: AccessLevel.admin,
         withParameters: true,
-        successCallback: _chatManager.setSwearwordsConfig));
+        onSuccess: _chatManager.setSwearwordsConfig));
 
     _platform.setupCommand(BotCommand(
         command: 'watchlistweather',
         description: '[U] Get weather for each city in the watchlist',
-        wrapper: _command.userCommand,
-        successCallback: _weatherManager.getWatchlistWeather));
+        accessLevel: AccessLevel.user,
+        onSuccess: _weatherManager.getWatchlistWeather));
 
     _platform.setupCommand(BotCommand(
         command: 'accordion',
         description: '[U] Start vote for the freshness of the content',
-        wrapper: _command.userCommand,
+        accessLevel: AccessLevel.user,
         withOtherUserIds: true,
-        successCallback: _accordionPollManager.startAccordionPoll));
+        onSuccess: _accordionPollManager.startAccordionPoll));
   }
 }

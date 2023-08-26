@@ -1,9 +1,8 @@
+import 'package:weather/src/globals/accordion_poll.dart';
 import './events/accordion_poll_events.dart';
 import './event_bus.dart';
 import './chat.dart';
 import './user.dart' show BotUser;
-
-enum AccordionVoteOption { yes, no, maybe }
 
 class AccordionPoll {
   final EventBus eventBus;

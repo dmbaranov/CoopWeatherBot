@@ -58,31 +58,36 @@ class AccordionPoll {
   Future<String> endVoteAndGetResults() async {
     await Future.delayed(Duration(seconds: pollTime));
 
-    var recordedOptions = _voteResult;
-
-    _stopPoll();
-
-    var voteResultKeys = recordedOptions.keys.toList();
+    var voteResultKeys = _voteResult.keys.toList();
 
     if (voteResultKeys.isEmpty) {
       return 'accordion.results.no_results';
     }
 
     var winnerOption =
-        recordedOptions.entries.toList().reduce((currentVote, nextVote) => currentVote.value > nextVote.value ? currentVote : nextVote).key;
+        _voteResult.entries.toList().reduce((currentVote, nextVote) => currentVote.value > nextVote.value ? currentVote : nextVote).key;
+
+    String winningTranslation;
 
     switch (winnerOption) {
       case AccordionVoteOption.yes:
         eventBus.fire(PollCompletedYes(fromUser: _fromUser, toUser: _toUser, chatId: _chatId));
-        return 'accordion.results.yes';
+        winningTranslation = 'accordion.results.yes';
+        break;
 
       case AccordionVoteOption.no:
         eventBus.fire(PollCompletedNo(fromUser: _fromUser, toUser: _toUser, chatId: _chatId));
-        return 'accordion.results.no';
+        winningTranslation = 'accordion.results.no';
+        break;
 
       case AccordionVoteOption.maybe:
-        return 'accordion.results.maybe';
+        winningTranslation = 'accordion.results.maybe';
+        break;
     }
+
+    _stopPoll();
+
+    return winningTranslation;
   }
 
   void _stopPoll() {

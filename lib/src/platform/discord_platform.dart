@@ -16,6 +16,7 @@ import 'package:weather/src/core/access.dart';
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/bot_command.dart';
 import 'package:weather/src/globals/message_event.dart';
+import 'package:weather/src/globals/access_level.dart';
 
 import 'package:weather/src/platform/platform.dart';
 
@@ -155,9 +156,11 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
         (IChatContext context, IChannel fromChannel, IChannel toChannel) async {
       await context.respond(MessageBuilder.empty());
 
-      // access.execute(event: transformPlatformMessageToGeneralMessageEvent(context), accessLevel: AccessLevel.moderator, onSuccess: onSuccess, onFailure: onFailure)
-      // command.moderatorCommand(transformPlatformMessageToGeneralMessageEvent(context),
-      //     onSuccessCustom: () => _moveAll(context, fromChannel, toChannel), onFailure: sendNoAccessMessage);
+      access.execute(
+          event: transformPlatformMessageToGeneralMessageEvent(context),
+          accessLevel: AccessLevel.moderator,
+          onSuccess: (_) => _moveAll(context, fromChannel, toChannel),
+          onFailure: sendNoAccessMessage);
     }));
   }
 

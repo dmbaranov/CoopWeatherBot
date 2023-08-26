@@ -8,14 +8,14 @@ import 'package:teledart/teledart.dart';
 import 'package:teledart/telegram.dart';
 
 import 'package:weather/src/core/chat.dart';
-import 'package:weather/src/core/command.dart';
 import 'package:weather/src/core/event_bus.dart';
-import 'package:weather/src/core/accordion_poll.dart';
 import 'package:weather/src/core/user.dart';
+import 'package:weather/src/core/access.dart';
 
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/globals/bot_command.dart';
+import 'package:weather/src/globals/accordion_poll.dart';
 
 import 'package:weather/src/platform/platform.dart';
 
@@ -25,7 +25,7 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   final String token;
   final String adminId;
   final EventBus eventBus;
-  final Command command;
+  final Access access;
   final Chat chat;
   final User user;
 
@@ -39,7 +39,7 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
       required this.token,
       required this.adminId,
       required this.eventBus,
-      required this.command,
+      required this.access,
       required this.chat,
       required this.user});
 
@@ -103,9 +103,8 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   void setupCommand(BotCommand command) {
     var eventMapper = _getEventMapper(command);
 
-    _bot
-        .onCommand(command.command)
-        .listen((event) => command.wrapper(eventMapper(event), onSuccess: command.successCallback, onFailure: sendNoAccessMessage));
+    _bot.onCommand(command.command).listen((event) => access.execute(
+        event: eventMapper(event), accessLevel: command.accessLevel, onSuccess: command.onSuccess, onFailure: sendNoAccessMessage));
   }
 
   @override

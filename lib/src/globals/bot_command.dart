@@ -1,23 +1,22 @@
-import 'message_event.dart';
+import './message_event.dart';
+import './access_level.dart';
 
-typedef BotCommandWrapper = void Function(MessageEvent event,
-    {required Function onFailure, Function? onSuccess, Function? onSuccessCustom});
 typedef OnSuccessCallback = void Function(MessageEvent event);
 
 class BotCommand {
   final String command;
   final String description;
-  final BotCommandWrapper wrapper;
+  final AccessLevel accessLevel;
+  final OnSuccessCallback onSuccess;
   final bool withParameters;
   final bool withOtherUserIds;
   final bool conversatorCommand;
-  final OnSuccessCallback successCallback;
 
   BotCommand(
       {required this.command,
       required this.description,
-      required this.wrapper,
-      required this.successCallback,
+      required this.accessLevel,
+      required this.onSuccess,
       this.withParameters = false,
       this.withOtherUserIds = false,
       this.conversatorCommand = false});

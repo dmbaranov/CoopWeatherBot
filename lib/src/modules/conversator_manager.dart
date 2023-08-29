@@ -13,7 +13,15 @@ class ConversatorManager {
   ConversatorManager({required this.platform, required this.db, required this.conversatorApiKey})
       : _conversator = Conversator(db: db, conversatorApiKey: conversatorApiKey);
 
-  void getConversationReply(MessageEvent event) async {
+  void getConversatorGpt3Reply(MessageEvent event) {
+    _getConversatorReply(event, gpt3Model);
+  }
+
+  void getConversatorGpt4Reply(MessageEvent event) {
+    _getConversatorReply(event, gpt4Model);
+  }
+
+  void _getConversatorReply(MessageEvent event, String model) async {
     if (!messageEventParametersCheck(platform, event)) return;
 
     var chatId = event.chatId;
@@ -22,7 +30,7 @@ class ConversatorManager {
     var message = event.parameters[2];
 
     var response = await _conversator.getConversationReply(
-        chatId: chatId, parentMessageId: parentMessageId, currentMessageId: currentMessageId, message: message);
+        chatId: chatId, parentMessageId: parentMessageId, currentMessageId: currentMessageId, message: message, model: model);
 
     var conversatorResponseMessage = await platform.sendMessage(chatId, message: response);
     var conversatorResponseMessageId = platform.getMessageId(conversatorResponseMessage);

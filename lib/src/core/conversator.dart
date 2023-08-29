@@ -3,8 +3,10 @@ import 'package:http/http.dart' as http;
 import './database.dart';
 
 const String _converstorApiURL = 'https://api.openai.com/v1/chat/completions';
-const String _conversatorModel = 'gpt-3.5-turbo';
 const int maxTokens = 4096;
+const String gpt3Model = 'gpt-3.5-turbo';
+const String gpt4Model = 'gpt-4';
+const int dailyLimit = 10;
 
 class ConversatorChatMessage {
   final String message;
@@ -17,12 +19,15 @@ class Conversator {
   final Database db;
   final String conversatorApiKey;
   final String _apiBaseUrl = _converstorApiURL;
-  final String _model = _conversatorModel;
 
   Conversator({required this.db, required this.conversatorApiKey});
 
   Future<String> getConversationReply(
-      {required String chatId, required String parentMessageId, required String currentMessageId, required String message}) async {
+      {required String chatId,
+      required String parentMessageId,
+      required String currentMessageId,
+      required String message,
+      required String model}) async {
     var conversationId = await getConversationId(chatId, parentMessageId);
     var previousMessages = await db.conversatorChat.getMessagesForConversation(chatId, conversationId);
     await saveConversationMessage(
@@ -30,7 +35,7 @@ class Conversator {
 
     var wholeConversation = [...previousMessages, ConversatorChatMessage(message: message, fromUser: true)];
 
-    var rawResponse = await _getConversatorResponse(wholeConversation);
+    var rawResponse = await _getConversatorResponse(wholeConversation, model);
     var response = rawResponse['choices']?[0]?['message']?['content'] ?? 'No response';
     var tokens = rawResponse['usage']?['total_tokens'] ?? -1;
 
@@ -52,12 +57,12 @@ class Conversator {
     return conversationId;
   }
 
-  Future<Map<String, dynamic>> _getConversatorResponse(List<ConversatorChatMessage> conversation) async {
+  Future<Map<String, dynamic>> _getConversatorResponse(List<ConversatorChatMessage> conversation, String model) async {
     var formattedMessages =
         conversation.map((message) => {'role': message.fromUser ? 'user' : 'system', 'content': message.message}).toList();
 
     var headers = {'Content-Type': 'application/json', 'Authorization': 'Bearer $conversatorApiKey'};
-    var body = {'model': _model, 'messages': formattedMessages};
+    var body = {'model': model, 'messages': formattedMessages};
 
     var response =
         await http.post(Uri.parse(_apiBaseUrl), headers: headers, body: json.encode(body), encoding: Encoding.getByName('utf-8'));

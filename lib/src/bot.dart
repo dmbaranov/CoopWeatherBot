@@ -183,7 +183,14 @@ class Bot {
         description: '[U] Ask for advice or anything else from the Conversator',
         accessLevel: AccessLevel.user,
         conversatorCommand: true,
-        onSuccess: _conversatorManager.getConversationReply));
+        onSuccess: _conversatorManager.getConversatorGpt3Reply));
+
+    _platform.setupCommand(BotCommand(
+        command: 'ask4',
+        description: '[U][Limited] Ask for advice or anything else from the more advanced Conversator.',
+        accessLevel: AccessLevel.user,
+        conversatorCommand: true,
+        onSuccess: _conversatorManager.getConversatorGpt4Reply));
 
     _platform.setupCommand(BotCommand(
         command: 'na',

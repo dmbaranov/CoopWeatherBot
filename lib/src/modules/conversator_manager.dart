@@ -54,12 +54,12 @@ class ConversatorManager {
           message: response,
           fromUser: false);
     } catch (err) {
-      var errorMessage = err.toString();
+      var errorMessage = err.toString().substring(11); // delete Exception:
 
       if (errorMessage.startsWith('conversator')) {
         platform.sendMessage(chatId, translation: errorMessage);
       } else {
-        platform.sendMessage(chatId, translation: 'general.something_went_wrong');
+        platform.sendMessage(chatId, translation: 'general.no_access');
       }
     }
   }

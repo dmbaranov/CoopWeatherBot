@@ -96,10 +96,11 @@ class Conversator {
 
   Future<void> _registerConversatorInvocation(String userId, String model) async {
     var conversatorUser = await db.conversatorUser.getConversatorUser(userId);
+    var errorMessage = 'conversator.daily_invocation_limit_hit';
 
     if (model == regularModel) {
       if (conversatorUser.dailyRegularInvocations > regularDailyLimit) {
-        throw Exception('Daily regular limit exceeded');
+        throw Exception(errorMessage);
       }
 
       await db.conversatorUser.updateRegularInvocations(userId);
@@ -109,7 +110,7 @@ class Conversator {
 
     if (model == advancedModel) {
       if (conversatorUser.dailyAdvancedInvocations > advancedDailyLimit) {
-        throw Exception('Daily advanced limit exceeded');
+        throw Exception(errorMessage);
       }
 
       await db.conversatorUser.updateAdvancedInvocations(userId);

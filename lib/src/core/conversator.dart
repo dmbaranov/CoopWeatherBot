@@ -4,9 +4,10 @@ import './database.dart';
 
 const String _converstorApiURL = 'https://api.openai.com/v1/chat/completions';
 const int maxTokens = 4096;
-const String gpt3Model = 'gpt-3.5-turbo';
-const String gpt4Model = 'gpt-4';
-const int dailyLimit = 10;
+const String regularModel = 'gpt-3.5-turbo';
+const String advancedModel = 'gpt-4';
+const int regularDailyLimit = 100;
+const int advancedDailyLimit = 10;
 
 class ConversatorChatMessage {
   final String message;

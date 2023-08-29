@@ -13,12 +13,12 @@ class ConversatorManager {
   ConversatorManager({required this.platform, required this.db, required this.conversatorApiKey})
       : _conversator = Conversator(db: db, conversatorApiKey: conversatorApiKey);
 
-  void getConversatorGpt3Reply(MessageEvent event) {
-    _getConversatorReply(event, gpt3Model);
+  void getRegularConversatorReply(MessageEvent event) {
+    _getConversatorReply(event, regularModel);
   }
 
-  void getConversatorGpt4Reply(MessageEvent event) {
-    _getConversatorReply(event, gpt4Model);
+  void getAdvancedConversatorReply(MessageEvent event) {
+    _getConversatorReply(event, advancedModel);
   }
 
   void _getConversatorReply(MessageEvent event, String model) async {

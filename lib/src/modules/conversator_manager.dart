@@ -8,10 +8,11 @@ class ConversatorManager {
   final Platform platform;
   final Database db;
   final String conversatorApiKey;
+  final String adminId;
   final Conversator _conversator;
 
-  ConversatorManager({required this.platform, required this.db, required this.conversatorApiKey})
-      : _conversator = Conversator(db: db, conversatorApiKey: conversatorApiKey);
+  ConversatorManager({required this.platform, required this.db, required this.conversatorApiKey, required this.adminId})
+      : _conversator = Conversator(db: db, conversatorApiKey: conversatorApiKey, adminId: adminId);
 
   void initialize() {
     _conversator.initialize();

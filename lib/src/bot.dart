@@ -78,7 +78,8 @@ class Bot {
 
     _dadJokesManager = DadJokesManager(platform: _platform);
     _youtubeManager = YoutubeManager(platform: _platform, apiKey: youtubeKey);
-    _conversatorManager = ConversatorManager(platform: _platform, db: _db, conversatorApiKey: conversatorKey)..initialize();
+    _conversatorManager = ConversatorManager(platform: _platform, db: _db, conversatorApiKey: conversatorKey, adminId: adminId)
+      ..initialize();
     _generalManager = GeneralManager(platform: _platform, chat: _chat, repositoryUrl: repoUrl);
     _chatManager = ChatManager(platform: _platform, db: _db, chat: _chat);
     _panoramaManager = PanoramaManager(platform: _platform, chat: _chat, db: _db)..initialize();

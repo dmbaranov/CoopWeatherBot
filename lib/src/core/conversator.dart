@@ -35,9 +35,10 @@ class ConversatorUser {
 class Conversator {
   final Database db;
   final String conversatorApiKey;
+  final String adminId;
   final String _apiBaseUrl = _converstorApiURL;
 
-  Conversator({required this.db, required this.conversatorApiKey});
+  Conversator({required this.db, required this.conversatorApiKey, required this.adminId});
 
   void initialize() {
     _startResetDailyInvocationsUsageJob();
@@ -99,7 +100,7 @@ class Conversator {
     var errorMessage = 'conversator.daily_invocation_limit_hit';
 
     if (model == regularModel) {
-      if (conversatorUser.dailyRegularInvocations > regularDailyLimit) {
+      if (conversatorUser.dailyRegularInvocations > regularDailyLimit && userId != adminId) {
         throw Exception(errorMessage);
       }
 
@@ -109,7 +110,7 @@ class Conversator {
     }
 
     if (model == advancedModel) {
-      if (conversatorUser.dailyAdvancedInvocations > advancedDailyLimit) {
+      if (conversatorUser.dailyAdvancedInvocations > advancedDailyLimit && userId != adminId) {
         throw Exception(errorMessage);
       }
 

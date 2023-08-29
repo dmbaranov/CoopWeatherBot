@@ -188,7 +188,7 @@ class Bot {
 
     _platform.setupCommand(BotCommand(
         command: 'theask',
-        description: '[U][Limited] Ask for advice or anything else from the more advanced Conversator.',
+        description: '[U][Limited] Ask for advice or anything else from the more advanced Conversator',
         accessLevel: AccessLevel.user,
         conversatorCommand: true,
         onSuccess: _conversatorManager.getAdvancedConversatorReply));

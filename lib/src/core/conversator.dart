@@ -16,6 +16,21 @@ class ConversatorChatMessage {
   ConversatorChatMessage({required this.message, required this.fromUser});
 }
 
+class ConversatorUser {
+  final String id;
+  final int dailyRegularInvocations;
+  final int totalRegularInvocations;
+  final int dailyAdvancedInvocations;
+  final int totalAdvancedInvocations;
+
+  ConversatorUser(
+      {required this.id,
+      required this.dailyRegularInvocations,
+      required this.totalRegularInvocations,
+      required this.dailyAdvancedInvocations,
+      required this.totalAdvancedInvocations});
+}
+
 class Conversator {
   final Database db;
   final String conversatorApiKey;
@@ -24,11 +39,14 @@ class Conversator {
   Conversator({required this.db, required this.conversatorApiKey});
 
   Future<String> getConversationReply(
-      {required String chatId,
+      {required String userId,
+      required String chatId,
       required String parentMessageId,
       required String currentMessageId,
       required String message,
       required String model}) async {
+    await _registerConversatorInvocation(userId, model);
+
     var conversationId = await getConversationId(chatId, parentMessageId);
     var previousMessages = await db.conversatorChat.getMessagesForConversation(chatId, conversationId);
     await saveConversationMessage(
@@ -69,5 +87,29 @@ class Conversator {
         await http.post(Uri.parse(_apiBaseUrl), headers: headers, body: json.encode(body), encoding: Encoding.getByName('utf-8'));
 
     return json.decode(utf8.decode(response.bodyBytes));
+  }
+
+  Future<void> _registerConversatorInvocation(String userId, String model) async {
+    var conversatorUser = await db.conversatorUser.getConversatorUser(userId);
+
+    if (model == regularModel) {
+      if (conversatorUser.dailyRegularInvocations > regularDailyLimit) {
+        throw Exception('Daily regular limit exceeded');
+      }
+
+      await db.conversatorUser.updateRegularInvocations(userId);
+
+      return;
+    }
+
+    if (model == advancedModel) {
+      if (conversatorUser.dailyAdvancedInvocations > advancedDailyLimit) {
+        throw Exception('Daily advanced limit exceeded');
+      }
+
+      await db.conversatorUser.updateAdvancedInvocations(userId);
+
+      return;
+    }
   }
 }

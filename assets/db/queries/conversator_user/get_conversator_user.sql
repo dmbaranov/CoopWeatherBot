@@ -4,4 +4,4 @@ SELECT bot_user_id,
        daily_advanced_invocations,
        total_advanced_invocations
 FROM conversator_user
-WHERE bot_user_id = @chatId;
+WHERE bot_user_id = @userId;

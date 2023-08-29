@@ -25,18 +25,38 @@ class ConversatorManager {
     if (!messageEventParametersCheck(platform, event)) return;
 
     var chatId = event.chatId;
+    var userId = event.userId;
     var parentMessageId = event.parameters[0];
     var currentMessageId = event.parameters[1];
     var message = event.parameters[2];
 
-    var response = await _conversator.getConversationReply(
-        chatId: chatId, parentMessageId: parentMessageId, currentMessageId: currentMessageId, message: message, model: model);
+    try {
+      var response = await _conversator.getConversationReply(
+          chatId: chatId,
+          userId: userId,
+          parentMessageId: parentMessageId,
+          currentMessageId: currentMessageId,
+          message: message,
+          model: model);
 
-    var conversatorResponseMessage = await platform.sendMessage(chatId, message: response);
-    var conversatorResponseMessageId = platform.getMessageId(conversatorResponseMessage);
-    var conversationId = await _conversator.getConversationId(chatId, parentMessageId);
+      var conversatorResponseMessage = await platform.sendMessage(chatId, message: response);
+      var conversatorResponseMessageId = platform.getMessageId(conversatorResponseMessage);
+      var conversationId = await _conversator.getConversationId(chatId, parentMessageId);
 
-    await _conversator.saveConversationMessage(
-        chatId: chatId, conversationId: conversationId, currentMessageId: conversatorResponseMessageId, message: response, fromUser: false);
+      await _conversator.saveConversationMessage(
+          chatId: chatId,
+          conversationId: conversationId,
+          currentMessageId: conversatorResponseMessageId,
+          message: response,
+          fromUser: false);
+    } catch (err) {
+      var errorMessage = err.toString();
+
+      if (errorMessage.startsWith('conversator')) {
+        platform.sendMessage(chatId, translation: errorMessage);
+      } else {
+        platform.sendMessage(chatId, translation: 'general.something_went_wrong');
+      }
+    }
   }
 }

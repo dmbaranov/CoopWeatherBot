@@ -6,6 +6,7 @@ import 'entities/reputation_entity.dart';
 import 'entities/weather_entity.dart';
 import 'entities/news_entity.dart';
 import 'entities/conversator_chat_entity.dart';
+import 'entities/conversator_user_entity.dart';
 
 class Database {
   final PostgreSQLConnection dbConnection;
@@ -15,6 +16,7 @@ class Database {
   final WeatherEntity weather;
   final NewsEntity news;
   final ConversatorChatEntity conversatorChat;
+  final ConversatorUserEntity conversatorUser;
 
   Database(this.dbConnection)
       : user = BotUserEntity(dbConnection: dbConnection),
@@ -22,7 +24,8 @@ class Database {
         reputation = ReputationEntity(dbConnection: dbConnection),
         weather = WeatherEntity(dbConnection: dbConnection),
         news = NewsEntity(dbConnection: dbConnection),
-        conversatorChat = ConversatorChatEntity(dbConnection: dbConnection);
+        conversatorChat = ConversatorChatEntity(dbConnection: dbConnection),
+        conversatorUser = ConversatorUserEntity(dbConnection: dbConnection);
 
   Future<void> initialize() async {
     await user.initEntity();
@@ -31,5 +34,6 @@ class Database {
     await weather.initEntity();
     await news.initEntity();
     await conversatorChat.initEntity();
+    await conversatorUser.initEntity();
   }
 }

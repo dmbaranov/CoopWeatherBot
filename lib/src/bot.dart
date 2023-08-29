@@ -78,7 +78,8 @@ class Bot {
 
     _dadJokesManager = DadJokesManager(platform: _platform);
     _youtubeManager = YoutubeManager(platform: _platform, apiKey: youtubeKey);
-    _conversatorManager = ConversatorManager(platform: _platform, db: _db, conversatorApiKey: conversatorKey);
+    _conversatorManager = ConversatorManager(platform: _platform, db: _db, conversatorApiKey: conversatorKey, adminId: adminId)
+      ..initialize();
     _generalManager = GeneralManager(platform: _platform, chat: _chat, repositoryUrl: repoUrl);
     _chatManager = ChatManager(platform: _platform, db: _db, chat: _chat);
     _panoramaManager = PanoramaManager(platform: _platform, chat: _chat, db: _db)..initialize();
@@ -183,7 +184,14 @@ class Bot {
         description: '[U] Ask for advice or anything else from the Conversator',
         accessLevel: AccessLevel.user,
         conversatorCommand: true,
-        onSuccess: _conversatorManager.getConversationReply));
+        onSuccess: _conversatorManager.getRegularConversatorReply));
+
+    _platform.setupCommand(BotCommand(
+        command: 'theask',
+        description: '[U][Limited] Ask for advice or anything else from the more advanced Conversator.',
+        accessLevel: AccessLevel.user,
+        conversatorCommand: true,
+        onSuccess: _conversatorManager.getAdvancedConversatorReply));
 
     _platform.setupCommand(BotCommand(
         command: 'na',

@@ -1,10 +1,14 @@
 import 'dart:convert';
+import 'package:cron/cron.dart';
 import 'package:http/http.dart' as http;
 import './database.dart';
 
 const String _converstorApiURL = 'https://api.openai.com/v1/chat/completions';
-const String _conversatorModel = 'gpt-3.5-turbo';
 const int maxTokens = 4096;
+const String regularModel = 'gpt-3.5-turbo';
+const String advancedModel = 'gpt-4';
+const int regularDailyLimit = 100;
+const int advancedDailyLimit = 10;
 
 class ConversatorChatMessage {
   final String message;
@@ -13,16 +17,42 @@ class ConversatorChatMessage {
   ConversatorChatMessage({required this.message, required this.fromUser});
 }
 
+class ConversatorUser {
+  final String id;
+  final int dailyRegularInvocations;
+  final int totalRegularInvocations;
+  final int dailyAdvancedInvocations;
+  final int totalAdvancedInvocations;
+
+  ConversatorUser(
+      {required this.id,
+      required this.dailyRegularInvocations,
+      required this.totalRegularInvocations,
+      required this.dailyAdvancedInvocations,
+      required this.totalAdvancedInvocations});
+}
+
 class Conversator {
   final Database db;
   final String conversatorApiKey;
+  final String adminId;
   final String _apiBaseUrl = _converstorApiURL;
-  final String _model = _conversatorModel;
 
-  Conversator({required this.db, required this.conversatorApiKey});
+  Conversator({required this.db, required this.conversatorApiKey, required this.adminId});
+
+  void initialize() {
+    _startResetDailyInvocationsUsageJob();
+  }
 
   Future<String> getConversationReply(
-      {required String chatId, required String parentMessageId, required String currentMessageId, required String message}) async {
+      {required String userId,
+      required String chatId,
+      required String parentMessageId,
+      required String currentMessageId,
+      required String message,
+      required String model}) async {
+    await _registerConversatorInvocation(userId, model);
+
     var conversationId = await getConversationId(chatId, parentMessageId);
     var previousMessages = await db.conversatorChat.getMessagesForConversation(chatId, conversationId);
     await saveConversationMessage(
@@ -30,7 +60,7 @@ class Conversator {
 
     var wholeConversation = [...previousMessages, ConversatorChatMessage(message: message, fromUser: true)];
 
-    var rawResponse = await _getConversatorResponse(wholeConversation);
+    var rawResponse = await _getConversatorResponse(wholeConversation, model);
     var response = rawResponse['choices']?[0]?['message']?['content'] ?? 'No response';
     var tokens = rawResponse['usage']?['total_tokens'] ?? -1;
 
@@ -52,16 +82,53 @@ class Conversator {
     return conversationId;
   }
 
-  Future<Map<String, dynamic>> _getConversatorResponse(List<ConversatorChatMessage> conversation) async {
+  Future<Map<String, dynamic>> _getConversatorResponse(List<ConversatorChatMessage> conversation, String model) async {
     var formattedMessages =
         conversation.map((message) => {'role': message.fromUser ? 'user' : 'system', 'content': message.message}).toList();
 
     var headers = {'Content-Type': 'application/json', 'Authorization': 'Bearer $conversatorApiKey'};
-    var body = {'model': _model, 'messages': formattedMessages};
+    var body = {'model': model, 'messages': formattedMessages};
 
     var response =
         await http.post(Uri.parse(_apiBaseUrl), headers: headers, body: json.encode(body), encoding: Encoding.getByName('utf-8'));
 
     return json.decode(utf8.decode(response.bodyBytes));
+  }
+
+  Future<void> _registerConversatorInvocation(String userId, String model) async {
+    var conversatorUser = await db.conversatorUser.getConversatorUser(userId);
+    var errorMessage = 'conversator.daily_invocation_limit_hit';
+
+    if (model == regularModel) {
+      if (conversatorUser.dailyRegularInvocations > regularDailyLimit && userId != adminId) {
+        throw Exception(errorMessage);
+      }
+
+      await db.conversatorUser.updateRegularInvocations(userId);
+
+      return;
+    }
+
+    if (model == advancedModel) {
+      if (conversatorUser.dailyAdvancedInvocations > advancedDailyLimit && userId != adminId) {
+        throw Exception(errorMessage);
+      }
+
+      await db.conversatorUser.updateAdvancedInvocations(userId);
+
+      return;
+    }
+  }
+
+  void _startResetDailyInvocationsUsageJob() {
+    Cron().schedule(Schedule.parse('0 0 * * *'), () async {
+      var result = await db.conversatorUser.resetDailyInvocations();
+
+      if (result == 0) {
+        print('Something went wrong with resetting conversator daily invocations usage');
+      } else {
+        print('Reset conversator daily invocation usage for $result rows');
+      }
+    });
   }
 }

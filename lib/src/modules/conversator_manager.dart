@@ -13,6 +13,10 @@ class ConversatorManager {
   ConversatorManager({required this.platform, required this.db, required this.conversatorApiKey})
       : _conversator = Conversator(db: db, conversatorApiKey: conversatorApiKey);
 
+  void initialize() {
+    _conversator.initialize();
+  }
+
   void getRegularConversatorReply(MessageEvent event) {
     _getConversatorReply(event, regularModel);
   }

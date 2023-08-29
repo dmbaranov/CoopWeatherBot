@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:cron/cron.dart';
 import 'package:http/http.dart' as http;
 import './database.dart';
 
@@ -37,6 +38,10 @@ class Conversator {
   final String _apiBaseUrl = _converstorApiURL;
 
   Conversator({required this.db, required this.conversatorApiKey});
+
+  void initialize() {
+    _startResetDailyInvocationsUsageJob();
+  }
 
   Future<String> getConversationReply(
       {required String userId,
@@ -111,5 +116,17 @@ class Conversator {
 
       return;
     }
+  }
+
+  void _startResetDailyInvocationsUsageJob() {
+    Cron().schedule(Schedule.parse('0 0 * * *'), () async {
+      var result = await db.conversatorUser.resetDailyInvocations();
+
+      if (result == 0) {
+        print('Something went wrong with resetting conversator daily invocations usage');
+      } else {
+        print('Reset conversator daily invocation usage for $result rows');
+      }
+    });
   }
 }

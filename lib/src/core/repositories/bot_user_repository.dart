@@ -1,9 +1,9 @@
 import 'package:postgres/postgres.dart';
 import '../user.dart' show BotUser;
-import 'entity.dart';
+import 'repository.dart';
 
-class BotUserEntity extends Entity {
-  BotUserEntity({required super.dbConnection}) : super(entityName: 'bot_user');
+class BotUserRepository extends Repository {
+  BotUserRepository({required super.dbConnection}) : super(repositoryName: 'bot_user');
 
   Future<List<BotUser>> getAllUsersForChat(String chatId) async {
     var rawUsers = await executeQuery(queriesMap['get_all_bot_users_for_chat'], {'chatId': chatId});

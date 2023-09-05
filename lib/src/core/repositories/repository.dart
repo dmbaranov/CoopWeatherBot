@@ -4,18 +4,18 @@ import 'package:postgres/postgres.dart';
 
 const String _pathToQueries = 'assets/db/queries';
 
-class Entity {
-  final String entityName;
+class Repository {
+  final String repositoryName;
   final PostgreSQLConnection dbConnection;
   final String _queriesDirectory = _pathToQueries;
 
   @protected
   final Map<String, String> queriesMap = {};
 
-  Entity({required this.entityName, required this.dbConnection});
+  Repository({required this.repositoryName, required this.dbConnection});
 
-  initEntity() async {
-    var queriesLocation = Directory('$_queriesDirectory/$entityName');
+  initRepository() async {
+    var queriesLocation = Directory('$_queriesDirectory/$repositoryName');
     var rawQueriesContent = await queriesLocation.list().toList();
     var queries = rawQueriesContent.whereType<File>();
 
@@ -53,7 +53,7 @@ class Entity {
     }).catchError((error) {
       print('DB transaction error');
       print(error);
-      
+
       return 0;
     });
 

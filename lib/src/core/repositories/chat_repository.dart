@@ -1,9 +1,9 @@
 import 'package:weather/src/globals/chat_platform.dart';
 import '../chat.dart' show ChatData;
-import 'entity.dart';
+import 'repository.dart';
 
-class ChatEntity extends Entity {
-  ChatEntity({required super.dbConnection}) : super(entityName: 'chat');
+class ChatRepository extends Repository {
+  ChatRepository({required super.dbConnection}) : super(repositoryName: 'chat');
 
   Future<int> createChat(String id, String name, String platform) {
     return executeTransaction(queriesMap['create_chat'], {'chatId': id, 'name': name, 'platform': platform});

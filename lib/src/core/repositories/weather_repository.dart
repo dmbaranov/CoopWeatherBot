@@ -1,8 +1,8 @@
 import '../weather.dart' show ChatNotificationHour;
-import 'entity.dart';
+import 'repository.dart';
 
-class WeatherEntity extends Entity {
-  WeatherEntity({required super.dbConnection}) : super(entityName: 'weather');
+class WeatherRepository extends Repository {
+  WeatherRepository({required super.dbConnection}) : super(repositoryName: 'weather');
 
   Future<int> createWeatherData(String chatId, int notificationHour) {
     return executeTransaction(queriesMap['create_weather_data'], {'chatId': chatId, 'notificationHour': notificationHour});

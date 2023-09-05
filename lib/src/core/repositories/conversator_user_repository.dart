@@ -1,8 +1,8 @@
 import '../conversator.dart' show ConversatorUser;
-import 'entity.dart';
+import 'repository.dart';
 
-class ConversatorUserEntity extends Entity {
-  ConversatorUserEntity({required super.dbConnection}) : super(entityName: 'conversator_user');
+class ConversatorUserRepository extends Repository {
+  ConversatorUserRepository({required super.dbConnection}) : super(repositoryName: 'conversator_user');
 
   Future<ConversatorUser> getConversatorUser(String userId) async {
     var user = await executeQuery(queriesMap['get_conversator_user'], {'userId': userId});

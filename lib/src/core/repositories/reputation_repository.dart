@@ -1,8 +1,8 @@
 import '../reputation.dart' show SingleReputationData, ChatReputationData;
-import 'entity.dart';
+import 'repository.dart';
 
-class ReputationEntity extends Entity {
-  ReputationEntity({required super.dbConnection}) : super(entityName: 'reputation');
+class ReputationRepository extends Repository {
+  ReputationRepository({required super.dbConnection}) : super(repositoryName: 'reputation');
 
   Future<List<ChatReputationData>> getReputationForChat(String chatId) async {
     var rawReputation = await executeQuery(queriesMap['get_reputation_for_chat'], {'chatId': chatId});

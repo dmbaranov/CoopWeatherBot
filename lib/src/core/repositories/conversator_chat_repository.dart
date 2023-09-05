@@ -1,8 +1,8 @@
 import '../conversator.dart' show ConversatorChatMessage;
-import 'entity.dart';
+import 'repository.dart';
 
-class ConversatorChatEntity extends Entity {
-  ConversatorChatEntity({required super.dbConnection}) : super(entityName: 'conversator_chat');
+class ConversatorChatRepository extends Repository {
+  ConversatorChatRepository({required super.dbConnection}) : super(repositoryName: 'conversator_chat');
 
   Future<int> createMessage(String chatId, String conversationId, String messageId, String message, bool fromUser) {
     return executeTransaction(queriesMap['create_message'],

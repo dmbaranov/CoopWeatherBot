@@ -1,7 +1,7 @@
-import 'entity.dart';
+import 'repository.dart';
 
-class NewsEntity extends Entity {
-  NewsEntity({required super.dbConnection}) : super(entityName: 'news');
+class NewsRepository extends Repository {
+  NewsRepository({required super.dbConnection}) : super(repositoryName: 'news');
 
   Future<bool> checkIfNewsExists(String chatId, String newsUrl) async {
     var foundNews = await executeQuery(queriesMap['check_if_news_exists'], {'chatId': chatId, 'newsUrl': newsUrl});

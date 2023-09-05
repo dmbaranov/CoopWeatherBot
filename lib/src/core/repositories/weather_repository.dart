@@ -1,4 +1,4 @@
-import '../weather.dart' show ChatNotificationHour;
+import 'package:weather/src/core/weather.dart' show ChatNotificationHour;
 import 'repository.dart';
 
 class WeatherRepository extends Repository {

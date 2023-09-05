@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:cron/cron.dart';
-import './database.dart';
+import 'database.dart';
 
 class OpenWeatherData {
   final String city;

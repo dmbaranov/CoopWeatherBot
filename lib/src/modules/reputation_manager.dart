@@ -4,7 +4,7 @@ import 'package:weather/src/core/chat.dart';
 import 'package:weather/src/core/reputation.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/platform/platform.dart';
-import './utils.dart';
+import 'utils.dart';
 
 class ReputationManager {
   final Platform platform;

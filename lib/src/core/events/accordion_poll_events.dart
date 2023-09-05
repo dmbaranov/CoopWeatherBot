@@ -1,4 +1,4 @@
-import '../user.dart' show BotUser;
+import 'package:weather/src/core/user.dart' show BotUser;
 
 class AccordionPollEvent {
   final BotUser fromUser;

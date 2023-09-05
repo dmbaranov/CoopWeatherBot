@@ -2,7 +2,7 @@ import 'package:weather/src/core/database.dart';
 import 'package:weather/src/core/conversator.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/platform/platform.dart';
-import './utils.dart';
+import 'utils.dart';
 
 class ConversatorManager {
   final Platform platform;

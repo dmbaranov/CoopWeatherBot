@@ -1,5 +1,5 @@
 import 'package:weather/src/globals/chat_platform.dart';
-import '../chat.dart' show ChatData;
+import 'package:weather/src/core/chat.dart' show ChatData;
 import 'repository.dart';
 
 class ChatRepository extends Repository {

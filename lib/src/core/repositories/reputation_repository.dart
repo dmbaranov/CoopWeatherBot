@@ -1,4 +1,4 @@
-import '../reputation.dart' show SingleReputationData, ChatReputationData;
+import 'package:weather/src/core/reputation.dart' show SingleReputationData, ChatReputationData;
 import 'repository.dart';
 
 class ReputationRepository extends Repository {

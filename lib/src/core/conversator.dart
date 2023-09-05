@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:cron/cron.dart';
 import 'package:http/http.dart' as http;
-import './database.dart';
+import 'database.dart';
 
 const String _converstorApiURL = 'https://api.openai.com/v1/chat/completions';
 const int maxTokens = 4096;

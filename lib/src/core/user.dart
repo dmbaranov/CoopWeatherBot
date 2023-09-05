@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:cron/cron.dart';
-
-import './database.dart';
+import 'database.dart';
 
 class BotUser {
   final String id;

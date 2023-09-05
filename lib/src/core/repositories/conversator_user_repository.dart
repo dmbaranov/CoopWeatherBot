@@ -1,4 +1,4 @@
-import '../conversator.dart' show ConversatorUser;
+import 'package:weather/src/core/conversator.dart' show ConversatorUser;
 import 'repository.dart';
 
 class ConversatorUserRepository extends Repository {

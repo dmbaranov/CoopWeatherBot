@@ -1,8 +1,7 @@
 import 'dart:io';
 import 'dart:convert';
 import 'package:weather/src/globals/chat_platform.dart';
-
-import './database.dart';
+import 'database.dart';
 
 class ChatData {
   final String id;

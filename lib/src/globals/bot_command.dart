@@ -1,5 +1,5 @@
-import './message_event.dart';
-import './access_level.dart';
+import 'message_event.dart';
+import 'access_level.dart';
 
 typedef OnSuccessCallback = void Function(MessageEvent event);
 

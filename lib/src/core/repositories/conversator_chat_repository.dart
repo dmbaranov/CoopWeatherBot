@@ -1,4 +1,4 @@
-import '../conversator.dart' show ConversatorChatMessage;
+import 'package:weather/src/core/conversator.dart' show ConversatorChatMessage;
 import 'repository.dart';
 
 class ConversatorChatRepository extends Repository {

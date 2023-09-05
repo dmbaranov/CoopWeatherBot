@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:cron/cron.dart';
-import './events/accordion_poll_events.dart';
-import './database.dart';
-import './event_bus.dart';
+import 'events/accordion_poll_events.dart';
+import 'database.dart';
+import 'event_bus.dart';
 
 enum ReputationChangeOption { increase, decrease }
 
@@ -86,7 +86,7 @@ class Reputation {
   Future<bool> forceUpdateReputation(String chatId, String userId, int reputation) async {
     // This method is intended to be used only by the system
     var existingUser = await db.reputation.getSingleReputationData(chatId, userId);
-    
+
     if (existingUser == null) {
       return false;
     }

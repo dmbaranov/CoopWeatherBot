@@ -1,5 +1,5 @@
 import 'package:postgres/postgres.dart';
-import '../user.dart' show BotUser;
+import 'package:weather/src/core/user.dart' show BotUser;
 import 'repository.dart';
 
 class BotUserRepository extends Repository {

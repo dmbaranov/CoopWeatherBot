@@ -9,21 +9,19 @@ const _containerName = 'postgres-dart-test';
 
 void setupTestEnvironment() {
   setUpAll(() async {
-    var envCreated = await _isPostgresContainerRunning();
+    var dockerRunning = await _isDockerContainerRunning();
 
-    if (envCreated) {
-      return;
+    if (!dockerRunning) {
+      await startPostgres(
+        name: _containerName,
+        version: 'latest',
+        pgPort: testDbPort,
+        pgDatabase: testDbName,
+        pgUser: testDbUser,
+        pgPassword: testDbPassword,
+        cleanup: true,
+      );
     }
-
-    await startPostgres(
-      name: _containerName,
-      version: 'latest',
-      pgPort: testDbPort,
-      pgDatabase: testDbName,
-      pgUser: testDbUser,
-      pgPassword: testDbPassword,
-      cleanup: true,
-    );
 
     var dbConnection = DbConnection.connection;
     await dbConnection.open();
@@ -32,11 +30,12 @@ void setupTestEnvironment() {
   });
 
   tearDownAll(() async {
-    await Process.run('docker', ['stop', _containerName]);
+    await DbConnection.connection.query('DROP SCHEMA public CASCADE;');
+    await DbConnection.connection.query('CREATE SCHEMA public;');
   });
 }
 
-Future<bool> _isPostgresContainerRunning() async {
+Future<bool> _isDockerContainerRunning() async {
   final pr = await Process.run(
     'docker',
     ['ps', '--format', '{{.Names}}'],

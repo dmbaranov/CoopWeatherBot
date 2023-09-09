@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
 import 'package:weather/src/globals/chat_platform.dart';
-import 'setup.dart';
+import 'utils/setup.dart';
 import 'package:weather/src/core/database.dart';
 import 'package:weather/src/core/chat.dart';
 

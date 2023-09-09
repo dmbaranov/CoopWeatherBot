@@ -9,9 +9,9 @@ const _containerName = 'postgres-dart-test';
 
 void setupTestEnvironment() {
   setUpAll(() async {
-    var isRunning = await _isPostgresContainerRunning();
+    var envCreated = await _isPostgresContainerRunning();
 
-    if (isRunning) {
+    if (envCreated) {
       return;
     }
 
@@ -25,7 +25,7 @@ void setupTestEnvironment() {
       cleanup: true,
     );
 
-    var dbConnection = DbConnection().connection;
+    var dbConnection = DbConnection.connection;
     await dbConnection.open();
 
     await MigrationsManager(dbConnection).runMigrations();

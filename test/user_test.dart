@@ -8,7 +8,6 @@ import 'utils/setup.dart';
 import 'utils/db_connection.dart';
 import 'utils/helpers.dart';
 
-// TODO: use raw SQL queries instead
 void main() {
   setupTestEnvironment();
   late User user;
@@ -32,13 +31,20 @@ void main() {
       await user.addUser(userId: '123123', chatId: '123', name: 'test-telegram-user-name');
       await user.addUser(userId: '456456', chatId: '456', name: 'test-discord-user-name');
 
-      var dbData = await _getAllUsers();
-      var expected = [
+      var dbUsers = await _getAllUsers();
+      var expectedUsers = [
         ['123123', 'test-telegram-user-name', false],
         ['456456', 'test-discord-user-name', false]
       ];
 
-      expect(sortResults(dbData), equals(expected));
+      var dbChatMembers = await _getAllChatMembers();
+      var expectedChatMembers = [
+        ['123123', '123', false, false, false],
+        ['456456', '456', false, false, false]
+      ];
+
+      expect(sortResults(dbUsers), equals(expectedUsers));
+      expect(sortResults(dbChatMembers), equals(expectedChatMembers));
     });
 
     test('receives a single user by id', () async {
@@ -58,32 +64,29 @@ void main() {
     test('receives all users for the chat', () async {
       var rawFoundUsers = await user.getUsersForChat('123');
       var foundUsers = rawFoundUsers.map((user) => user.toJson());
-      var expected = [
+      var expectedUsers = [
         {'id': '123123', 'name': 'test-telegram-user-name', 'isPremium': false, 'deleted': false, 'banned': false, 'moderator': false}
       ];
 
-      expect(foundUsers, equals(expected));
+      expect(foundUsers, equals(expectedUsers));
     });
 
     test('deletes a user', () async {
       await user.removeUser('123', '123123');
-      var foundUser = await user.getSingleUserForChat('123', '123123');
-      var expected = {
-        'id': '123123',
-        'name': 'test-telegram-user-name',
-        'isPremium': false,
-        'deleted': true,
-        'banned': false,
-        'moderator': false
-      };
 
-      expect(foundUser?.toJson(), equals(expected));
+      var dbData = await _getAllChatMembers();
+      var expected = [
+        ['123123', '123', true, false, false],
+        ['456456', '456', false, false, false]
+      ];
+
+      expect(sortResults(dbData), equals(expected));
     });
 
     test('updates a premium status for the user', () async {
       await user.updatePremiumStatus('456456', true);
       var foundUser = await user.getSingleUserForChat('456', '456456');
-      var expected = {
+      var expectedUser = {
         'id': '456456',
         'name': 'test-discord-user-name ⭐',
         'isPremium': true,
@@ -92,11 +95,22 @@ void main() {
         'moderator': false
       };
 
-      expect(foundUser?.toJson(), equals(expected));
+      var dbData = await _getAllUsers();
+      var expectedDbData = [
+        ['123123', 'test-telegram-user-name', false],
+        ['456456', 'test-discord-user-name', true]
+      ];
+
+      expect(foundUser?.toJson(), equals(expectedUser));
+      expect(sortResults(dbData), equals(expectedDbData));
     });
   });
 }
 
 Future<PostgreSQLResult> _getAllUsers() {
   return DbConnection.connection.query('SELECT * FROM bot_user');
+}
+
+Future<PostgreSQLResult> _getAllChatMembers() {
+  return DbConnection.connection.query('SELECT * FROM chat_member');
 }

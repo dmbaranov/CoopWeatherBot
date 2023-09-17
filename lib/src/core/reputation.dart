@@ -83,19 +83,6 @@ class Reputation {
     return change == ReputationChangeOption.increase ? ReputationChangeResult.increaseSuccess : ReputationChangeResult.decreaseSuccess;
   }
 
-  Future<bool> forceUpdateReputation(String chatId, String userId, int reputation) async {
-    // This method is intended to be used only by the system
-    var existingUser = await db.reputation.getSingleReputationData(chatId, userId);
-
-    if (existingUser == null) {
-      return false;
-    }
-
-    var result = await db.reputation.updateReputation(chatId, userId, reputation);
-
-    return result == 1;
-  }
-
   Future<bool> createReputationData(String chatId, String userId) async {
     // TODO: add 6 options for premium users
     var result = await db.reputation.createReputationData(chatId, userId, numberOfVoteOptions);
@@ -107,6 +94,19 @@ class Reputation {
     var reputation = await db.reputation.getReputationForChat(chatId);
 
     return reputation;
+  }
+
+  Future<bool> _forceUpdateReputation(String chatId, String userId, int reputation) async {
+    // This method is intended to be used only by the system
+    var existingUser = await db.reputation.getSingleReputationData(chatId, userId);
+
+    if (existingUser == null) {
+      return false;
+    }
+
+    var result = await db.reputation.updateReputation(chatId, userId, reputation);
+
+    return result == 1;
   }
 
   Future<bool> _updateReputation(String chatId, String userId, int reputation) async {
@@ -150,7 +150,7 @@ class Reputation {
     var userReputationData = await db.reputation.getSingleReputationData(chatId, userId);
 
     if (userReputationData != null) {
-      forceUpdateReputation(chatId, userId, userReputationData.reputation - 1);
+      _forceUpdateReputation(chatId, userId, userReputationData.reputation - 1);
     }
   }
 }

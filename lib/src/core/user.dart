@@ -26,6 +26,9 @@ class BotUser {
       name = name.replaceAll(' ⭐', '');
     }
   }
+
+  Map<String, dynamic> toJson() =>
+      {'id': id, 'name': name, 'isPremium': isPremium, 'deleted': deleted, 'banned': banned, 'moderator': moderator};
 }
 
 class User {

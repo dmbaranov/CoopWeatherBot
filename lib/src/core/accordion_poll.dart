@@ -7,16 +7,14 @@ import 'user.dart' show BotUser;
 class AccordionPoll {
   final EventBus eventBus;
   final Chat chat;
+  final int pollTime;
   late BotUser _fromUser;
   late BotUser _toUser;
   late String _chatId;
-  final int _pollTime = 180;
   bool _isVoteActive = false;
   Map<AccordionVoteOption, int> _voteResult = {};
 
-  AccordionPoll({required this.eventBus, required this.chat});
-
-  get pollTime => _pollTime;
+  AccordionPoll({required this.eventBus, required this.chat, this.pollTime = 180});
 
   get pollOptions => [
         chat.getText(_chatId, 'accordion.options.yes'),
@@ -30,6 +28,7 @@ class AccordionPoll {
     BotUser? fromUser,
     BotUser? toUser,
   }) {
+    // TODO: change to Enum like reputation
     if (_isVoteActive) {
       return 'accordion.other.accordion_vote_in_progress';
     } else if (toUser == null) {

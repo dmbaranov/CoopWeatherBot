@@ -100,7 +100,7 @@ class Conversator {
     var errorMessage = 'conversator.daily_invocation_limit_hit';
 
     if (model == regularModel) {
-      if (conversatorUser.dailyRegularInvocations > regularDailyLimit && userId != adminId) {
+      if (conversatorUser.dailyRegularInvocations >= regularDailyLimit && userId != adminId) {
         throw Exception(errorMessage);
       }
 
@@ -110,7 +110,7 @@ class Conversator {
     }
 
     if (model == advancedModel) {
-      if (conversatorUser.dailyAdvancedInvocations > advancedDailyLimit && userId != adminId) {
+      if (conversatorUser.dailyAdvancedInvocations >= advancedDailyLimit && userId != adminId) {
         throw Exception(errorMessage);
       }
 

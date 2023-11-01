@@ -228,7 +228,7 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
 
   void _startHeroCheckJob() {
     // TODO: onlineUsers are returned for a single chat only. Fix this + make this job configurable per chat
-    Cron().schedule(Schedule.parse('0 5 * * 6,0'), () async {
+    Cron().schedule(Schedule.parse('0 4 * * 6,0'), () async {
       var authorizedChats = await chat.getAllChatIdsForPlatform(chatPlatform);
 
       await Process.run('${Directory.current.path}/generate-online', []);

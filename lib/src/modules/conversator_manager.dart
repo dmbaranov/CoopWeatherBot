@@ -1,5 +1,6 @@
 import 'package:weather/src/core/database.dart';
 import 'package:weather/src/core/conversator.dart';
+import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/platform/platform.dart';
 import 'utils.dart';
@@ -34,6 +35,7 @@ class ConversatorManager {
     var parentMessageId = event.parameters[0];
     var currentMessageId = event.parameters[1];
     var message = event.parameters[2];
+    var responseLimit = platform.chatPlatform == ChatPlatform.discord ? 2000 : null;
 
     try {
       var response = await _conversator.getConversationReply(
@@ -42,7 +44,8 @@ class ConversatorManager {
           parentMessageId: parentMessageId,
           currentMessageId: currentMessageId,
           message: message,
-          model: model);
+          model: model,
+          responseLimit: responseLimit);
 
       var conversatorResponseMessage = await platform.sendMessage(chatId, message: response);
       var conversatorResponseMessageId = platform.getMessageId(conversatorResponseMessage);

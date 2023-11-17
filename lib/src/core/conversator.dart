@@ -6,7 +6,7 @@ import 'database.dart';
 const String _converstorApiURL = 'https://api.openai.com/v1/chat/completions';
 const int maxTokens = 4096;
 const String regularModel = 'gpt-3.5-turbo';
-const String advancedModel = 'gpt-4';
+const String advancedModel = 'gpt-4-1106-preview';
 const int regularDailyLimit = 100;
 const int advancedDailyLimit = 10;
 
@@ -50,7 +50,8 @@ class Conversator {
       required String parentMessageId,
       required String currentMessageId,
       required String message,
-      required String model}) async {
+      required String model,
+      int? responseLimit}) async {
     await _registerConversatorInvocation(userId, model);
 
     var conversationId = await getConversationId(chatId, parentMessageId);
@@ -58,7 +59,10 @@ class Conversator {
     await saveConversationMessage(
         chatId: chatId, conversationId: conversationId, currentMessageId: currentMessageId, message: message, fromUser: true);
 
-    var wholeConversation = [...previousMessages, ConversatorChatMessage(message: message, fromUser: true)];
+    var wholeConversation = [
+      ...previousMessages,
+      ConversatorChatMessage(message: _formatMessage(message, responseLimit: responseLimit), fromUser: true)
+    ];
 
     var rawResponse = await _getConversatorResponse(wholeConversation, model);
     var response = rawResponse['choices']?[0]?['message']?['content'] ?? 'No response';
@@ -130,5 +134,13 @@ class Conversator {
         print('Reset conversator daily invocation usage for $result rows');
       }
     });
+  }
+
+  String _formatMessage(String message, {int? responseLimit}) {
+    if (responseLimit == null) {
+      return message;
+    }
+
+    return '$message. Reply in the language that was used previously. Limit your response to $responseLimit symbols';
   }
 }

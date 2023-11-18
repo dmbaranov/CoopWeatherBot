@@ -1,5 +1,7 @@
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/globals/access_level.dart';
+import 'package:weather/src/core/event_bus.dart';
+import 'package:weather/src/core/events/access_events.dart';
 import 'database.dart';
 
 typedef OnSuccessCallback = void Function(MessageEvent event);
@@ -7,12 +9,14 @@ typedef OnFailureCallback = Future Function(MessageEvent event);
 
 class Access {
   final Database db;
+  final EventBus eventBus;
   final String adminId;
 
-  Access({required this.db, required this.adminId});
+  Access({required this.db, required this.eventBus, required this.adminId});
 
   void execute(
       {required MessageEvent event,
+      required String command,
       required AccessLevel accessLevel,
       required OnSuccessCallback onSuccess,
       required OnFailureCallback onFailure}) async {
@@ -42,6 +46,7 @@ class Access {
       return;
     }
 
+    eventBus.fire(AccessEvent(user: user, command: command, platform: event.platform));
     onSuccess(event);
   }
 }

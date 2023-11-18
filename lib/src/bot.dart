@@ -5,6 +5,7 @@ import 'package:weather/src/core/chat.dart';
 import 'package:weather/src/core/user.dart';
 import 'package:weather/src/core/event_bus.dart';
 import 'package:weather/src/core/access.dart';
+import 'package:weather/src/core/commands_statistics.dart';
 
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/bot_command.dart';
@@ -38,6 +39,7 @@ class Bot {
   late Chat _chat;
   late User _user;
   late Access _access;
+  late CommandsStatistics _commandsStatistics;
 
   late UserManager _userManager;
   late WeatherManager _weatherManager;
@@ -70,7 +72,8 @@ class Bot {
     await _chat.initialize();
 
     _user = User(db: _db)..initialize();
-    _access = Access(db: _db, adminId: adminId);
+    _commandsStatistics = CommandsStatistics(db: _db);
+    _access = Access(db: _db, eventBus: _eventBus, adminId: adminId);
 
     _platform = Platform(
         chatPlatform: platformName, token: botToken, adminId: adminId, eventBus: _eventBus, access: _access, chat: _chat, user: _user);

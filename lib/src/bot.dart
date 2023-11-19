@@ -72,8 +72,10 @@ class Bot {
     await _chat.initialize();
 
     _user = User(db: _db)..initialize();
-    _commandsStatistics = CommandsStatistics(db: _db);
     _access = Access(db: _db, eventBus: _eventBus, adminId: adminId);
+
+    _commandsStatistics = CommandsStatistics(db: _db, eventBus: _eventBus);
+    _commandsStatistics.initialize();
 
     _platform = Platform(
         chatPlatform: platformName, token: botToken, adminId: adminId, eventBus: _eventBus, access: _access, chat: _chat, user: _user);

@@ -29,6 +29,7 @@ class Access {
     }
 
     if (user.id == adminId) {
+      eventBus.fire(AccessEvent(user: user, command: command, platform: event.platform));
       onSuccess(event);
 
       return;

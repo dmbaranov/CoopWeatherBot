@@ -1,3 +1,3 @@
-INSERT INTO commands_statistics(bot_user_id, platform, command, timestamp)
-VALUES (@userId, @platform, @command, @timestamp)
+INSERT INTO commands_statistics(chat_id, bot_user_id, command, timestamp)
+VALUES (@chatId, @userId, @command, @timestamp)
 ON CONFLICT DO NOTHING;

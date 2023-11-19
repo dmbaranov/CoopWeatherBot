@@ -1,5 +1,4 @@
 import 'package:weather/src/core/events/access_events.dart';
-import 'package:weather/src/globals/chat_platform.dart';
 import 'database.dart';
 import 'event_bus.dart';
 
@@ -16,11 +15,10 @@ class CommandsStatistics {
     _listenToAccessEvents();
   }
 
-  Future<void> _registerCommandInvocation({required String userId, required ChatPlatform platform, required String command}) async {
+  Future<void> _registerCommandInvocation({required String chatId, required String userId, required String command}) async {
     var timestamp = DateTime.now().toString();
 
-    await db.commandsStatistics
-        .createCommandInvocationRecord(userId: userId, platform: platform.value, command: command, timestamp: timestamp);
+    await db.commandsStatistics.createCommandInvocationRecord(chatId: chatId, userId: userId, command: command, timestamp: timestamp);
   }
 
   void getStatisticsForChat() {}
@@ -30,6 +28,6 @@ class CommandsStatistics {
   void _listenToAccessEvents() {
     eventBus
         .on<AccessEvent>()
-        .listen((event) => _registerCommandInvocation(userId: event.user.id, platform: event.platform, command: event.command));
+        .listen((event) => _registerCommandInvocation(chatId: event.chatId, userId: event.user.id, command: event.command));
   }
 }

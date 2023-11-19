@@ -29,7 +29,7 @@ class Access {
     }
 
     if (user.id == adminId) {
-      eventBus.fire(AccessEvent(user: user, command: command, platform: event.platform));
+      eventBus.fire(AccessEvent(chatId: event.chatId, user: user, command: command));
       onSuccess(event);
 
       return;
@@ -47,7 +47,7 @@ class Access {
       return;
     }
 
-    eventBus.fire(AccessEvent(user: user, command: command, platform: event.platform));
+    eventBus.fire(AccessEvent(chatId: event.chatId, user: user, command: command));
     onSuccess(event);
   }
 }

@@ -42,11 +42,13 @@ void main() {
       access.execute(
           event: getFakeMessageEvent(userId: adminId),
           accessLevel: AccessLevel.admin,
-          onSuccess: (MessageEvent) {
+          onSuccess: (messageEvent) {
             successCallbackCalled = true;
           },
-          onFailure: (MessageEvent) async {
+          onFailure: (messageEvent) {
             failureCallbackCalled = true;
+            
+            return Future.value(null);
           });
 
       await Future.delayed(Duration(seconds: 1));

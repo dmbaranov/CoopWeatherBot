@@ -3,13 +3,13 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:collection/collection.dart';
-import 'package:nyxx/nyxx.dart' hide User;
+import 'package:nyxx/nyxx.dart';
 import 'package:nyxx_commands/nyxx_commands.dart';
 import 'package:uuid/uuid.dart';
 import 'package:cron/cron.dart';
 
 import 'package:weather/src/core/chat.dart';
-import 'package:weather/src/core/user.dart';
+import 'package:weather/src/core/user.dart' as weather;
 import 'package:weather/src/core/event_bus.dart';
 import 'package:weather/src/core/access.dart';
 
@@ -31,7 +31,7 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
   final EventBus eventBus;
   final Access access;
   final Chat chat;
-  final User user;
+  final weather.User user;
 
   final List<ChatCommand> _commands = [];
 
@@ -260,20 +260,39 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
   }
 
   void _moveAll(ChatContext context, Channel fromChannel, Channel toChannel) async {
-    // await Process.run('${Directory.current.path}/generate-channel-users', []);
-    //
-    // var channelUsersFile = File('assets/channels-users');
-    // var channelsWithUsersRaw = await channelUsersFile.readAsLines();
-    //
-    // Map<String, dynamic> channelsWithUsers = jsonDecode(channelsWithUsersRaw[0]);
-    // List usersToMove = channelsWithUsers[fromChannel.toString()];
-    //
-    // var chatId = context.guild?.id.toString() ?? '';
-    //
+    await Process.run('${Directory.current.path}/generate-channel-users', []);
+
+    var channelUsersFile = File('assets/channels-users');
+    var channelsWithUsersRaw = await channelUsersFile.readAsLines();
+
+    Map<String, dynamic> channelsWithUsers = jsonDecode(channelsWithUsersRaw[0]);
+    List usersToMove = channelsWithUsers[fromChannel.id.toString()];
+
+    var chatId = context.guild?.id.toString() ?? '';
+
+    List<User> discordUsers = [];
+
+    // https://github.com/nyxx-discord/nyxx/blob/b89952b2069b72e38914a1fc7404d6ad2b4519fd/lib/src/internal/http_endpoints.dart#L908
+    // https://github.com/nyxx-discord/nyxx/blob/b89952b2069b72e38914a1fc7404d6ad2b4519fd/lib/src/utils/builders/member_builder.dart#L5
+    var guild = await bot.guilds.fetch(Snowflake('guildId'));
+
+    await guild.updateVoiceState(Snowflake('userId'), VoiceStateUpdateBuilder(channelId: Snowflake('new channel id')));
+
+    await Future.forEach(usersToMove, (userId) async => discordUsers.add(await bot.users.get(Snowflake(int.parse(userId)))));
+
+    discordUsers.forEach((user) {
+      var builder = GatewayVoiceStateBuilder(channelId: toChannel.id, isMuted: false, isDeafened: false);
+
+      // guil
+      // user.manager.update(builder);
+    });
+
     // usersToMove.forEach((user) {
-    //   var builder = MemberBuilder()..channel = Snowflake(toChannel);
+    //   var builder = GatewayVoiceStateBuilder(channelId: toChannel.id, isMuted: false, isDeafened: false);
     //
-    //   bot.httpEndpoints.editGuildMember(Snowflake(chatId), Snowflake(user), builder: builder);
+    //   // var builder = MemberBuilder()..channel = Snowflake(toChannel);
+    //   //
+    //   // bot.httpEndpoints.editGuildMember(Snowflake(chatId), Snowflake(user), builder: builder);
     // });
     //
     // await channelUsersFile.delete();

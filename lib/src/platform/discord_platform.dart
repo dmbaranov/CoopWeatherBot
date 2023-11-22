@@ -102,7 +102,6 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
   MessageEvent transformPlatformMessageToGeneralMessageEvent(ChatContext event) {
     return MessageEvent(
         platform: chatPlatform,
-        // TODO: replace guildId with channelId?
         chatId: event.guild?.id.toString() ?? '',
         userId: event.user.id.toString(),
         otherUserIds: [],
@@ -130,10 +129,9 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
 
   @override
   Future<bool> getUserPremiumStatus(String chatId, String userId) async {
-    return Future.value(false);
-    // var discordUser = await bot.httpEndpoints.fetchGuildMember(Snowflake(chatId), Snowflake(userId));
-    //
-    // return discordUser.boostingSince != null;
+    var discordUser = await bot.users.fetch(Snowflake(int.parse(userId)));
+
+    return discordUser.nitroType.value > 0;
   }
 
   @override

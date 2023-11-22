@@ -3,7 +3,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:collection/collection.dart';
-import 'package:nyxx/nyxx.dart';
+import 'package:nyxx/nyxx.dart' hide User;
 import 'package:nyxx_commands/nyxx_commands.dart';
 import 'package:uuid/uuid.dart';
 import 'package:cron/cron.dart';
@@ -22,7 +22,7 @@ import 'package:weather/src/platform/platform.dart';
 
 const uuid = Uuid();
 
-class DiscordPlatform<T extends IChatContext> implements Platform<T> {
+class DiscordPlatform<T extends ChatContext> implements Platform<T> {
   @override
   late ChatPlatform chatPlatform;
   final String token;
@@ -34,7 +34,7 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
 
   final List<ChatCommand> _commands = [];
 
-  late INyxxWebsocket bot;
+  late NyxxGateway bot;
 
   DiscordPlatform(
       {required this.chatPlatform,
@@ -47,38 +47,32 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
 
   @override
   Future<void> initialize() async {
-    bot = NyxxFactory.createNyxxWebsocket(token, GatewayIntents.all);
+    bot = await Nyxx.connectGateway(token, GatewayIntents.all,
+        options: GatewayClientOptions(plugins: [_setupDiscordCommands(), logging, cliIntegration, ignoreExceptions]));
 
     _setupPlatformSpecificCommands();
   }
 
   @override
   Future<void> postStart() async {
-    bot
-      ..registerPlugin(Logging())
-      ..registerPlugin(CliIntegration())
-      ..registerPlugin(IgnoreExceptions())
-      ..registerPlugin(_setupDiscordCommands());
-
-    await bot.connect();
-
     _startHeroCheckJob();
 
     print('Discord platform has been started!');
   }
 
   @override
-  Future<IMessage> sendMessage(String chatId, {String? message, String? translation}) async {
-    var guild = await bot.httpEndpoints.fetchGuild(Snowflake(chatId));
-    var channelId = guild.systemChannel?.id.toString() ?? '';
+  Future<Message> sendMessage(String chatId, {String? message, String? translation}) async {
+    var guild = await bot.guilds.fetch(Snowflake(int.parse(chatId)));
+    var channelId = guild.systemChannel?.id ?? Snowflake.zero;
+    var channel = await bot.channels.get(channelId) as TextChannel;
 
     if (message != null) {
-      return bot.httpEndpoints.sendMessage(Snowflake(channelId), MessageBuilder.content(message));
+      return channel.sendMessage(MessageBuilder(content: message));
     } else if (translation != null) {
-      return bot.httpEndpoints.sendMessage(Snowflake(channelId), MessageBuilder.content(chat.getText(chatId, translation)));
+      return channel.sendMessage(MessageBuilder(content: chat.getText(chatId, translation)));
     }
 
-    return bot.httpEndpoints.sendMessage(Snowflake(channelId), MessageBuilder.content(chat.getText(chatId, 'something_went_wrong')));
+    return channel.sendMessage(MessageBuilder(content: chat.getText(chatId, 'something_went_wrong')));
   }
 
   @override
@@ -105,40 +99,41 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
   }
 
   @override
-  MessageEvent transformPlatformMessageToGeneralMessageEvent(IChatContext event) {
+  MessageEvent transformPlatformMessageToGeneralMessageEvent(ChatContext event) {
     return MessageEvent(
         platform: chatPlatform,
         // TODO: replace guildId with channelId?
         chatId: event.guild?.id.toString() ?? '',
         userId: event.user.id.toString(),
         otherUserIds: [],
-        isBot: event.user.bot,
+        isBot: event.user.isBot,
         parameters: [],
         rawMessage: event);
   }
 
   @override
-  MessageEvent transformPlatformMessageToMessageEventWithParameters(IChatContext event, [List? otherParameters]) {
+  MessageEvent transformPlatformMessageToMessageEventWithParameters(ChatContext event, [List? otherParameters]) {
     return transformPlatformMessageToGeneralMessageEvent(event)
       ..parameters.addAll(otherParameters?.map((param) => param.toString()).toList() ?? []);
   }
 
   @override
-  MessageEvent transformPlatformMessageToMessageEventWithOtherUserIds(IChatContext event, [List? otherUserIds]) {
+  MessageEvent transformPlatformMessageToMessageEventWithOtherUserIds(ChatContext event, [List? otherUserIds]) {
     return transformPlatformMessageToGeneralMessageEvent(event)
       ..otherUserIds.addAll(otherUserIds?.map((param) => param.toString()).toList() ?? []);
   }
 
   @override
-  MessageEvent transformPlatformMessageToConversatorMessageEvent(IChatContext event, [List<String>? otherParameters]) {
+  MessageEvent transformPlatformMessageToConversatorMessageEvent(ChatContext event, [List<String>? otherParameters]) {
     return transformPlatformMessageToGeneralMessageEvent(event)..parameters.addAll(otherParameters ?? []);
   }
 
   @override
   Future<bool> getUserPremiumStatus(String chatId, String userId) async {
-    var discordUser = await bot.httpEndpoints.fetchGuildMember(Snowflake(chatId), Snowflake(userId));
-
-    return discordUser.boostingSince != null;
+    return Future.value(false);
+    // var discordUser = await bot.httpEndpoints.fetchGuildMember(Snowflake(chatId), Snowflake(userId));
+    //
+    // return discordUser.boostingSince != null;
   }
 
   @override
@@ -152,20 +147,20 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
   }
 
   void _setupPlatformSpecificCommands() {
-    _commands.add(ChatCommand('moveall', 'Move all users from one voice channel to another',
-        (IChatContext context, IChannel fromChannel, IChannel toChannel) async {
-      await context.respond(MessageBuilder.empty());
-
-      access.execute(
-          event: transformPlatformMessageToGeneralMessageEvent(context),
-          accessLevel: AccessLevel.moderator,
-          onSuccess: (_) => _moveAll(context, fromChannel, toChannel),
-          onFailure: sendNoAccessMessage);
-    }));
+    // _commands.add(ChatCommand('moveall', 'Move all users from one voice channel to another',
+    //     (IChatContext context, IChannel fromChannel, IChannel toChannel) async {
+    //   await context.respond(MessageBuilder.empty());
+    //
+    //   access.execute(
+    //       event: transformPlatformMessageToGeneralMessageEvent(context),
+    //       accessLevel: AccessLevel.moderator,
+    //       onSuccess: (_) => _moveAll(context, fromChannel, toChannel),
+    //       onFailure: sendNoAccessMessage);
+    // }));
   }
 
   CommandsPlugin _setupDiscordCommands() {
-    var commands = CommandsPlugin(prefix: (message) => '!');
+    var commands = CommandsPlugin(prefix: (message) => '!', options: CommandsOptions(logErrors: true));
 
     _commands.forEach((command) => commands.addCommand(command));
 
@@ -173,8 +168,8 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
   }
 
   void _setupSimpleCommand(BotCommand command) {
-    _commands.add(ChatCommand(command.command, command.description, (IChatContext context) async {
-      await context.respond(MessageBuilder.empty());
+    _commands.add(ChatCommand(command.command, command.description, (ChatContext context) async {
+      await context.respond(MessageBuilder());
 
       access.execute(
           event: transformPlatformMessageToGeneralMessageEvent(context),
@@ -185,45 +180,45 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
   }
 
   void _setupCommandWithParameters(BotCommand command) {
-    _commands.add(ChatCommand(command.command, command.description, (IChatContext context, String what) async {
-      await context.respond(MessageBuilder.content(what));
-
-      access.execute(
-          event: transformPlatformMessageToMessageEventWithParameters(context, [what]),
-          accessLevel: command.accessLevel,
-          onSuccess: command.onSuccess,
-          onFailure: sendNoAccessMessage);
-    }));
+    // _commands.add(ChatCommand(command.command, command.description, (IChatContext context, String what) async {
+    //   await context.respond(MessageBuilder.content(what));
+    //
+    //   access.execute(
+    //       event: transformPlatformMessageToMessageEventWithParameters(context, [what]),
+    //       accessLevel: command.accessLevel,
+    //       onSuccess: command.onSuccess,
+    //       onFailure: sendNoAccessMessage);
+    // }));
   }
 
   void _setupCommandWithOtherUserIds(BotCommand command) {
-    _commands.add(ChatCommand(command.command, command.description, (IChatContext context, IMember who) async {
-      var user = await who.user.getOrDownload();
-      var isPremium = who.boostingSince != null ? 'true' : 'false';
-      await context.respond(MessageBuilder.content(user.username));
-
-      access.execute(
-          event: transformPlatformMessageToMessageEventWithOtherUserIds(context, [who.user.id.toString()])
-            ..parameters.addAll([user.username, isPremium]),
-          accessLevel: command.accessLevel,
-          onSuccess: command.onSuccess,
-          onFailure: sendNoAccessMessage);
-    }));
+    // _commands.add(ChatCommand(command.command, command.description, (IChatContext context, IMember who) async {
+    //   var user = await who.user.getOrDownload();
+    //   var isPremium = who.boostingSince != null ? 'true' : 'false';
+    //   await context.respond(MessageBuilder.content(user.username));
+    //
+    //   access.execute(
+    //       event: transformPlatformMessageToMessageEventWithOtherUserIds(context, [who.user.id.toString()])
+    //         ..parameters.addAll([user.username, isPremium]),
+    //       accessLevel: command.accessLevel,
+    //       onSuccess: command.onSuccess,
+    //       onFailure: sendNoAccessMessage);
+    // }));
   }
 
   void _setupCommandForConversator(BotCommand command) {
-    _commands.add(ChatCommand(command.command, command.description, (IChatContext context, String what, [String? conversationId]) async {
-      await context.respond(MessageBuilder.content(what));
-
-      conversationId ??= uuid.v4();
-      var currentMessageId = uuid.v4();
-
-      access.execute(
-          event: transformPlatformMessageToConversatorMessageEvent(context, [conversationId, currentMessageId, what]),
-          accessLevel: command.accessLevel,
-          onSuccess: command.onSuccess,
-          onFailure: sendNoAccessMessage);
-    }));
+    // _commands.add(ChatCommand(command.command, command.description, (IChatContext context, String what, [String? conversationId]) async {
+    //   await context.respond(MessageBuilder.content(what));
+    //
+    //   conversationId ??= uuid.v4();
+    //   var currentMessageId = uuid.v4();
+    //
+    //   access.execute(
+    //       event: transformPlatformMessageToConversatorMessageEvent(context, [conversationId, currentMessageId, what]),
+    //       accessLevel: command.accessLevel,
+    //       onSuccess: command.onSuccess,
+    //       onFailure: sendNoAccessMessage);
+    // }));
   }
 
   void _startHeroCheckJob() {
@@ -260,23 +255,23 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
     });
   }
 
-  void _moveAll(IContext context, IChannel fromChannel, IChannel toChannel) async {
-    await Process.run('${Directory.current.path}/generate-channel-users', []);
-
-    var channelUsersFile = File('assets/channels-users');
-    var channelsWithUsersRaw = await channelUsersFile.readAsLines();
-
-    Map<String, dynamic> channelsWithUsers = jsonDecode(channelsWithUsersRaw[0]);
-    List usersToMove = channelsWithUsers[fromChannel.toString()];
-
-    var chatId = context.guild?.id.toString() ?? '';
-
-    usersToMove.forEach((user) {
-      var builder = MemberBuilder()..channel = Snowflake(toChannel);
-
-      bot.httpEndpoints.editGuildMember(Snowflake(chatId), Snowflake(user), builder: builder);
-    });
-
-    await channelUsersFile.delete();
-  }
+// void _moveAll(ChatContext context, IChannel fromChannel, IChannel toChannel) async {
+//   await Process.run('${Directory.current.path}/generate-channel-users', []);
+//
+//   var channelUsersFile = File('assets/channels-users');
+//   var channelsWithUsersRaw = await channelUsersFile.readAsLines();
+//
+//   Map<String, dynamic> channelsWithUsers = jsonDecode(channelsWithUsersRaw[0]);
+//   List usersToMove = channelsWithUsers[fromChannel.toString()];
+//
+//   var chatId = context.guild?.id.toString() ?? '';
+//
+//   usersToMove.forEach((user) {
+//     var builder = MemberBuilder()..channel = Snowflake(toChannel);
+//
+//     bot.httpEndpoints.editGuildMember(Snowflake(chatId), Snowflake(user), builder: builder);
+//   });
+//
+//   await channelUsersFile.delete();
+// }
 }

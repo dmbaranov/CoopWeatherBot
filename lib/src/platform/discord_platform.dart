@@ -254,18 +254,10 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
   }
 
   void _moveAll(ChatContext context, Channel fromChannel, Channel toChannel) async {
-    await Process.run('${Directory.current.path}/generate-channel-users', []);
-
-    var channelUsersFile = File('assets/channels-users');
-    var channelsWithUsersRaw = await channelUsersFile.readAsLines();
-
-    Map<String, dynamic> channelsWithUsers = jsonDecode(channelsWithUsersRaw[0]);
-    List usersToMove = channelsWithUsers[fromChannel.id.toString()];
-
-    usersToMove.forEach((userId) {
-      context.guild?.members.update(Snowflake(int.parse(userId)), MemberUpdateBuilder(voiceChannelId: toChannel.id));
+    context.guild?.voiceStates.entries.toList().forEach((voiceState) {
+      if (voiceState.value.channelId == fromChannel.id) {
+        context.guild?.members.update(voiceState.value.userId, MemberUpdateBuilder(voiceChannelId: toChannel.id));
+      }
     });
-
-    await channelUsersFile.delete();
   }
 }

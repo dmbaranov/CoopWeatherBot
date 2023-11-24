@@ -262,33 +262,10 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
     Map<String, dynamic> channelsWithUsers = jsonDecode(channelsWithUsersRaw[0]);
     List usersToMove = channelsWithUsers[fromChannel.id.toString()];
 
-    var chatId = context.guild?.id.toString() ?? '';
-
-    List<User> discordUsers = [];
-
-    // https://github.com/nyxx-discord/nyxx/blob/b89952b2069b72e38914a1fc7404d6ad2b4519fd/lib/src/internal/http_endpoints.dart#L908
-    // https://github.com/nyxx-discord/nyxx/blob/b89952b2069b72e38914a1fc7404d6ad2b4519fd/lib/src/utils/builders/member_builder.dart#L5
-    var guild = await bot.guilds.fetch(Snowflake('guildId'));
-
-    await guild.updateVoiceState(Snowflake('userId'), VoiceStateUpdateBuilder(channelId: Snowflake('new channel id')));
-
-    await Future.forEach(usersToMove, (userId) async => discordUsers.add(await bot.users.get(Snowflake(int.parse(userId)))));
-
-    discordUsers.forEach((user) {
-      var builder = GatewayVoiceStateBuilder(channelId: toChannel.id, isMuted: false, isDeafened: false);
-
-      // guil
-      // user.manager.update(builder);
+    usersToMove.forEach((userId) {
+      context.guild?.members.update(Snowflake(int.parse(userId)), MemberUpdateBuilder(voiceChannelId: toChannel.id));
     });
 
-    // usersToMove.forEach((user) {
-    //   var builder = GatewayVoiceStateBuilder(channelId: toChannel.id, isMuted: false, isDeafened: false);
-    //
-    //   // var builder = MemberBuilder()..channel = Snowflake(toChannel);
-    //   //
-    //   // bot.httpEndpoints.editGuildMember(Snowflake(chatId), Snowflake(user), builder: builder);
-    // });
-    //
-    // await channelUsersFile.delete();
+    await channelUsersFile.delete();
   }
 }

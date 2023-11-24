@@ -192,18 +192,12 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
 
   void _setupCommandWithOtherUserIds(BotCommand command) {
     _commands.add(ChatCommand(command.command, command.description, (ChatContext context, Member who) async {
-      var user = await who.user?.get();
-
-      if (user == null) {
-        return sendMessage(context.guild?.id.toString() ?? '', translation: 'general.something_went_wrong');
-      }
-
+      var user = await bot.users.get(who.id);
       var isPremium = user.nitroType.value > 0 ? 'true' : 'false';
       await context.respond(MessageBuilder(content: user.username));
 
       access.execute(
-          event: transformPlatformMessageToMessageEventWithOtherUserIds(context, [who.user?.id.toString()])
-            ..parameters.addAll([user.username, isPremium]),
+          event: transformPlatformMessageToMessageEventWithOtherUserIds(context, [who.id])..parameters.addAll([user.username, isPremium]),
           accessLevel: command.accessLevel,
           onSuccess: command.onSuccess,
           onFailure: sendNoAccessMessage);

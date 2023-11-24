@@ -1,6 +1,4 @@
-import 'dart:io';
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:collection/collection.dart';
 import 'package:nyxx/nyxx.dart';
@@ -34,6 +32,7 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
   final weather.User user;
 
   final List<ChatCommand> _commands = [];
+  final Map<String, Map<String, bool>> _usersOnlineStatus = {};
 
   late NyxxGateway bot;
 
@@ -57,6 +56,7 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
         options: GatewayClientOptions(plugins: [_setupDiscordCommands(), logging, cliIntegration, ignoreExceptions]));
 
     _startHeroCheckJob();
+    _watchUsersStatusUpdate();
 
     print('Discord platform has been started!');
   }
@@ -142,7 +142,7 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
 
   @override
   startAccordionPoll(String chatId, List<String> pollOptions, int pollTime) {
-    throw "Not implemented";
+    throw 'Not implemented';
   }
 
   void _setupPlatformSpecificCommands() {
@@ -220,24 +220,26 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
   }
 
   void _startHeroCheckJob() {
-    // TODO: onlineUsers are returned for a single chat only. Fix this + make this job configurable per chat
     Cron().schedule(Schedule.parse('0 4 * * 6,0'), () async {
       var authorizedChats = await chat.getAllChatIdsForPlatform(chatPlatform);
 
-      await Process.run('${Directory.current.path}/generate-online', []);
-
-      var onlineFile = File('assets/online');
-      var onlineUsers = await onlineFile.readAsLines();
-
       await Future.forEach(authorizedChats, (chatId) async {
-        if (onlineUsers.isEmpty) {
+        var chatOnlineUsers = _usersOnlineStatus[chatId];
+        if (chatOnlineUsers == null) {
+          print('Attempt to get online users for empty chat $chatId');
+
+          return null;
+        }
+
+        var listOfOnlineUsers = chatOnlineUsers.entries.where((entry) => entry.value == true).map((entry) => entry.key).toList();
+        if (listOfOnlineUsers.isEmpty) {
           return sendMessage(chatId, translation: 'hero.users_at_five.no_users');
         }
 
-        var heroesMessage = chat.getText(chatId, 'hero.users_at_five.list');
         var chatUsers = await user.getUsersForChat(chatId);
+        var heroesMessage = chat.getText(chatId, 'hero.users_at_five.list');
 
-        onlineUsers.forEach((userId) {
+        listOfOnlineUsers.forEach((userId) {
           var onlineUser = chatUsers.firstWhereOrNull((user) => user.id == userId);
 
           if (onlineUser != null) {
@@ -248,8 +250,23 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
 
         await sendMessage(chatId, message: heroesMessage);
       });
+    });
+  }
 
-      await onlineFile.delete();
+  void _watchUsersStatusUpdate() {
+    bot.onPresenceUpdate.listen((event) {
+      var userId = event.user?.id.toString();
+      var guildId = event.guildId?.toString();
+
+      if (userId == null || guildId == null) {
+        return;
+      }
+
+      if (event.status == UserStatus.online) {
+        (_usersOnlineStatus[guildId] ??= {})[userId] = true;
+      } else {
+        (_usersOnlineStatus[guildId] ??= {})[userId] = false;
+      }
     });
   }
 

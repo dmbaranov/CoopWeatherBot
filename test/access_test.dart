@@ -11,7 +11,6 @@ import 'utils/helpers.dart';
 
 const adminId = '369';
 
-@Skip('TODO: get rid of Future.delayed')
 void main() {
   setupTestEnvironment();
   late Access access;
@@ -47,7 +46,7 @@ void main() {
           },
           onFailure: (messageEvent) {
             failureCallbackCalled = true;
-            
+
             return Future.value(null);
           });
 
@@ -55,6 +54,6 @@ void main() {
 
       expect(successCallbackCalled, equals(true));
       expect(failureCallbackCalled, equals(false));
-    });
+    }, skip: 'TODO: get rid of Future.delayed');
   });
 }

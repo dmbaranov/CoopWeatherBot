@@ -98,6 +98,7 @@ class Bot {
         command: 'addcity',
         description: '[U] Add city to the watchlist',
         accessLevel: AccessLevel.user,
+        withParameters: true,
         onSuccess: _weatherManager.addCity));
 
     _platform.setupCommand(BotCommand(

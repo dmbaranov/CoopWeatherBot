@@ -11,8 +11,8 @@ dependencies:
   html: ^0.15.0
   debounce_throttle: ^2.0.0
   crypto: ^3.0.2
-  nyxx: ^6.0.2
-  nyxx_commands: ^6.0.0
+  nyxx: ^6.0.3
+  nyxx_commands: ^6.0.1
   cron: ^0.5.1
   args: ^2.4.0
   http: ^1.1.1

@@ -46,7 +46,9 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
       required this.user});
 
   @override
-  Future<void> initialize() async {}
+  Future<void> initialize() async {
+    print('No initialize script for Discord');
+  }
 
   @override
   Future<void> postStart() async {
@@ -63,7 +65,7 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
 
   @override
   Future<Message> sendMessage(String chatId, {String? message, String? translation}) async {
-    var guild = await bot.guilds.fetch(Snowflake(int.parse(chatId)));
+    var guild = await bot.guilds.get(Snowflake(int.parse(chatId)));
     var channelId = guild.systemChannel?.id ?? Snowflake.zero;
     var channel = await bot.channels.get(channelId) as TextChannel;
 

@@ -43,13 +43,13 @@ class BotUserRepository extends Repository {
     return executeTransaction(queriesMap['update_premium_status'], {'userId': userId, 'isPremium': isPremium});
   }
 
-  BotUser _mapUser(PostgreSQLResultRow foundUser) {
+  BotUser _mapUser(ResultRow foundUser) {
     return BotUser(
-        id: foundUser[0],
-        name: foundUser[1],
-        isPremium: foundUser[2],
-        deleted: foundUser[3],
-        banned: foundUser[4],
-        moderator: foundUser[5]);
+        id: foundUser[0] as String,
+        name: foundUser[1] as String,
+        isPremium: foundUser[2] as bool,
+        deleted: foundUser[3] as bool,
+        banned: foundUser[4] as bool,
+        moderator: foundUser[5] as bool);
   }
 }

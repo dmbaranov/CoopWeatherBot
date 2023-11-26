@@ -17,7 +17,7 @@ dependencies:
   args: ^2.4.0
   http: ^1.1.1
   collection: ^1.17.1
-  postgres: ^2.6.1
+  postgres: ^3.0.1
   meta: ^1.11.0
   uuid: ^4.2.1
   event_bus: ^2.0.0

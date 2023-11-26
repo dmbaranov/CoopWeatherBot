@@ -11,7 +11,7 @@ class ReputationRepository extends Repository {
       return [];
     }
 
-    return rawReputation.map((reputation) => ChatReputationData(name: reputation[0], reputation: reputation[1])).toList();
+    return rawReputation.map((reputation) => ChatReputationData(name: reputation[0] as String, reputation: reputation[1] as int)).toList();
   }
 
   Future<SingleReputationData?> getSingleReputationData(String chatId, String userId) async {
@@ -30,10 +30,10 @@ class ReputationRepository extends Repository {
     var reputationData = data[0];
 
     return SingleReputationData(
-        id: reputationData[0],
-        reputation: reputationData[1],
-        increaseOptionsLeft: reputationData[2],
-        decreaseOptionsLeft: reputationData[3]);
+        id: reputationData[0] as String,
+        reputation: reputationData[1] as int,
+        increaseOptionsLeft: reputationData[2] as int,
+        decreaseOptionsLeft: reputationData[3] as int);
   }
 
   Future<int> updateReputation(String chatId, String userId, int reputation) {

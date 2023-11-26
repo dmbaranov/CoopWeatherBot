@@ -27,7 +27,11 @@ class ChatRepository extends Repository {
     }
 
     return chats
-        .map((chat) => ChatData(id: chat[0], name: chat[1], platform: ChatPlatform.fromString(chat[2]), swearwordsConfig: chat[3]))
+        .map((chat) => ChatData(
+            id: chat[0] as String,
+            name: chat[1] as String,
+            platform: ChatPlatform.fromString(chat[2] as String),
+            swearwordsConfig: chat[3] as String))
         .toList();
   }
 

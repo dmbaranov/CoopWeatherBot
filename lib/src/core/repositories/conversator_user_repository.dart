@@ -14,11 +14,11 @@ class ConversatorUserRepository extends Repository {
     var userData = user[0];
 
     return ConversatorUser(
-        id: userData[0],
-        dailyRegularInvocations: userData[1],
-        totalRegularInvocations: userData[2],
-        dailyAdvancedInvocations: userData[3],
-        totalAdvancedInvocations: userData[4]);
+        id: userData[0] as String,
+        dailyRegularInvocations: userData[1] as int,
+        totalRegularInvocations: userData[2] as int,
+        dailyAdvancedInvocations: userData[3] as int,
+        totalAdvancedInvocations: userData[4] as int);
   }
 
   Future<int> createConversatorUser(String userId) {

@@ -25,7 +25,7 @@ class WeatherRepository extends Repository {
       return [];
     }
 
-    return hoursForChats.map((config) => ChatNotificationHour(chatId: config[0], notificationHour: config[1])).toList();
+    return hoursForChats.map((config) => ChatNotificationHour(chatId: config[0] as String, notificationHour: config[1] as int)).toList();
   }
 
   Future<List<String>?> getCities(String chatId) async {
@@ -43,6 +43,6 @@ class WeatherRepository extends Repository {
 
     var citiesData = data[0];
 
-    return citiesData[0]?.split(',');
+    return (citiesData[0] as String?)?.split(',');
   }
 }

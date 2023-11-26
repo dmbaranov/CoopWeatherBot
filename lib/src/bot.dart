@@ -30,7 +30,7 @@ class Bot {
   final String openweatherKey;
   final String youtubeKey;
   final String conversatorKey;
-  final PostgreSQLConnection dbConnection;
+  final Pool dbConnection;
 
   late Platform _platform;
   late Database _db;

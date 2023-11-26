@@ -6,7 +6,7 @@ const String _pathToQueries = 'assets/db/queries';
 
 class Repository {
   final String repositoryName;
-  final PostgreSQLConnection dbConnection;
+  final Pool dbConnection;
   final String _queriesDirectory = _pathToQueries;
 
   @protected
@@ -28,28 +28,28 @@ class Repository {
   }
 
   @protected
-  Future<PostgreSQLResult?> executeQuery(String? query, [Map<String, dynamic>? substitutionValues]) async {
+  Future<Result?> executeQuery(String? query, [Map<String, dynamic>? parameters]) async {
     if (query == null) {
       print('Wrong query $query');
 
       return null;
     }
 
-    return dbConnection.query(query, substitutionValues: substitutionValues);
+    return dbConnection.execute(Sql.named(query), parameters: parameters);
   }
 
   @protected
-  Future<int> executeTransaction(String? query, [Map<String, dynamic>? substitutionValues]) async {
+  Future<int> executeTransaction(String? query, [Map<String, dynamic>? parameters]) async {
     if (query == null) {
       print('Wrong query $query');
 
       return 0;
     }
 
-    int result = await dbConnection.transaction((ctx) async {
-      var queryResult = await ctx.query(query, substitutionValues: substitutionValues);
+    int result = await dbConnection.runTx((ctx) async {
+      var queryResult = await ctx.execute(Sql.named(query), parameters: parameters);
 
-      return queryResult.affectedRowCount;
+      return queryResult.affectedRows;
     }).catchError((error) {
       print('DB transaction error');
       print(error);

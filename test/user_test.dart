@@ -108,10 +108,10 @@ void main() {
   });
 }
 
-Future<PostgreSQLResult> _getAllUsers() {
-  return DbConnection.connection.query('SELECT * FROM bot_user');
+Future<Result> _getAllUsers() {
+  return DbConnection.connection.execute('SELECT * FROM bot_user');
 }
 
-Future<PostgreSQLResult> _getAllChatMembers() {
-  return DbConnection.connection.query('SELECT * FROM chat_member');
+Future<Result> _getAllChatMembers() {
+  return DbConnection.connection.execute('SELECT * FROM chat_member');
 }

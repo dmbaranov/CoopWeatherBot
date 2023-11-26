@@ -59,6 +59,6 @@ void main() {
   });
 }
 
-Future<PostgreSQLResult> _getAllChats() {
-  return DbConnection.connection.query('SELECT * FROM chat');
+Future<Result> _getAllChats() {
+  return DbConnection.connection.execute('SELECT * FROM chat');
 }

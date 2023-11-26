@@ -16,7 +16,10 @@ class ConversatorChatRepository extends Repository {
       return [];
     }
 
-    return rawChatData.map((chatData) => ConversatorChatMessage(message: chatData[0] as String, fromUser: chatData[1] as bool)).toList();
+    return rawChatData
+        .map((chatData) => chatData.toColumnMap())
+        .map((chatData) => ConversatorChatMessage(message: chatData['message'], fromUser: chatData['from_user']))
+        .toList();
   }
 
   Future<String?> findConversationById(String chatId, String messageId) async {

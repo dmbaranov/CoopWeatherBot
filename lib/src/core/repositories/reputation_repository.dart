@@ -27,13 +27,13 @@ class ReputationRepository extends Repository {
       return null;
     }
 
-    var reputationData = data[0];
+    var reputationData = data[0].toColumnMap();
 
     return SingleReputationData(
-        id: reputationData[0] as String,
-        reputation: reputationData[1] as int,
-        increaseOptionsLeft: reputationData[2] as int,
-        decreaseOptionsLeft: reputationData[3] as int);
+        id: reputationData['bot_user_id'],
+        reputation: reputationData['reputation'],
+        increaseOptionsLeft: reputationData['increase_options_left'],
+        decreaseOptionsLeft: reputationData['decrease_options_left']);
   }
 
   Future<int> updateReputation(String chatId, String userId, int reputation) {

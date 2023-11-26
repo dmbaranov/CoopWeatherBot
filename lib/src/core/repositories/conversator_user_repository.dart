@@ -11,14 +11,14 @@ class ConversatorUserRepository extends Repository {
       return createConversatorUser(userId).then((_) => getConversatorUser(userId));
     }
 
-    var userData = user[0];
+    var userData = user[0].toColumnMap();
 
     return ConversatorUser(
-        id: userData[0] as String,
-        dailyRegularInvocations: userData[1] as int,
-        totalRegularInvocations: userData[2] as int,
-        dailyAdvancedInvocations: userData[3] as int,
-        totalAdvancedInvocations: userData[4] as int);
+        id: userData['id'],
+        dailyRegularInvocations: userData['daily_regular_invocations'],
+        totalRegularInvocations: userData['total_regular_invocations'],
+        dailyAdvancedInvocations: userData['daily_advanced_invocations'],
+        totalAdvancedInvocations: userData['total_advanced_invocations']);
   }
 
   Future<int> createConversatorUser(String userId) {

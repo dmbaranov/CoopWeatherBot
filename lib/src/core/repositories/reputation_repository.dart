@@ -11,7 +11,10 @@ class ReputationRepository extends Repository {
       return [];
     }
 
-    return rawReputation.map((reputation) => ChatReputationData(name: reputation[0] as String, reputation: reputation[1] as int)).toList();
+    return rawReputation
+        .map((reputation) => reputation.toColumnMap())
+        .map((reputation) => ChatReputationData(name: reputation['name'], reputation: reputation['reputation']))
+        .toList();
   }
 
   Future<SingleReputationData?> getSingleReputationData(String chatId, String userId) async {

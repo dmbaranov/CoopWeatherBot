@@ -12,7 +12,7 @@ class BotUserRepository extends Repository {
       return [];
     }
 
-    return rawUsers.map(_mapUser).toList();
+    return rawUsers.map((user) => _mapUser(user.toColumnMap())).toList();
   }
 
   Future<BotUser?> getSingleUserForChat(String chatId, String userId) async {
@@ -22,7 +22,7 @@ class BotUserRepository extends Repository {
       return null;
     }
 
-    return _mapUser(rawUser[0]);
+    return _mapUser(rawUser[0].toColumnMap());
   }
 
   Future<int> createUser({required String chatId, required String userId, required String name, bool isPremium = false}) async {
@@ -43,13 +43,13 @@ class BotUserRepository extends Repository {
     return executeTransaction(queriesMap['update_premium_status'], {'userId': userId, 'isPremium': isPremium});
   }
 
-  BotUser _mapUser(PostgreSQLResultRow foundUser) {
+  BotUser _mapUser(Map<String, dynamic> foundUser) {
     return BotUser(
-        id: foundUser[0],
-        name: foundUser[1],
-        isPremium: foundUser[2],
-        deleted: foundUser[3],
-        banned: foundUser[4],
-        moderator: foundUser[5]);
+        id: foundUser['id'],
+        name: foundUser['name'],
+        isPremium: foundUser['is_premium'],
+        deleted: foundUser['deleted'],
+        banned: foundUser['banned'],
+        moderator: foundUser['moderator']);
   }
 }

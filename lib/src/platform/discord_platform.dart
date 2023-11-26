@@ -1,6 +1,4 @@
-import 'dart:io';
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:collection/collection.dart';
 import 'package:nyxx/nyxx.dart';
@@ -9,7 +7,7 @@ import 'package:uuid/uuid.dart';
 import 'package:cron/cron.dart';
 
 import 'package:weather/src/core/chat.dart';
-import 'package:weather/src/core/user.dart';
+import 'package:weather/src/core/user.dart' as weather;
 import 'package:weather/src/core/event_bus.dart';
 import 'package:weather/src/core/access.dart';
 
@@ -21,8 +19,9 @@ import 'package:weather/src/globals/access_level.dart';
 import 'package:weather/src/platform/platform.dart';
 
 const uuid = Uuid();
+const emptyCharacter = 'ㅤ';
 
-class DiscordPlatform<T extends IChatContext> implements Platform<T> {
+class DiscordPlatform<T extends ChatContext> implements Platform<T> {
   @override
   late ChatPlatform chatPlatform;
   final String token;
@@ -30,11 +29,12 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
   final EventBus eventBus;
   final Access access;
   final Chat chat;
-  final User user;
+  final weather.User user;
 
   final List<ChatCommand> _commands = [];
+  final Map<String, Map<String, bool>> _usersOnlineStatus = {};
 
-  late INyxxWebsocket bot;
+  late NyxxGateway bot;
 
   DiscordPlatform(
       {required this.chatPlatform,
@@ -47,38 +47,35 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
 
   @override
   Future<void> initialize() async {
-    bot = NyxxFactory.createNyxxWebsocket(token, GatewayIntents.all);
-
-    _setupPlatformSpecificCommands();
+    print('No initialize script for Discord');
   }
 
   @override
   Future<void> postStart() async {
-    bot
-      ..registerPlugin(Logging())
-      ..registerPlugin(CliIntegration())
-      ..registerPlugin(IgnoreExceptions())
-      ..registerPlugin(_setupDiscordCommands());
+    _setupPlatformSpecificCommands();
 
-    await bot.connect();
+    bot = await Nyxx.connectGateway(token, GatewayIntents.all,
+        options: GatewayClientOptions(plugins: [_setupDiscordCommands(), logging, cliIntegration, ignoreExceptions]));
 
     _startHeroCheckJob();
+    _watchUsersStatusUpdate();
 
     print('Discord platform has been started!');
   }
 
   @override
-  Future<IMessage> sendMessage(String chatId, {String? message, String? translation}) async {
-    var guild = await bot.httpEndpoints.fetchGuild(Snowflake(chatId));
-    var channelId = guild.systemChannel?.id.toString() ?? '';
+  Future<Message> sendMessage(String chatId, {String? message, String? translation}) async {
+    var guild = await bot.guilds.get(Snowflake(int.parse(chatId)));
+    var channelId = guild.systemChannel?.id ?? Snowflake.zero;
+    var channel = await bot.channels.get(channelId) as TextChannel;
 
     if (message != null) {
-      return bot.httpEndpoints.sendMessage(Snowflake(channelId), MessageBuilder.content(message));
+      return channel.sendMessage(MessageBuilder(content: message));
     } else if (translation != null) {
-      return bot.httpEndpoints.sendMessage(Snowflake(channelId), MessageBuilder.content(chat.getText(chatId, translation)));
+      return channel.sendMessage(MessageBuilder(content: chat.getText(chatId, translation)));
     }
 
-    return bot.httpEndpoints.sendMessage(Snowflake(channelId), MessageBuilder.content(chat.getText(chatId, 'something_went_wrong')));
+    return channel.sendMessage(MessageBuilder(content: chat.getText(chatId, 'something_went_wrong')));
   }
 
   @override
@@ -105,40 +102,39 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
   }
 
   @override
-  MessageEvent transformPlatformMessageToGeneralMessageEvent(IChatContext event) {
+  MessageEvent transformPlatformMessageToGeneralMessageEvent(ChatContext event) {
     return MessageEvent(
         platform: chatPlatform,
-        // TODO: replace guildId with channelId?
         chatId: event.guild?.id.toString() ?? '',
         userId: event.user.id.toString(),
         otherUserIds: [],
-        isBot: event.user.bot,
+        isBot: event.user.isBot,
         parameters: [],
         rawMessage: event);
   }
 
   @override
-  MessageEvent transformPlatformMessageToMessageEventWithParameters(IChatContext event, [List? otherParameters]) {
+  MessageEvent transformPlatformMessageToMessageEventWithParameters(ChatContext event, [List? otherParameters]) {
     return transformPlatformMessageToGeneralMessageEvent(event)
       ..parameters.addAll(otherParameters?.map((param) => param.toString()).toList() ?? []);
   }
 
   @override
-  MessageEvent transformPlatformMessageToMessageEventWithOtherUserIds(IChatContext event, [List? otherUserIds]) {
+  MessageEvent transformPlatformMessageToMessageEventWithOtherUserIds(ChatContext event, [List? otherUserIds]) {
     return transformPlatformMessageToGeneralMessageEvent(event)
       ..otherUserIds.addAll(otherUserIds?.map((param) => param.toString()).toList() ?? []);
   }
 
   @override
-  MessageEvent transformPlatformMessageToConversatorMessageEvent(IChatContext event, [List<String>? otherParameters]) {
+  MessageEvent transformPlatformMessageToConversatorMessageEvent(ChatContext event, [List<String>? otherParameters]) {
     return transformPlatformMessageToGeneralMessageEvent(event)..parameters.addAll(otherParameters ?? []);
   }
 
   @override
   Future<bool> getUserPremiumStatus(String chatId, String userId) async {
-    var discordUser = await bot.httpEndpoints.fetchGuildMember(Snowflake(chatId), Snowflake(userId));
+    var discordUser = await bot.users.fetch(Snowflake(int.parse(userId)));
 
-    return discordUser.boostingSince != null;
+    return discordUser.nitroType.value > 0;
   }
 
   @override
@@ -148,13 +144,13 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
 
   @override
   startAccordionPoll(String chatId, List<String> pollOptions, int pollTime) {
-    throw "Not implemented";
+    throw 'Not implemented';
   }
 
   void _setupPlatformSpecificCommands() {
     _commands.add(ChatCommand('moveall', 'Move all users from one voice channel to another',
-        (IChatContext context, IChannel fromChannel, IChannel toChannel) async {
-      await context.respond(MessageBuilder.empty());
+        (ChatContext context, Channel fromChannel, Channel toChannel) async {
+      await context.respond(MessageBuilder(content: emptyCharacter));
 
       access.execute(
           event: transformPlatformMessageToGeneralMessageEvent(context),
@@ -165,7 +161,7 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
   }
 
   CommandsPlugin _setupDiscordCommands() {
-    var commands = CommandsPlugin(prefix: (message) => '!');
+    var commands = CommandsPlugin(prefix: (message) => '!', options: CommandsOptions(logErrors: true));
 
     _commands.forEach((command) => commands.addCommand(command));
 
@@ -173,8 +169,8 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
   }
 
   void _setupSimpleCommand(BotCommand command) {
-    _commands.add(ChatCommand(command.command, command.description, (IChatContext context) async {
-      await context.respond(MessageBuilder.empty());
+    _commands.add(ChatCommand(command.command, command.description, (ChatContext context) async {
+      await context.respond(MessageBuilder(content: emptyCharacter));
 
       access.execute(
           event: transformPlatformMessageToGeneralMessageEvent(context),
@@ -185,8 +181,8 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
   }
 
   void _setupCommandWithParameters(BotCommand command) {
-    _commands.add(ChatCommand(command.command, command.description, (IChatContext context, String what) async {
-      await context.respond(MessageBuilder.content(what));
+    _commands.add(ChatCommand(command.command, command.description, (ChatContext context, String what) async {
+      await context.respond(MessageBuilder(content: what));
 
       access.execute(
           event: transformPlatformMessageToMessageEventWithParameters(context, [what]),
@@ -197,14 +193,13 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
   }
 
   void _setupCommandWithOtherUserIds(BotCommand command) {
-    _commands.add(ChatCommand(command.command, command.description, (IChatContext context, IMember who) async {
-      var user = await who.user.getOrDownload();
-      var isPremium = who.boostingSince != null ? 'true' : 'false';
-      await context.respond(MessageBuilder.content(user.username));
+    _commands.add(ChatCommand(command.command, command.description, (ChatContext context, Member who) async {
+      var user = await bot.users.get(who.id);
+      var isPremium = user.nitroType.value > 0 ? 'true' : 'false';
+      await context.respond(MessageBuilder(content: user.username));
 
       access.execute(
-          event: transformPlatformMessageToMessageEventWithOtherUserIds(context, [who.user.id.toString()])
-            ..parameters.addAll([user.username, isPremium]),
+          event: transformPlatformMessageToMessageEventWithOtherUserIds(context, [who.id])..parameters.addAll([user.username, isPremium]),
           accessLevel: command.accessLevel,
           onSuccess: command.onSuccess,
           onFailure: sendNoAccessMessage);
@@ -212,8 +207,8 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
   }
 
   void _setupCommandForConversator(BotCommand command) {
-    _commands.add(ChatCommand(command.command, command.description, (IChatContext context, String what, [String? conversationId]) async {
-      await context.respond(MessageBuilder.content(what));
+    _commands.add(ChatCommand(command.command, command.description, (ChatContext context, String what, [String? conversationId]) async {
+      await context.respond(MessageBuilder(content: what));
 
       conversationId ??= uuid.v4();
       var currentMessageId = uuid.v4();
@@ -227,24 +222,26 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
   }
 
   void _startHeroCheckJob() {
-    // TODO: onlineUsers are returned for a single chat only. Fix this + make this job configurable per chat
     Cron().schedule(Schedule.parse('0 4 * * 6,0'), () async {
       var authorizedChats = await chat.getAllChatIdsForPlatform(chatPlatform);
 
-      await Process.run('${Directory.current.path}/generate-online', []);
-
-      var onlineFile = File('assets/online');
-      var onlineUsers = await onlineFile.readAsLines();
-
       await Future.forEach(authorizedChats, (chatId) async {
-        if (onlineUsers.isEmpty) {
+        var chatOnlineUsers = _usersOnlineStatus[chatId];
+        if (chatOnlineUsers == null) {
+          print('Attempt to get online users for empty chat $chatId');
+
+          return null;
+        }
+
+        var listOfOnlineUsers = chatOnlineUsers.entries.where((entry) => entry.value == true).map((entry) => entry.key).toList();
+        if (listOfOnlineUsers.isEmpty) {
           return sendMessage(chatId, translation: 'hero.users_at_five.no_users');
         }
 
-        var heroesMessage = chat.getText(chatId, 'hero.users_at_five.list');
         var chatUsers = await user.getUsersForChat(chatId);
+        var heroesMessage = chat.getText(chatId, 'hero.users_at_five.list');
 
-        onlineUsers.forEach((userId) {
+        listOfOnlineUsers.forEach((userId) {
           var onlineUser = chatUsers.firstWhereOrNull((user) => user.id == userId);
 
           if (onlineUser != null) {
@@ -255,28 +252,31 @@ class DiscordPlatform<T extends IChatContext> implements Platform<T> {
 
         await sendMessage(chatId, message: heroesMessage);
       });
-
-      await onlineFile.delete();
     });
   }
 
-  void _moveAll(IContext context, IChannel fromChannel, IChannel toChannel) async {
-    await Process.run('${Directory.current.path}/generate-channel-users', []);
+  void _watchUsersStatusUpdate() {
+    bot.onPresenceUpdate.listen((event) {
+      var userId = event.user?.id.toString();
+      var guildId = event.guildId?.toString();
 
-    var channelUsersFile = File('assets/channels-users');
-    var channelsWithUsersRaw = await channelUsersFile.readAsLines();
+      if (userId == null || guildId == null) {
+        return;
+      }
 
-    Map<String, dynamic> channelsWithUsers = jsonDecode(channelsWithUsersRaw[0]);
-    List usersToMove = channelsWithUsers[fromChannel.toString()];
-
-    var chatId = context.guild?.id.toString() ?? '';
-
-    usersToMove.forEach((user) {
-      var builder = MemberBuilder()..channel = Snowflake(toChannel);
-
-      bot.httpEndpoints.editGuildMember(Snowflake(chatId), Snowflake(user), builder: builder);
+      if (event.status == UserStatus.online) {
+        (_usersOnlineStatus[guildId] ??= {})[userId] = true;
+      } else {
+        (_usersOnlineStatus[guildId] ??= {})[userId] = false;
+      }
     });
+  }
 
-    await channelUsersFile.delete();
+  void _moveAll(ChatContext context, Channel fromChannel, Channel toChannel) async {
+    context.guild?.voiceStates.entries.toList().forEach((voiceState) {
+      if (voiceState.value.channelId == fromChannel.id) {
+        context.guild?.members.update(voiceState.value.userId, MemberUpdateBuilder(voiceChannelId: toChannel.id));
+      }
+    });
   }
 }

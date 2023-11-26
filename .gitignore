@@ -17,4 +17,3 @@ assets/swearwords/swearwords.*.json
 !assets/swearwords/swearwords.sample.json
 assets/misc/*.*
 !assets/misc/*.sample.*
-assets/online

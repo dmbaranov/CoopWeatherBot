@@ -91,6 +91,6 @@ void main() {
   });
 }
 
-Future<PostgreSQLResult> _getAllWeather() {
-  return DbConnection.connection.query('SELECT * FROM weather');
+Future<Result> _getAllWeather() {
+  return DbConnection.connection.execute('SELECT * FROM weather');
 }

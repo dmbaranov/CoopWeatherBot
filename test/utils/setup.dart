@@ -24,14 +24,13 @@ void setupTestEnvironment() {
     }
 
     var dbConnection = DbConnection.connection;
-    await dbConnection.open();
 
     await MigrationsManager(dbConnection).runMigrations();
   });
 
   tearDownAll(() async {
-    await DbConnection.connection.query('DROP SCHEMA public CASCADE;');
-    await DbConnection.connection.query('CREATE SCHEMA public;');
+    await DbConnection.connection.execute('DROP SCHEMA public CASCADE;');
+    await DbConnection.connection.execute('CREATE SCHEMA public;');
   });
 }
 

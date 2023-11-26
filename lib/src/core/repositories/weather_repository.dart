@@ -25,7 +25,10 @@ class WeatherRepository extends Repository {
       return [];
     }
 
-    return hoursForChats.map((config) => ChatNotificationHour(chatId: config[0], notificationHour: config[1])).toList();
+    return hoursForChats
+        .map((config) => config.toColumnMap())
+        .map((config) => ChatNotificationHour(chatId: config['chat_id'], notificationHour: config['notification_hour']))
+        .toList();
   }
 
   Future<List<String>?> getCities(String chatId) async {
@@ -41,8 +44,8 @@ class WeatherRepository extends Repository {
       return null;
     }
 
-    var citiesData = data[0];
+    var citiesData = data[0].toColumnMap();
 
-    return citiesData[0]?.split(',');
+    return citiesData['cities']?.split(',');
   }
 }

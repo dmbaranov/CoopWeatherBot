@@ -9,7 +9,7 @@ import 'repositories/conversator_chat_repository.dart';
 import 'repositories/conversator_user_repository.dart';
 
 class Database {
-  final PostgreSQLConnection dbConnection;
+  final Pool dbConnection;
   final BotUserRepository user;
   final ChatRepository chat;
   final ReputationRepository reputation;

@@ -5,7 +5,7 @@ const String _pathToMigrations = 'assets/db/migrations';
 const String _migrationTableMigrationName = '1677944890_migration.sql';
 
 class MigrationsManager {
-  final PostgreSQLConnection dbConnection;
+  final Pool dbConnection;
   final String _migrationsDirectory = _pathToMigrations;
 
   MigrationsManager(this.dbConnection);
@@ -35,7 +35,7 @@ class MigrationsManager {
   }
 
   Future<void> _createMigrationsTableIfNeeded(File migration) async {
-    var migrationTable = await dbConnection.query("SELECT * FROM information_schema.tables WHERE table_name = 'migration'");
+    var migrationTable = await dbConnection.execute("SELECT * FROM information_schema.tables WHERE table_name = 'migration'");
 
     if (migrationTable.isEmpty) {
       var query = await migration.readAsString();
@@ -45,15 +45,15 @@ class MigrationsManager {
 
   Future<bool> _shouldRunMigration(String migrationName) async {
     var savedMigration = await dbConnection
-        .query('SELECT id FROM migration WHERE name = @migrationName', substitutionValues: {'migrationName': migrationName});
+        .execute(Sql.named('SELECT id FROM migration WHERE name = @migrationName'), parameters: {'migrationName': migrationName});
 
     return savedMigration.isEmpty;
   }
 
   Future<void> _runMigration(String query, String migrationName) async {
-    await dbConnection.transaction((ctx) async {
-      await ctx.query(query);
-      await ctx.query('INSERT INTO migration(name) VALUES(@migrationName)', substitutionValues: {'migrationName': migrationName});
+    await dbConnection.runTx((ctx) async {
+      await ctx.execute(Sql.named(query));
+      await ctx.execute(Sql.named('INSERT INTO migration(name) VALUES(@migrationName)'), parameters: {'migrationName': migrationName});
     });
   }
 }

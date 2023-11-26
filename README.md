@@ -35,5 +35,3 @@ and [PostgreSQL](https://www.postgresql.org/) installed and running. Once ready,
 2. Update variables in the .env file
 3. `dart pub get`
 3. `dart bin/main.dart -p telegram` or `dart bin/main.dart -p discord`
-
-[Private tools](https://github.com/dmbaranov/CoopWeatherBot-tools)

@@ -14,7 +14,7 @@ class ConversatorUserRepository extends Repository {
     var userData = user[0].toColumnMap();
 
     return ConversatorUser(
-        id: userData['id'],
+        id: userData['bot_user_id'],
         dailyRegularInvocations: userData['daily_regular_invocations'],
         totalRegularInvocations: userData['total_regular_invocations'],
         dailyAdvancedInvocations: userData['daily_advanced_invocations'],

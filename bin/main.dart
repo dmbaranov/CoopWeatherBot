@@ -14,7 +14,7 @@ Future<Pool> getDatabaseConnection(DotEnv env) async {
   final database = env['dbdatabase']!;
 
   return Pool.withEndpoints([Endpoint(host: 'localhost', port: 5432, database: database, username: username, password: password)],
-      settings: PoolSettings(sslMode: SslMode.disable));
+      settings: PoolSettings(maxConnectionCount: 4, sslMode: SslMode.disable));
 }
 
 ArgResults getRunArguments(List<String> args) {

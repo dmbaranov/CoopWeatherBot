@@ -7,11 +7,10 @@ import 'package:weather/src/modules/utils.dart';
 
 class UserManager {
   final Platform platform;
-  final Database db;
   final Chat chat;
   final User user;
 
-  UserManager({required this.platform, required this.db, required this.chat, required this.user});
+  UserManager({required this.platform, required this.chat, required this.user});
 
   void initialize() {
     _subscribeToUserUpdates();

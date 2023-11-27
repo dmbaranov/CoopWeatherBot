@@ -47,28 +47,11 @@ class User {
   }
 
   Future<BotUser?> getSingleUserForChat(String chatId, String userId) async {
-    var user = await db.user.getSingleUserForChat(chatId, userId);
-
-    if (user != null) {
-      return BotUser(
-          id: user.id, name: user.name, isPremium: user.isPremium, deleted: user.deleted, banned: user.banned, moderator: user.moderator);
-    }
-
-    return null;
+    return db.user.getSingleUserForChat(chatId, userId);
   }
 
   Future<List<BotUser>> getUsersForChat(String chatId) async {
-    var users = await db.user.getAllUsersForChat(chatId);
-
-    return users
-        .map((dbUser) => BotUser(
-            id: dbUser.id,
-            name: dbUser.name,
-            isPremium: dbUser.isPremium,
-            deleted: dbUser.deleted,
-            banned: dbUser.banned,
-            moderator: dbUser.moderator))
-        .toList();
+    return db.user.getAllUsersForChat(chatId);
   }
 
   Future<bool> addUser({required String userId, required String chatId, required String name, bool isPremium = false}) async {

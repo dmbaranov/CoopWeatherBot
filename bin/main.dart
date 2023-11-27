@@ -8,15 +8,13 @@ import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/weather.dart';
 import 'package:weather/src/utils/migrations_manager.dart';
 
-Future<PostgreSQLConnection> getDatabaseConnection(DotEnv env) async {
+Future<Pool> getDatabaseConnection(DotEnv env) async {
   final username = env['dbuser']!;
   final password = env['dbpassword']!;
   final database = env['dbdatabase']!;
 
-  var connection = PostgreSQLConnection('localhost', 5432, database, username: username, password: password);
-  await connection.open();
-
-  return connection;
+  return Pool.withEndpoints([Endpoint(host: 'localhost', port: 5432, database: database, username: username, password: password)],
+      settings: PoolSettings(maxConnectionCount: 4, sslMode: SslMode.disable));
 }
 
 ArgResults getRunArguments(List<String> args) {
@@ -34,7 +32,7 @@ ArgResults getRunArguments(List<String> args) {
   return parsedArguments;
 }
 
-Future<void> runMigrations(PostgreSQLConnection dbConnection) async {
+Future<void> runMigrations(Pool dbConnection) async {
   MigrationsManager migrationsManager = MigrationsManager(dbConnection);
 
   await migrationsManager.runMigrations();

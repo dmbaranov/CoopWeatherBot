@@ -31,7 +31,7 @@ class Bot {
   final String openweatherKey;
   final String youtubeKey;
   final String conversatorKey;
-  final PostgreSQLConnection dbConnection;
+  final Pool dbConnection;
 
   late Platform _platform;
   late Database _db;
@@ -103,6 +103,7 @@ class Bot {
         command: 'addcity',
         description: '[U] Add city to the watchlist',
         accessLevel: AccessLevel.user,
+        withParameters: true,
         onSuccess: _weatherManager.addCity));
 
     _platform.setupCommand(BotCommand(

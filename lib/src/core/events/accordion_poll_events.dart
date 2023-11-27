@@ -9,11 +9,9 @@ class AccordionPollEvent {
 }
 
 class PollCompletedYes extends AccordionPollEvent {
-  PollCompletedYes({required BotUser fromUser, required BotUser toUser, required String chatId})
-      : super(fromUser: fromUser, toUser: toUser, chatId: chatId);
+  PollCompletedYes({required super.fromUser, required super.toUser, required super.chatId});
 }
 
 class PollCompletedNo extends AccordionPollEvent {
-  PollCompletedNo({required BotUser fromUser, required BotUser toUser, required String chatId})
-      : super(fromUser: fromUser, toUser: toUser, chatId: chatId);
+  PollCompletedNo({required super.fromUser, required super.toUser, required super.chatId});
 }

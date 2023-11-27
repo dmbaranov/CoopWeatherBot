@@ -10,7 +10,7 @@ import 'repositories/conversator_user_repository.dart';
 import 'repositories/commands_statistics_repository.dart';
 
 class Database {
-  final PostgreSQLConnection dbConnection;
+  final Pool dbConnection;
   final BotUserRepository user;
   final ChatRepository chat;
   final ReputationRepository reputation;

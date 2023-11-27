@@ -124,6 +124,6 @@ void main() {
   });
 }
 
-Future<PostgreSQLResult> _getAllReputationData() {
-  return DbConnection.connection.query('SELECT * FROM reputation');
+Future<Result> _getAllReputationData() {
+  return DbConnection.connection.execute('SELECT * FROM reputation');
 }

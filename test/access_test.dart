@@ -12,7 +12,6 @@ import 'utils/helpers.dart';
 
 const adminId = '369';
 
-@Skip('TODO: get rid of Future.delayed')
 void main() {
   setupTestEnvironment();
   late Access access;
@@ -47,17 +46,19 @@ void main() {
           event: getFakeMessageEvent(userId: adminId),
           command: 'test-command',
           accessLevel: AccessLevel.admin,
-          onSuccess: (MessageEvent) {
+          onSuccess: (messageEvent) {
             successCallbackCalled = true;
           },
-          onFailure: (MessageEvent) async {
+          onFailure: (messageEvent) {
             failureCallbackCalled = true;
+
+            return Future.value(null);
           });
 
       await Future.delayed(Duration(seconds: 1));
 
       expect(successCallbackCalled, equals(true));
       expect(failureCallbackCalled, equals(false));
-    });
+    }, skip: 'TODO: get rid of Future.delayed');
   });
 }

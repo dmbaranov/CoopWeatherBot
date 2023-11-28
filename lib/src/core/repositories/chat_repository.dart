@@ -26,17 +26,28 @@ class ChatRepository extends Repository {
       return [];
     }
 
-    return chats
-        .map((chat) => chat.toColumnMap())
-        .map((chat) => ChatData(
-            id: chat['id'],
-            name: chat['name'],
-            platform: ChatPlatform.fromString(chat['platform']),
-            swearwordsConfig: chat['swearwords_config']))
-        .toList();
+    return chats.map((chat) => _mapChat(chat.toColumnMap())).toList();
+  }
+
+  Future<ChatData?> getSingleChat({required String chatId}) async {
+    var chat = await executeQuery(queriesMap['get_single_chat'], {'chatId': chatId});
+
+    if (chat == null || chat.isEmpty) {
+      return null;
+    }
+
+    return _mapChat(chat[0].toColumnMap());
   }
 
   Future<int> setChatSwearwordsConfig(String chatId, String config) {
     return executeTransaction(queriesMap['set_swearwords_config'], {'chatId': chatId, 'config': config});
+  }
+
+  ChatData _mapChat(Map<String, dynamic> foundChat) {
+    return ChatData(
+        id: foundChat['id'],
+        name: foundChat['name'],
+        platform: ChatPlatform.fromString(foundChat['platform']),
+        swearwordsConfig: foundChat['swearwords_config']);
   }
 }

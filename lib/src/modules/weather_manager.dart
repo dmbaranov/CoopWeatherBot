@@ -96,7 +96,13 @@ class WeatherManager {
   }
 
   void _subscribeToWeatherUpdates() {
-    _weather.weatherStream.listen((weatherData) {
+    _weather.weatherStream.listen((weatherData) async {
+      var chatData = await chat.getSingleChat(chatId: weatherData.chatId);
+
+      if (chatData?.platform != platform.chatPlatform) {
+        return;
+      }
+
       var fakeEvent = MessageEvent(
           platform: platform.chatPlatform,
           chatId: weatherData.chatId,

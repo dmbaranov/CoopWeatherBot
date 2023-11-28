@@ -30,6 +30,10 @@ class Chat {
     return creationResult == 1;
   }
 
+  Future<ChatData?> getSingleChat({required String chatId}) {
+    return db.chat.getSingleChat(chatId: chatId);
+  }
+
   Future<List<String>> getAllChatIdsForPlatform(ChatPlatform platform) {
     return db.chat.getAllChatIds(platform.value);
   }

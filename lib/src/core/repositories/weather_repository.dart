@@ -9,7 +9,7 @@ class WeatherRepository extends Repository {
   }
 
   Future<int> updateCities(String chatId, List<String> cities) {
-    var citiesString = cities.join(',');
+    var citiesString = cities.isNotEmpty ? cities.join(',') : null;
 
     return executeTransaction(queriesMap['update_cities'], {'chatId': chatId, 'cities': citiesString});
   }

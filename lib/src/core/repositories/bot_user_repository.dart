@@ -1,4 +1,3 @@
-import 'package:postgres/postgres.dart';
 import 'package:weather/src/core/user.dart' show BotUser;
 import 'repository.dart';
 

@@ -22,6 +22,10 @@ class CommandsStatistics {
     return db.commandsStatistics.getChatCommandInvocations(chatId: chatId);
   }
 
+  Future<List<(String, String, int)>> getUserCommandInvocations({required String userId}) {
+    return db.commandsStatistics.getUserInvocationsStatistics(userId: userId);
+  }
+
   void getStatisticsForUser() {}
 
   void _listenToAccessEvents() {

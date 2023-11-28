@@ -22,16 +22,30 @@ class CommandsStatisticsManager {
 
   void getChatCommandInvocations(MessageEvent event) async {
     var chatId = event.chatId;
-    var commandsInvocationData = await _commandsStatistics.getChatCommandInvocations(chatId: chatId);
-    var invocationsMessage = _buildChatCommandInvocationsMessage(commandsInvocationData);
+    var commandInvocationData = await _commandsStatistics.getChatCommandInvocations(chatId: chatId);
+    var invocationsMessage = _buildCommandInvocationsMessage(commandInvocationData);
     var successfulMessage = chat.getText(chatId, 'commands_statistics.chat_invocations_statistics', {'invocations': invocationsMessage});
 
     sendOperationMessage(chatId,
-        platform: platform, operationResult: commandsInvocationData.isNotEmpty, successfulMessage: successfulMessage);
+        platform: platform, operationResult: commandInvocationData.isNotEmpty, successfulMessage: successfulMessage);
+  }
+
+  void getCurrentUserCommandInvocations(MessageEvent event) async {
+    var chatId = event.chatId;
+    var userId = event.userId;
+    var userCommandInvocationData = await _commandsStatistics.getUserCommandInvocations(userId: userId);
+    var userName = userCommandInvocationData.elementAtOrNull(0)?.$1 ?? '';
+    var noNameInvocationData = userCommandInvocationData.map((data) => (data.$2, data.$3)).toList();
+    var invocationsMessage = _buildCommandInvocationsMessage(noNameInvocationData);
+    var successfulMessage =
+        chat.getText(chatId, 'commands_statistics.user_invocations_data', {'user': userName, 'invocations': invocationsMessage});
+
+    sendOperationMessage(chatId,
+        platform: platform, operationResult: userCommandInvocationData.isNotEmpty, successfulMessage: successfulMessage);
   }
 }
 
-String _buildChatCommandInvocationsMessage(List<(String, int)> invocationsData) {
+String _buildCommandInvocationsMessage(List<(String, int)> invocationsData) {
   var invocationsMessage = '';
 
   invocationsData.forEach((invocationData) {

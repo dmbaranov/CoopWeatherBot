@@ -70,6 +70,7 @@
     "daily_invocation_limit_hit": "Достигнут дневной лимит. Попробуй задать вопрос завтра."
   },
   "commands_statistics": {
-    "chat_invocations_statistics": "Самые популярные команды в чате:\n\n$invocations"
+    "chat_invocations_statistics": "Самые популярные команды в чате:\n\n$invocations",
+    "user_invocations_data": "Пользователь $user чаще всего использовал эти команды:\n\n$invocations"
   }
 }

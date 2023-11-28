@@ -254,9 +254,15 @@ class Bot {
         onSuccess: _accordionPollManager.startAccordionPoll));
 
     _platform.setupCommand(BotCommand(
-        command: 'getchatstatistics',
-        description: '[U] Get commands invocation statistics for the chat',
+        command: 'getchatcommandstatistics',
+        description: '[U] Get command invocation statistics for the chat',
         accessLevel: AccessLevel.user,
         onSuccess: _commandsStatisticsManager.getChatCommandInvocations));
+
+    _platform.setupCommand(BotCommand(
+        command: 'getmycommandstatistics',
+        description: '[U] Get command invocation statistics for the current user',
+        accessLevel: AccessLevel.user,
+        onSuccess: _commandsStatisticsManager.getCurrentUserCommandInvocations));
   }
 }

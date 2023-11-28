@@ -1,7 +1,7 @@
 import 'repository.dart';
 
-class CommandsStatisticsRepository extends Repository {
-  CommandsStatisticsRepository({required super.dbConnection}) : super(repositoryName: 'commands_statistics');
+class CommandStatisticsRepository extends Repository {
+  CommandStatisticsRepository({required super.dbConnection}) : super(repositoryName: 'commands_statistics');
 
   Future<int> createCommandInvocationRecord(
       {required String chatId, required String userId, required String command, required String timestamp}) {

@@ -1,6 +1,6 @@
 name: weather
 description: Multi-platform bot that provides weather to the Coop chat plus some extra things
-version: 3.12.1
+version: 3.13.0g
 
 environment:
   sdk: '>=3.0.0 <4.0.0'

@@ -264,5 +264,12 @@ class Bot {
         description: '[U] Get command invocation statistics for the current user',
         accessLevel: AccessLevel.user,
         onSuccess: _commandStatisticsManager.getCurrentUserCommandInvocations));
+
+    _platform.setupCommand(BotCommand(
+        command: 'getusercommandstatistics',
+        description: '[U] Get command invocation statistics for another user',
+        accessLevel: AccessLevel.user,
+        withOtherUserIds: true,
+        onSuccess: _commandStatisticsManager.getOtherUserCommandInvocations));
   }
 }

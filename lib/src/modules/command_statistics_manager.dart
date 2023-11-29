@@ -30,17 +30,10 @@ class CommandStatisticsManager {
         platform: platform, operationResult: commandInvocationData.isNotEmpty, successfulMessage: successfulMessage);
   }
 
-  void getCurrentUserCommandInvocations(MessageEvent event) async {
-    _getUserCommandInvocations(event, event.userId);
-  }
-
-  void getOtherUserCommandInvocations(MessageEvent event) async {
+  void getUserCommandInvocations(MessageEvent event) async {
     if (!userIdsCheck(platform, event)) return;
 
-    _getUserCommandInvocations(event, event.otherUserIds[0]);
-  }
-
-  void _getUserCommandInvocations(MessageEvent event, String userId) async {
+    var userId = event.otherUserIds[0];
     var chatId = event.chatId;
     var userCommandInvocationData = await _commandStatistics.getUserCommandInvocations(userId: userId);
     var userName = userCommandInvocationData.elementAtOrNull(0)?.$1 ?? '';

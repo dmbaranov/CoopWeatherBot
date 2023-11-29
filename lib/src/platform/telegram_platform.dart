@@ -103,12 +103,16 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   void setupCommand(BotCommand command) {
     var eventMapper = _getEventMapper(command);
 
-    _bot.onCommand(command.command).listen((event) => access.execute(
-        event: eventMapper(event),
-        command: command.command,
-        accessLevel: command.accessLevel,
-        onSuccess: command.onSuccess,
-        onFailure: sendNoAccessMessage));
+    _bot.onCommand(command.command).listen((event) {
+      if (event.text?.startsWith('/') == true) {
+        access.execute(
+            event: eventMapper(event),
+            command: command.command,
+            accessLevel: command.accessLevel,
+            onSuccess: command.onSuccess,
+            onFailure: sendNoAccessMessage);
+      }
+    });
   }
 
   @override

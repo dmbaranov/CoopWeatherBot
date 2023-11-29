@@ -26,8 +26,6 @@ class CommandStatistics {
     return db.commandStatistics.getUserInvocationsStatistics(userId: userId);
   }
 
-  void getStatisticsForUser() {}
-
   void _listenToAccessEvents() {
     eventBus
         .on<AccessEvent>()

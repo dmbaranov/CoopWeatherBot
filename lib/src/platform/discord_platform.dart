@@ -154,6 +154,7 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
 
       access.execute(
           event: transformPlatformMessageToGeneralMessageEvent(context),
+          command: 'moveall',
           accessLevel: AccessLevel.moderator,
           onSuccess: (_) => _moveAll(context, fromChannel, toChannel),
           onFailure: sendNoAccessMessage);
@@ -174,6 +175,7 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
 
       access.execute(
           event: transformPlatformMessageToGeneralMessageEvent(context),
+          command: command.command,
           accessLevel: command.accessLevel,
           onSuccess: command.onSuccess,
           onFailure: sendNoAccessMessage);
@@ -186,6 +188,7 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
 
       access.execute(
           event: transformPlatformMessageToMessageEventWithParameters(context, [what]),
+          command: command.command,
           accessLevel: command.accessLevel,
           onSuccess: command.onSuccess,
           onFailure: sendNoAccessMessage);
@@ -200,6 +203,7 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
 
       access.execute(
           event: transformPlatformMessageToMessageEventWithOtherUserIds(context, [who.id])..parameters.addAll([user.username, isPremium]),
+          command: command.command,
           accessLevel: command.accessLevel,
           onSuccess: command.onSuccess,
           onFailure: sendNoAccessMessage);
@@ -215,6 +219,7 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
 
       access.execute(
           event: transformPlatformMessageToConversatorMessageEvent(context, [conversationId, currentMessageId, what]),
+          command: command.command,
           accessLevel: command.accessLevel,
           onSuccess: command.onSuccess,
           onFailure: sendNoAccessMessage);

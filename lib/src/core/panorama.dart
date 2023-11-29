@@ -25,7 +25,7 @@ class PanoramaNews {
 
   void initialize() {
     _panoramaNewsStreamController = StreamController<int>.broadcast();
-    _updatePanoramaNewsController();
+    _updatePanoramaNewsStream();
   }
 
   Future<NewsData?> getNews(String chatId) async {
@@ -63,7 +63,7 @@ class PanoramaNews {
     return null;
   }
 
-  _updatePanoramaNewsController() {
+  _updatePanoramaNewsStream() {
     _panoramaNewsCronTask?.cancel();
 
     _panoramaNewsCronTask = Cron().schedule(Schedule.parse('0 10,15,20 * * *'), () {

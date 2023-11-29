@@ -1,4 +1,3 @@
-import 'package:weather/src/core/database.dart';
 import 'package:weather/src/core/chat.dart';
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/message_event.dart';
@@ -8,10 +7,9 @@ import 'utils.dart';
 
 class ChatManager {
   final Platform platform;
-  final Database db;
   final Chat chat;
 
-  ChatManager({required this.platform, required this.db, required this.chat});
+  ChatManager({required this.platform, required this.chat});
 
   void createChat(MessageEvent event) async {
     var chatId = event.chatId;

@@ -21,6 +21,7 @@ import 'package:weather/src/modules/youtube_manager.dart';
 import 'package:weather/src/modules/conversator_manager.dart';
 import 'package:weather/src/modules/general_manager.dart';
 import 'package:weather/src/modules/accordion_poll_manager.dart';
+import 'package:weather/src/modules/command_statistics_manager.dart';
 
 class Bot {
   final ChatPlatform platformName;
@@ -49,6 +50,7 @@ class Bot {
   late ChatManager _chatManager;
   late GeneralManager _generalManager;
   late AccordionPollManager _accordionPollManager;
+  late CommandStatisticsManager _commandStatisticsManager;
 
   Bot(
       {required this.platformName,
@@ -70,7 +72,7 @@ class Bot {
     await _chat.initialize();
 
     _user = User(db: _db)..initialize();
-    _access = Access(db: _db, adminId: adminId);
+    _access = Access(db: _db, eventBus: _eventBus, adminId: adminId);
 
     _platform = Platform(
         chatPlatform: platformName, token: botToken, adminId: adminId, eventBus: _eventBus, access: _access, chat: _chat, user: _user);
@@ -81,12 +83,13 @@ class Bot {
     _conversatorManager = ConversatorManager(platform: _platform, db: _db, conversatorApiKey: conversatorKey, adminId: adminId)
       ..initialize();
     _generalManager = GeneralManager(platform: _platform, chat: _chat, repositoryUrl: repoUrl);
-    _chatManager = ChatManager(platform: _platform, db: _db, chat: _chat);
+    _chatManager = ChatManager(platform: _platform, chat: _chat);
     _panoramaManager = PanoramaManager(platform: _platform, chat: _chat, db: _db)..initialize();
-    _userManager = UserManager(platform: _platform, db: _db, chat: _chat, user: _user)..initialize();
+    _userManager = UserManager(platform: _platform, chat: _chat, user: _user)..initialize();
     _reputationManager = ReputationManager(platform: _platform, db: _db, eventBus: _eventBus, chat: _chat)..initialize();
     _weatherManager = WeatherManager(platform: _platform, chat: _chat, db: _db, openweatherKey: openweatherKey)..initialize();
     _accordionPollManager = AccordionPollManager(platform: _platform, eventBus: _eventBus, user: _user, chat: _chat);
+    _commandStatisticsManager = CommandStatisticsManager(platform: _platform, db: _db, eventBus: _eventBus, chat: _chat)..initialize();
 
     _setupCommands();
 
@@ -249,5 +252,24 @@ class Bot {
         accessLevel: AccessLevel.user,
         withOtherUserIds: true,
         onSuccess: _accordionPollManager.startAccordionPoll));
+
+    _platform.setupCommand(BotCommand(
+        command: 'getchatcommandstatistics',
+        description: '[U] Get command invocation statistics for the chat',
+        accessLevel: AccessLevel.user,
+        onSuccess: _commandStatisticsManager.getChatCommandInvocations));
+
+    _platform.setupCommand(BotCommand(
+        command: 'getmycommandstatistics',
+        description: '[U] Get command invocation statistics for the current user',
+        accessLevel: AccessLevel.user,
+        onSuccess: _commandStatisticsManager.getCurrentUserCommandInvocations));
+
+    _platform.setupCommand(BotCommand(
+        command: 'getusercommandstatistics',
+        description: '[U] Get command invocation statistics for another user',
+        accessLevel: AccessLevel.user,
+        withOtherUserIds: true,
+        onSuccess: _commandStatisticsManager.getOtherUserCommandInvocations));
   }
 }

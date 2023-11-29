@@ -89,7 +89,7 @@ class Bot {
     _reputationManager = ReputationManager(platform: _platform, db: _db, eventBus: _eventBus, chat: _chat)..initialize();
     _weatherManager = WeatherManager(platform: _platform, chat: _chat, db: _db, openweatherKey: openweatherKey)..initialize();
     _accordionPollManager = AccordionPollManager(platform: _platform, eventBus: _eventBus, user: _user, chat: _chat);
-    _commandStatisticsManager = CommandStatisticsManager(platform: _platform, db: _db, eventBus: _eventBus, chat: _chat);
+    _commandStatisticsManager = CommandStatisticsManager(platform: _platform, db: _db, eventBus: _eventBus, chat: _chat)..initialize();
 
     _setupCommands();
 

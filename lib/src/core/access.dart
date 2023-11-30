@@ -1,7 +1,7 @@
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/globals/access_level.dart';
-import 'package:weather/src/core/event_bus.dart';
-import 'package:weather/src/core/events/access_events.dart';
+import 'event_bus.dart';
+import 'events/access_events.dart';
 import 'database.dart';
 
 typedef OnSuccessCallback = void Function(MessageEvent event);

@@ -14,10 +14,11 @@ class CommandStatisticsManager {
   final CommandStatistics _commandStatistics;
 
   CommandStatisticsManager({required this.platform, required this.db, required this.eventBus, required this.chat})
-      : _commandStatistics = CommandStatistics(db: db, eventBus: eventBus);
+      : _commandStatistics = CommandStatistics(db: db, eventBus: eventBus, chat: chat, chatPlatform: platform.chatPlatform);
 
   void initialize() {
     _commandStatistics.initialize();
+    _subscribeToChatReports();
   }
 
   void getChatCommandInvocations(MessageEvent event) async {
@@ -45,15 +46,34 @@ class CommandStatisticsManager {
     sendOperationMessage(chatId,
         platform: platform, operationResult: userCommandInvocationData.isNotEmpty, successfulMessage: successfulMessage);
   }
-}
 
-String _buildCommandInvocationsMessage(List<(String, int)> invocationsData) {
-  var invocationsMessage = '';
+  void _subscribeToChatReports() {
+    _commandStatistics.chatReportStream.listen((chatReport) async {
+      var chatId = chatReport.chatId;
 
-  invocationsData.forEach((invocationData) {
-    var (command, count) = invocationData;
-    invocationsMessage += '$command: $count\n';
-  });
+      var successfulMessage = '';
+      var totalCommandsInvoked = chatReport.totalCommandsInvoked;
+      var topUsers = chatReport.topInvocationUsers.map((userData) => '${userData.$1}: ${userData.$2}').join('\n');
+      var topCommands =
+          chatReport.topInvokedCommands.map((commandData) => '${commandData.$1}: ${commandData.$2} (${commandData.$3}%)').join('\n');
 
-  return invocationsMessage;
+      successfulMessage +=
+          chat.getText(chatId, 'command_statistics.chat_report.total_commands_invoked', {'number': totalCommandsInvoked.toString()});
+      successfulMessage += chat.getText(chatId, 'command_statistics.chat_report.top_users', {'topUsers': topUsers});
+      successfulMessage += chat.getText(chatId, 'command_statistics.chat_report.top_commands', {'topCommands': topCommands});
+
+      sendOperationMessage(chatId, platform: platform, operationResult: true, successfulMessage: successfulMessage);
+    });
+  }
+
+  String _buildCommandInvocationsMessage(List<(String, int)> invocationsData) {
+    var invocationsMessage = '';
+
+    invocationsData.forEach((invocationData) {
+      var (command, count) = invocationData;
+      invocationsMessage += '$command: $count\n';
+    });
+
+    return invocationsMessage;
+  }
 }

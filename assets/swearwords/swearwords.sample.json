@@ -71,6 +71,11 @@
   },
   "command_statistics": {
     "chat_invocations_statistics": "Самые популярные команды в чате:\n\n$invocations",
-    "user_invocations_data": "Пользователь $user чаще всего использовал эти команды:\n\n$invocations"
+    "user_invocations_data": "Пользователь $user чаще всего использовал эти команды:\n\n$invocations",
+    "chat_report": {
+      "total_commands_invoked": "В прошлом месяце было вызвано $number команд\n\n",
+      "top_users": "Самыми активными пользователями были:\n$topUsers\n\n",
+      "top_commands": "Самыми используемыми командами были:\n$topCommands"
+    }
   }
 }

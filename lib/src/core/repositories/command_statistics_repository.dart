@@ -18,7 +18,7 @@ class CommandStatisticsRepository extends Repository {
 
     return invocations
         .map<Map<String, dynamic>>((invocation) => invocation.toColumnMap())
-        .map<(String, int)>((invocationData) => (invocationData['command'], invocationData['count']))
+        .map<(String, int)>((invocationData) => (invocationData['command'], invocationData['invocations']))
         .toList();
   }
 
@@ -31,7 +31,7 @@ class CommandStatisticsRepository extends Repository {
 
     return invocations
         .map<Map<String, dynamic>>((invocation) => invocation.toColumnMap())
-        .map<(String, String, int)>((invocationData) => (invocationData['name'], invocationData['command'], invocationData['count']))
+        .map<(String, String, int)>((invocationData) => (invocationData['name'], invocationData['command'], invocationData['invocations']))
         .toList();
   }
 
@@ -44,7 +44,8 @@ class CommandStatisticsRepository extends Repository {
 
     return topInvokedCommands
         .map<Map<String, dynamic>>((invocation) => invocation.toColumnMap())
-        .map<(String, int, int)>((invocationData) => (invocationData['command'], invocationData['count'], invocationData['percentage']))
+        .map<(String, int, int)>(
+            (invocationData) => (invocationData['command'], invocationData['invocations'], invocationData['percentage']))
         .toList();
   }
 
@@ -57,7 +58,7 @@ class CommandStatisticsRepository extends Repository {
 
     return topInvocationUsers
         .map<Map<String, dynamic>>((invocation) => invocation.toColumnMap())
-        .map<(String, int)>((invocationData) => (invocationData['name'], invocationData['count']))
+        .map<(String, int)>((invocationData) => (invocationData['name'], invocationData['invocations']))
         .toList();
   }
 

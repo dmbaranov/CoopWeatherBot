@@ -4,8 +4,8 @@ import 'dart:async';
 import 'package:args/args.dart';
 import 'package:dotenv/dotenv.dart';
 import 'package:postgres/postgres.dart';
-import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/weather.dart';
+import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/utils/migrations_manager.dart';
 
 Future<Pool> getDatabaseConnection(DotEnv env) async {

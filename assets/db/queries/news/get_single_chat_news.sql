@@ -1,4 +1,5 @@
 SELECT id
 FROM news
 WHERE chat_id = @chatId
-  AND news_url = @newsUrl;
+  AND news_url = @newsUrl
+LIMIT 1;

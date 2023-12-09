@@ -44,10 +44,9 @@ class ConversatorManager {
           parentMessageId: parentMessageId,
           currentMessageId: currentMessageId,
           message: message,
-          model: model,
-          responseLimit: responseLimit);
-
-      var conversatorResponseMessage = await platform.sendMessage(chatId, message: response);
+          model: model);
+      
+      var conversatorResponseMessage = await _sendConversatorResponseMessage(chatId, response, responseLimit);
       var conversatorResponseMessageId = platform.getMessageId(conversatorResponseMessage);
       var conversationId = await _conversator.getConversationId(chatId, parentMessageId);
 
@@ -66,5 +65,37 @@ class ConversatorManager {
         platform.sendMessage(chatId, translation: 'general.no_access');
       }
     }
+  }
+
+  Future _sendConversatorResponseMessage(String chatId, String response, int? responseLimit) async {
+    if (responseLimit == null) {
+      return platform.sendMessage(chatId, message: response);
+    }
+
+    var messages = _splitResponseToParts(response, responseLimit);
+    var messageId;
+
+    await Future.forEach(messages, (message) async {
+      await Future.delayed(Duration(milliseconds: 500));
+
+      messageId = await platform.sendMessage(chatId, message: message);
+    });
+
+    return messageId;
+  }
+
+  List<String> _splitResponseToParts(String response, int responseLimit) {
+    List<String> messageParts = [];
+    var regexRule = '.{1,$responseLimit}';
+
+    for (var part in RegExp(regexRule).allMatches(response)) {
+      var message = part[0];
+
+      if (message != null) {
+        messageParts.add(message);
+      }
+    }
+
+    return messageParts;
   }
 }

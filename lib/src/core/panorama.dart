@@ -47,9 +47,9 @@ class PanoramaNews {
 
       var title = post.querySelector('.text-sm > div')?.text;
 
-      var newsWasSentBefore = await db.news.checkIfNewsExists(chatId, postHref);
+      var existingNewsId = await db.news.getSingleNewsIdForChat(chatId, postHref);
 
-      if (title == null || newsWasSentBefore) {
+      if (title == null || existingNewsId != null) {
         continue;
       }
 

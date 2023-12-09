@@ -148,9 +148,9 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
   }
 
   void _setupPlatformSpecificCommands() {
-    _commands.add(ChatCommand('moveall', 'Move all users from one voice channel to another',
-        (ChatContext context, Channel fromChannel, Channel toChannel) async {
-      await context.respond(MessageBuilder(content: emptyCharacter));
+    _commands.add(ChatCommand('moveall', '[M] Move all users from one voice channel to another',
+        (ChatContext context, GuildVoiceChannel fromChannel, GuildVoiceChannel toChannel) async {
+      await context.respond(MessageBuilder(content: '${fromChannel.name} -> ${toChannel.name}'));
 
       access.execute(
           event: transformPlatformMessageToGeneralMessageEvent(context),

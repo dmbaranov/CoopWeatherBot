@@ -3,10 +3,12 @@ import 'repository.dart';
 class NewsRepository extends Repository {
   NewsRepository({required super.dbConnection}) : super(repositoryName: 'news');
 
-  Future<bool> checkIfNewsExists(String chatId, String newsUrl) async {
-    var foundNews = await executeQuery(queriesMap['get_single_chat_news'], {'chatId': chatId, 'newsUrl': newsUrl});
+  Future<int?> getSingleNewsIdForChat(String chatId, String newsUrl) async {
+    var foundNews = await executeQuery(queriesMap['get_single_chat_news_id'], {'chatId': chatId, 'newsUrl': newsUrl});
 
-    return foundNews == null || foundNews.isNotEmpty;
+    if (foundNews != null && foundNews.isNotEmpty) {
+      return foundNews[0].toColumnMap()['id'];
+    }
   }
 
   Future<int> addNews(String chatId, String newsUrl) {

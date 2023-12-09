@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:cron/cron.dart';
 import 'package:weather/src/globals/chat_platform.dart';
+import 'package:weather/src/utils/wait_concurrently.dart';
 import 'events/access_events.dart';
 import 'database.dart';
 import 'event_bus.dart';
@@ -60,9 +61,11 @@ class CommandStatistics {
       var platformChatIds = await chat.getAllChatIdsForPlatform(chatPlatform);
 
       Future.forEach(platformChatIds, (chatId) async {
-        var totalCommandsInvoked = await db.commandStatistics.getMonthlyCommandInvokesNumber(chatId: chatId);
-        var topInvokedCommands = await db.commandStatistics.getTopMonthlyCommandInvocations(chatId: chatId);
-        var topInvocationUsers = await db.commandStatistics.getTopMonthlyCommandInvocationUsers(chatId: chatId);
+        var (totalCommandsInvoked, topInvokedCommands, topInvocationUsers) =
+            await waitConcurrently3<int, List<(String, int, int)>, List<(String, int)>>(
+                db.commandStatistics.getMonthlyCommandInvokesNumber(chatId: chatId),
+                db.commandStatistics.getTopMonthlyCommandInvocations(chatId: chatId),
+                db.commandStatistics.getTopMonthlyCommandInvocationUsers(chatId: chatId));
 
         _chatReportController.sink.add(ChatReport(
             chatId: chatId,

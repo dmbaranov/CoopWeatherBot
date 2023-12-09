@@ -45,7 +45,7 @@ class ConversatorManager {
           currentMessageId: currentMessageId,
           message: message,
           model: model);
-      
+
       var conversatorResponseMessage = await _sendConversatorResponseMessage(chatId, response, responseLimit);
       var conversatorResponseMessageId = platform.getMessageId(conversatorResponseMessage);
       var conversationId = await _conversator.getConversationId(chatId, parentMessageId);
@@ -86,7 +86,7 @@ class ConversatorManager {
 
   List<String> _splitResponseToParts(String response, int responseLimit) {
     List<String> messageParts = [];
-    var regexRule = '.{1,$responseLimit}';
+    var regexRule = '(.|\\n|\\r){1,$responseLimit}';
 
     for (var part in RegExp(regexRule).allMatches(response)) {
       var message = part[0];

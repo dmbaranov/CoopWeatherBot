@@ -9,6 +9,8 @@ class NewsRepository extends Repository {
     if (foundNews != null && foundNews.isNotEmpty) {
       return foundNews[0].toColumnMap()['id'];
     }
+    
+    return null;
   }
 
   Future<int> addNews(String chatId, String newsUrl) {

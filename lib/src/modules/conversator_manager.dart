@@ -73,15 +73,15 @@ class ConversatorManager {
     }
 
     var messages = _splitResponseToParts(response, responseLimit);
-    var messageId;
+    var sentMessage;
 
     await Future.forEach(messages, (message) async {
       await Future.delayed(Duration(milliseconds: 500));
 
-      messageId = await platform.sendMessage(chatId, message: message);
+      sentMessage = await platform.sendMessage(chatId, message: message);
     });
 
-    return messageId;
+    return sentMessage;
   }
 
   List<String> _splitResponseToParts(String response, int responseLimit) {

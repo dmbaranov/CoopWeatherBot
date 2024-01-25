@@ -1,5 +1,6 @@
-FROM postgres
-ENV POSTGRES_DB coop_weather_bot
-ENV POSTGRES_USER postgres
-ENV POSTGRES_PASSWORD postgres
-EXPOSE 5432
+FROM dart:stable
+WORKDIR /app
+COPY pubspec.yaml ./
+RUN dart pub get
+COPY . .
+CMD ["dart", "run", "bin/main.dart", "-p", "telegram"]

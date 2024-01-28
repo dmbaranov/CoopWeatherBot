@@ -22,6 +22,7 @@ import 'package:weather/src/modules/conversator_manager.dart';
 import 'package:weather/src/modules/general_manager.dart';
 import 'package:weather/src/modules/accordion_poll_manager.dart';
 import 'package:weather/src/modules/command_statistics_manager.dart';
+import 'package:weather/src/modules/check_manager.dart';
 
 class Bot {
   final ChatPlatform platformName;
@@ -51,6 +52,7 @@ class Bot {
   late GeneralManager _generalManager;
   late AccordionPollManager _accordionPollManager;
   late CommandStatisticsManager _commandStatisticsManager;
+  late CheckManager _checkManager;
 
   Bot(
       {required this.platformName,
@@ -90,6 +92,7 @@ class Bot {
     _weatherManager = WeatherManager(platform: _platform, chat: _chat, db: _db, openweatherKey: openweatherKey)..initialize();
     _accordionPollManager = AccordionPollManager(platform: _platform, eventBus: _eventBus, user: _user, chat: _chat);
     _commandStatisticsManager = CommandStatisticsManager(platform: _platform, db: _db, eventBus: _eventBus, chat: _chat)..initialize();
+    _checkManager = CheckManager(platform: _platform, db: _db, chat: _chat);
 
     _setupCommands();
 
@@ -265,5 +268,12 @@ class Bot {
         accessLevel: AccessLevel.user,
         withOtherUserIds: true,
         onSuccess: _commandStatisticsManager.getUserCommandInvocations));
+
+    _platform.setupCommand(BotCommand(
+        command: 'check',
+        description: '[U] Remind about the selected message after specified period',
+        accessLevel: AccessLevel.user,
+        checkCommand: true,
+        onSuccess: _checkManager.checkMessage));
   }
 }

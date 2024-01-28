@@ -54,6 +54,8 @@ abstract class Platform<T> {
 
   MessageEvent transformPlatformMessageToConversatorMessageEvent(T message, [List<String>? otherParameters]);
 
+  MessageEvent transformPlatformMessageToCheckMessageEvent(T message, [List<String>? otherParameters]);
+
   void setupCommand(BotCommand command);
 
   Future sendMessage(String chatId, {String? message, String? translation});

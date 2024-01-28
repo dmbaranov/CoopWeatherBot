@@ -11,6 +11,7 @@ class BotCommand {
   final bool withParameters;
   final bool withOtherUserIds;
   final bool conversatorCommand;
+  final bool checkCommand;
 
   BotCommand(
       {required this.command,
@@ -19,5 +20,6 @@ class BotCommand {
       required this.onSuccess,
       this.withParameters = false,
       this.withOtherUserIds = false,
-      this.conversatorCommand = false});
+      this.conversatorCommand = false,
+      this.checkCommand = false});
 }

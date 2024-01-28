@@ -131,6 +131,11 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
   }
 
   @override
+  MessageEvent transformPlatformMessageToCheckMessageEvent(ChatContext event, [List<String>? otherParameters]) {
+    return transformPlatformMessageToGeneralMessageEvent(event);
+  }
+
+  @override
   Future<bool> getUserPremiumStatus(String chatId, String userId) async {
     var discordUser = await bot.users.fetch(Snowflake(int.parse(userId)));
 

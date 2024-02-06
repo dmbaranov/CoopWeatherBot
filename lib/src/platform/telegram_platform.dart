@@ -100,17 +100,6 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   }
 
   @override
-  MessageEvent transformPlatformMessageToCheckMessageEvent(TeleDartMessage event, [List<String>? otherParameters]) {
-    var otherUserId = [event.replyToMessage?.from?.id.toString()].whereNotNull();
-    var messageText = event.replyToMessage?.text ?? '';
-    var period = event.text?.split(' ').sublist(1).join(' ') ?? '';
-
-    return transformPlatformMessageToGeneralMessageEvent(event)
-      ..otherUserIds.addAll(otherUserId)
-      ..parameters.addAll([period, messageText]);
-  }
-
-  @override
   void setupCommand(BotCommand command) {
     var eventMapper = _getEventMapper(command);
 
@@ -219,8 +208,6 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
       return transformPlatformMessageToMessageEventWithOtherUserIds;
     } else if (command.conversatorCommand) {
       return transformPlatformMessageToConversatorMessageEvent;
-    } else if (command.checkCommand) {
-      return transformPlatformMessageToCheckMessageEvent;
     }
 
     return transformPlatformMessageToGeneralMessageEvent;

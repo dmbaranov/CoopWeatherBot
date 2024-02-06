@@ -273,7 +273,7 @@ class Bot {
         command: 'check',
         description: '[U] Remind about the selected message after specified period',
         accessLevel: AccessLevel.user,
-        checkCommand: true,
+        withParameters: true,
         onSuccess: _checkManager.checkMessage));
   }
 }

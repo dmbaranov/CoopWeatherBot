@@ -19,11 +19,15 @@ class CheckReminderRepository extends Repository {
     return rawCheckReminders
         .map((checkReminder) => checkReminder.toColumnMap())
         .map((checkReminder) => CheckReminderData(
-            checkReminderId: checkReminder['id'],
+            id: checkReminder['id'],
             chatId: checkReminder['chat_id'],
             userId: checkReminder['bot_user_id'],
             message: checkReminder['message'],
             timestamp: checkReminder['timestamp']))
         .toList();
+  }
+
+  Future<int> completeCheckReminder(int checkReminderId) {
+    return executeTransaction(queriesMap['complete_check_reminder'], {'checkReminderId': checkReminderId});
   }
 }

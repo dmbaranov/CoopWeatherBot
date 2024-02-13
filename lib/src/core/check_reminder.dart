@@ -2,14 +2,13 @@ import 'dart:async';
 import 'database.dart';
 
 class CheckReminderData {
-  final int checkReminderId;
+  final int id;
   final String chatId;
   final String userId;
   final String message;
   final DateTime timestamp;
 
-  CheckReminderData(
-      {required this.checkReminderId, required this.chatId, required this.userId, required this.message, required this.timestamp});
+  CheckReminderData({required this.id, required this.chatId, required this.userId, required this.message, required this.timestamp});
 }
 
 class CheckReminder {
@@ -87,8 +86,9 @@ class CheckReminder {
     var now = DateTime.now();
     var incompleteReminders = await db.checkReminderRepository.getIncompleteCheckReminders();
 
-    await Future.forEach(incompleteReminders, (checkReminder) {
+    await Future.forEach(incompleteReminders, (checkReminder) async {
       if (checkReminder.timestamp.isAfter(now)) {
+        await db.checkReminderRepository.completeCheckReminder(checkReminder.id);
         _checkReminderController.sink.add(checkReminder);
       }
     });

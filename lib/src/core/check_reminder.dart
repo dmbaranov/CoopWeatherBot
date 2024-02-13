@@ -1,27 +1,28 @@
 import 'dart:async';
-
-import 'package:weather/src/core/user.dart';
-
 import 'database.dart';
 
 class CheckReminderData {
+  final int checkReminderId;
   final String chatId;
-  final BotUser user;
+  final String userId;
   final String message;
+  final DateTime timestamp;
 
-  CheckReminderData({required this.chatId, required this.user, required this.message});
+  CheckReminderData(
+      {required this.checkReminderId, required this.chatId, required this.userId, required this.message, required this.timestamp});
 }
 
 class CheckReminder {
   final Database db;
 
-  late StreamController<CheckReminder> _checkReminderController;
+  late StreamController<CheckReminderData> _checkReminderController;
 
   CheckReminder({required this.db});
 
-  Stream<CheckReminder> get checkReminderStream => _checkReminderController.stream;
+  Stream<CheckReminderData> get checkReminderStream => _checkReminderController.stream;
 
   void initialize() {
+    _checkReminderController = StreamController<CheckReminderData>.broadcast();
     _startExistingCheckTimers();
   }
 
@@ -32,11 +33,8 @@ class CheckReminder {
     var checkReminderTimestamp = _generateReminderTimestamp(reminderValue, reminderInterval);
     var result = await db.checkReminderRepository.createCheckReminder(chatId, userId, message, checkReminderTimestamp);
 
+    // TODO: create Timer
     return result == 1;
-  }
-
-  void _startExistingCheckTimers() {
-    print('get data from the db and create timers');
   }
 
   List<String> _parseReminderPeriod(String rawPeriod) {
@@ -83,5 +81,16 @@ class CheckReminder {
     if (!validPeriodIntervals.contains(interval)) {
       throw Exception('Supported intervals are s, m, h and d');
     }
+  }
+
+  void _startExistingCheckTimers() async {
+    var now = DateTime.now();
+    var incompleteReminders = await db.checkReminderRepository.getIncompleteCheckReminders();
+
+    await Future.forEach(incompleteReminders, (checkReminder) {
+      if (checkReminder.timestamp.isAfter(now)) {
+        _checkReminderController.sink.add(checkReminder);
+      }
+    });
   }
 }

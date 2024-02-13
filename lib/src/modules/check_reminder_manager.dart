@@ -30,7 +30,7 @@ class CheckReminderManager {
 
   void _subscribeToCheckUpdates() {
     _checkReminder.checkReminderStream.listen((checkReminder) {
-      print('Sending check to the chat...');
+      sendOperationMessage(checkReminder.chatId, platform: platform, operationResult: true, successfulMessage: checkReminder.message);
     });
   }
 }

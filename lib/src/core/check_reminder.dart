@@ -4,20 +4,20 @@ import 'package:weather/src/core/user.dart';
 
 import 'database.dart';
 
-class CheckReminder {
+class CheckReminderData {
   final String chatId;
   final BotUser user;
   final String message;
 
-  CheckReminder({required this.chatId, required this.user, required this.message});
+  CheckReminderData({required this.chatId, required this.user, required this.message});
 }
 
-class Check {
+class CheckReminder {
   final Database db;
 
   late StreamController<CheckReminder> _checkReminderController;
 
-  Check({required this.db});
+  CheckReminder({required this.db});
 
   Stream<CheckReminder> get checkReminderStream => _checkReminderController.stream;
 
@@ -25,12 +25,14 @@ class Check {
     _startExistingCheckTimers();
   }
 
-  Future<void> createCheckReminder(
+  Future<bool> createCheckReminder(
       {required String chatId, required String userId, required String period, required String message}) async {
     var [reminderValue, reminderInterval] = _parseReminderPeriod(period);
-    var checkReminderDate = _generateReminderDate(reminderValue, reminderInterval);
+    _validateCheckReminderParameters(reminderValue, reminderInterval, message);
+    var checkReminderTimestamp = _generateReminderTimestamp(reminderValue, reminderInterval);
+    var result = await db.checkReminderRepository.createCheckReminder(chatId, userId, message, checkReminderTimestamp);
 
-    print(checkReminderDate);
+    return result == 1;
   }
 
   void _startExistingCheckTimers() {
@@ -38,7 +40,7 @@ class Check {
   }
 
   List<String> _parseReminderPeriod(String rawPeriod) {
-    var periodSplitRegexp = RegExp(r'(-\d+)(\D+)');
+    var periodSplitRegexp = RegExp(r'^(\d+)([a-zA-Z])$');
     var periodMatches = periodSplitRegexp.allMatches(rawPeriod);
 
     if (periodMatches.isEmpty) {
@@ -47,12 +49,10 @@ class Check {
 
     var [reminderValue, reminderInterval] = periodMatches.map((m) => [m.group(1) ?? '', m.group(2) ?? '']).expand((pair) => pair).toList();
 
-    _validatePeriod(reminderValue, reminderInterval);
-
     return [reminderValue, reminderInterval];
   }
 
-  DateTime _generateReminderDate(String reminderValue, String interval) {
+  DateTime _generateReminderTimestamp(String reminderValue, String interval) {
     var numericValue = int.parse(reminderValue);
 
     var now = DateTime.now();
@@ -64,7 +64,7 @@ class Check {
     return DateTime(now.year, now.month, checkDays, checkHours, checkMinutes, checkSeconds);
   }
 
-  void _validatePeriod(String value, String interval) {
+  void _validateCheckReminderParameters(String value, String interval, String message) {
     const validPeriodIntervals = ['s', 'm', 'h', 'd'];
     var numericValue = int.tryParse(value);
 

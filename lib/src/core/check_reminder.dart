@@ -1,5 +1,10 @@
 import 'dart:async';
+import 'package:cron/cron.dart';
+
 import 'database.dart';
+
+// how many reminders from the DB can be active at the same time
+const remindersLimit = 50;
 
 class CheckReminderData {
   final int id;
@@ -13,6 +18,7 @@ class CheckReminderData {
 
 class CheckReminder {
   final Database db;
+  List<Timer> _checkReminderTimers = [];
 
   late StreamController<CheckReminderData> _checkReminderController;
 
@@ -22,7 +28,8 @@ class CheckReminder {
 
   void initialize() {
     _checkReminderController = StreamController<CheckReminderData>.broadcast();
-    _startExistingCheckTimers();
+    _updateActiveCheckReminderTimers();
+    _startUpdateTimersJob();
   }
 
   Future<bool> createCheckReminder(
@@ -58,7 +65,7 @@ class CheckReminder {
     var checkMinutes = interval == 'm' ? now.minute + numericValue : now.minute;
     var checkSeconds = interval == 's' ? now.second + numericValue : now.second;
 
-    return DateTime(now.year, now.month, checkDays, checkHours, checkMinutes, checkSeconds);
+    return DateTime(now.year, now.month, checkDays, checkHours, checkMinutes, checkSeconds).toUtc();
   }
 
   void _validateCheckReminderParameters(String value, String interval, String message) {
@@ -82,15 +89,22 @@ class CheckReminder {
     }
   }
 
-  void _startExistingCheckTimers() async {
-    var now = DateTime.now();
-    var incompleteReminders = await db.checkReminderRepository.getIncompleteCheckReminders();
+  void _updateActiveCheckReminderTimers() async {
+    var now = DateTime.now().toUtc();
+    var incompleteReminders = await db.checkReminderRepository.getIncompleteCheckReminders(remindersLimit);
 
-    await Future.forEach(incompleteReminders, (checkReminder) async {
-      if (checkReminder.timestamp.isAfter(now)) {
-        await db.checkReminderRepository.completeCheckReminder(checkReminder.id);
-        _checkReminderController.sink.add(checkReminder);
-      }
-    });
+    _checkReminderTimers.forEach((timer) => timer.cancel());
+    _checkReminderTimers = incompleteReminders
+        .map((checkReminder) => Timer(checkReminder.timestamp.toUtc().difference(now), () => _completeCheckReminder(checkReminder)))
+        .toList();
+  }
+
+  void _startUpdateTimersJob() {
+    Cron().schedule(Schedule.parse('*/1 * * * *'), _updateActiveCheckReminderTimers);
+  }
+
+  void _completeCheckReminder(CheckReminderData checkReminder) {
+    _checkReminderController.sink.add(checkReminder);
+    db.checkReminderRepository.completeCheckReminder(checkReminder.id);
   }
 }

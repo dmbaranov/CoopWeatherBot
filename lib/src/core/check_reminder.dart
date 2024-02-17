@@ -5,6 +5,8 @@ import 'database.dart';
 
 // how many reminders from the DB can be active at the same time
 const remindersLimit = 50;
+// every n minutes fetch reminders from DB that will shoot within this period
+const activeRemindersPeriodInMinutes = 10;
 
 class CheckReminderData {
   final int id;
@@ -38,8 +40,8 @@ class CheckReminder {
     _validateCheckReminderParameters(reminderValue, reminderInterval, message);
     var checkReminderTimestamp = _generateReminderTimestamp(reminderValue, reminderInterval);
     var result = await db.checkReminderRepository.createCheckReminder(chatId, userId, message, checkReminderTimestamp);
+    _updateActiveCheckReminderTimers();
 
-    // TODO: create Timer
     return result == 1;
   }
 
@@ -91,7 +93,7 @@ class CheckReminder {
 
   void _updateActiveCheckReminderTimers() async {
     var now = DateTime.now().toUtc();
-    var incompleteReminders = await db.checkReminderRepository.getIncompleteCheckReminders(remindersLimit);
+    var incompleteReminders = await db.checkReminderRepository.getIncompleteCheckReminders(remindersLimit, activeRemindersPeriodInMinutes);
 
     _checkReminderTimers.forEach((timer) => timer.cancel());
     _checkReminderTimers = incompleteReminders
@@ -100,7 +102,7 @@ class CheckReminder {
   }
 
   void _startUpdateTimersJob() {
-    Cron().schedule(Schedule.parse('*/1 * * * *'), _updateActiveCheckReminderTimers);
+    Cron().schedule(Schedule.parse('*/$activeRemindersPeriodInMinutes * * * *'), _updateActiveCheckReminderTimers);
   }
 
   void _completeCheckReminder(CheckReminderData checkReminder) {

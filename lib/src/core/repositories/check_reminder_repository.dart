@@ -9,8 +9,9 @@ class CheckReminderRepository extends Repository {
         queriesMap['create_check_reminder'], {'chatId': chatId, 'userId': userId, 'message': message, 'timestamp': timestamp});
   }
 
-  Future<List<CheckReminderData>> getIncompleteCheckReminders(int remindersLimit) async {
-    var rawCheckReminders = await executeQuery(queriesMap['get_incomplete_check_reminders'], {'remindersLimit': remindersLimit});
+  Future<List<CheckReminderData>> getIncompleteCheckReminders(int remindersLimit, int timestampLimit) async {
+    var rawCheckReminders = await executeQuery(
+        queriesMap['get_incomplete_check_reminders'], {'remindersLimit': remindersLimit, 'timestampLimit': timestampLimit});
 
     if (rawCheckReminders == null || rawCheckReminders.isEmpty) {
       return [];

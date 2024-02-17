@@ -50,7 +50,7 @@ class CheckReminder {
     var periodMatches = periodSplitRegexp.allMatches(rawPeriod);
 
     if (periodMatches.isEmpty) {
-      throw Exception('Incorrect parameters');
+      throw Exception('check_reminder.errors.wrong_parameters');
     }
 
     var [reminderValue, reminderInterval] = periodMatches.map((m) => [m.group(1) ?? '', m.group(2) ?? '']).expand((pair) => pair).toList();
@@ -75,19 +75,19 @@ class CheckReminder {
     var numericValue = int.tryParse(value);
 
     if (numericValue == null) {
-      throw Exception('Incorrect format');
+      throw Exception('check_reminder.errors.wrong_parameters');
     }
 
     if (numericValue > 999) {
-      throw Exception('Too big');
+      throw Exception('check_reminder.errors.period_too_big');
     }
 
     if (numericValue <= 0) {
-      throw Exception('Too small');
+      throw Exception('check_reminder.errors.period_too_small');
     }
 
     if (!validPeriodIntervals.contains(interval)) {
-      throw Exception('Supported intervals are s, m, h and d');
+      throw Exception('check_reminder.errors.possible_period');
     }
   }
 

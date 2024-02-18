@@ -31,7 +31,7 @@ class CheckReminderManager {
 
     try {
       var result = await _checkReminder.createCheckReminder(chatId: chatId, userId: userId, period: period, message: message);
-      var successfulMessage = chat.getText(chatId, 'check_reminder.created');
+      var successfulMessage = chat.getText(chatId, 'general.success');
 
       sendOperationMessage(chatId, platform: platform, operationResult: result, successfulMessage: successfulMessage);
     } catch (err) {

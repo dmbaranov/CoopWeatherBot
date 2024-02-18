@@ -5,8 +5,8 @@ import 'database.dart';
 
 // how many reminders from the DB can be active at the same time
 const remindersLimit = 50;
-// every n minutes fetch reminders from DB that will shoot within this period
-const activeRemindersPeriodInMinutes = 10;
+// every n minutes fetch reminders from DB that will shoot within this interval
+const activeRemindersInterval = 10;
 
 class CheckReminderData {
   final int id;
@@ -21,7 +21,6 @@ class CheckReminderData {
 class CheckReminder {
   final Database db;
   List<Timer> _checkReminderTimers = [];
-
   late StreamController<CheckReminderData> _checkReminderController;
 
   CheckReminder({required this.db});
@@ -74,7 +73,7 @@ class CheckReminder {
     const validPeriodIntervals = ['s', 'm', 'h', 'd'];
     var numericValue = int.tryParse(value);
 
-    if (numericValue == null) {
+    if (numericValue == null || message == '') {
       throw Exception('check_reminder.errors.wrong_parameters');
     }
 
@@ -93,7 +92,7 @@ class CheckReminder {
 
   void _updateActiveCheckReminderTimers() async {
     var now = DateTime.now().toUtc();
-    var incompleteReminders = await db.checkReminderRepository.getIncompleteCheckReminders(remindersLimit, activeRemindersPeriodInMinutes);
+    var incompleteReminders = await db.checkReminderRepository.getIncompleteCheckReminders(remindersLimit, activeRemindersInterval);
 
     _checkReminderTimers.forEach((timer) => timer.cancel());
     _checkReminderTimers = incompleteReminders
@@ -102,7 +101,7 @@ class CheckReminder {
   }
 
   void _startUpdateTimersJob() {
-    Cron().schedule(Schedule.parse('*/$activeRemindersPeriodInMinutes * * * *'), _updateActiveCheckReminderTimers);
+    Cron().schedule(Schedule.parse('*/$activeRemindersInterval * * * *'), _updateActiveCheckReminderTimers);
   }
 
   void _completeCheckReminder(CheckReminderData checkReminder) {

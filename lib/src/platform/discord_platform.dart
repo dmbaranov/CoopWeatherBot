@@ -115,8 +115,9 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
 
   @override
   MessageEvent transformPlatformMessageToMessageEventWithParameters(ChatContext event, [List? otherParameters]) {
-    return transformPlatformMessageToGeneralMessageEvent(event)
-      ..parameters.addAll(otherParameters?.map((param) => param.toString()).toList() ?? []);
+    var formattedParameters = otherParameters?.first?.toString().split(' ');
+
+    return transformPlatformMessageToGeneralMessageEvent(event)..parameters.addAll(formattedParameters ?? []);
   }
 
   @override

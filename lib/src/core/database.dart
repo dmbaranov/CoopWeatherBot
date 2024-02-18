@@ -8,6 +8,7 @@ import 'repositories/news_repository.dart';
 import 'repositories/conversator_chat_repository.dart';
 import 'repositories/conversator_user_repository.dart';
 import 'repositories/command_statistics_repository.dart';
+import 'repositories/check_reminder_repository.dart';
 
 class Database {
   final Pool dbConnection;
@@ -19,6 +20,7 @@ class Database {
   final ConversatorChatRepository conversatorChat;
   final ConversatorUserRepository conversatorUser;
   final CommandStatisticsRepository commandStatistics;
+  final CheckReminderRepository checkReminderRepository;
 
   Database(this.dbConnection)
       : user = BotUserRepository(dbConnection: dbConnection),
@@ -28,7 +30,8 @@ class Database {
         news = NewsRepository(dbConnection: dbConnection),
         conversatorChat = ConversatorChatRepository(dbConnection: dbConnection),
         conversatorUser = ConversatorUserRepository(dbConnection: dbConnection),
-        commandStatistics = CommandStatisticsRepository(dbConnection: dbConnection);
+        commandStatistics = CommandStatisticsRepository(dbConnection: dbConnection),
+        checkReminderRepository = CheckReminderRepository(dbConnection: dbConnection);
 
   Future<void> initialize() async {
     await user.initRepository();
@@ -39,5 +42,6 @@ class Database {
     await conversatorChat.initRepository();
     await conversatorUser.initRepository();
     await commandStatistics.initRepository();
+    await checkReminderRepository.initRepository();
   }
 }

@@ -271,7 +271,7 @@ class Bot {
 
     _platform.setupCommand(BotCommand(
         command: 'check',
-        description: '[U] Remind about the selected message after specified period',
+        description: '[U] Remind about something after specified period',
         accessLevel: AccessLevel.user,
         withParameters: true,
         onSuccess: _checkReminderManager.checkMessage));

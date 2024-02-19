@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:cron/cron.dart';
+import 'package:weather/src/globals/module_exception.dart';
 
 import 'database.dart';
 
@@ -7,6 +8,10 @@ import 'database.dart';
 const remindersLimit = 50;
 // every n minutes fetch reminders from DB that will shoot within this interval
 const activeRemindersInterval = 10;
+
+class CheckReminderException extends ModuleException {
+  CheckReminderException(super.cause);
+}
 
 class CheckReminderData {
   final int id;
@@ -49,7 +54,7 @@ class CheckReminder {
     var periodMatches = periodSplitRegexp.allMatches(rawPeriod);
 
     if (periodMatches.isEmpty) {
-      throw Exception('check_reminder.errors.wrong_parameters');
+      throw CheckReminderException('check_reminder.errors.wrong_parameters');
     }
 
     var [reminderValue, reminderInterval] = periodMatches.map((m) => [m.group(1) ?? '', m.group(2) ?? '']).expand((pair) => pair).toList();
@@ -74,19 +79,19 @@ class CheckReminder {
     var numericValue = int.tryParse(value);
 
     if (numericValue == null || message == '') {
-      throw Exception('check_reminder.errors.wrong_parameters');
+      throw CheckReminderException('check_reminder.errors.wrong_parameters');
     }
 
     if (numericValue > 999) {
-      throw Exception('check_reminder.errors.period_too_big');
+      throw CheckReminderException('check_reminder.errors.period_too_big');
     }
 
     if (numericValue <= 0) {
-      throw Exception('check_reminder.errors.period_too_small');
+      throw CheckReminderException('check_reminder.errors.period_too_small');
     }
 
     if (!validPeriodIntervals.contains(interval)) {
-      throw Exception('check_reminder.errors.possible_period');
+      throw CheckReminderException('check_reminder.errors.possible_period');
     }
   }
 

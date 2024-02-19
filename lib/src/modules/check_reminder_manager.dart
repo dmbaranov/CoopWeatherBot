@@ -28,21 +28,12 @@ class CheckReminderManager {
     var userId = event.userId;
     var period = event.parameters[0];
     var message = event.parameters.sublist(1).join(' ');
+    var successfulMessage = chat.getText(chatId, 'general.success');
 
-    try {
-      var result = await _checkReminder.createCheckReminder(chatId: chatId, userId: userId, period: period, message: message);
-      var successfulMessage = chat.getText(chatId, 'general.success');
-
-      sendOperationMessage(chatId, platform: platform, operationResult: result, successfulMessage: successfulMessage);
-    } catch (err) {
-      var errorMessage = err.toString().substring(11);
-
-      if (errorMessage.startsWith('check_reminder')) {
-        platform.sendMessage(chatId, translation: errorMessage);
-      } else {
-        platform.sendMessage(chatId, translation: 'general.something_went_wrong');
-      }
-    }
+    _checkReminder
+        .createCheckReminder(chatId: chatId, userId: userId, period: period, message: message)
+        .then((result) => sendOperationMessage(chatId, platform: platform, operationResult: result, successfulMessage: successfulMessage))
+        .catchError((error) => handleException<CheckReminderException>(error, chatId, platform));
   }
 
   void _subscribeToCheckUpdates() {

@@ -29,3 +29,11 @@ void sendOperationMessage(String chatId, {required Platform platform, required b
     platform.sendMessage(chatId, translation: 'general.something_went_wrong');
   }
 }
+
+void handleException<CustomException>(error, String chatId, Platform platform) {
+  if (error is CustomException) {
+    platform.sendMessage(chatId, translation: error.toString());
+  } else {
+    platform.sendMessage(chatId, translation: 'general.something_went_wrong');
+  }
+}

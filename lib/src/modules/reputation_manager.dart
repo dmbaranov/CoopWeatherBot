@@ -26,10 +26,12 @@ class ReputationManager {
     var chatId = event.chatId;
     var fromUserId = event.userId;
     var toUserId = event.otherUserIds[0];
-    var result = await _reputation.updateReputation(
-        chatId: chatId, change: ReputationChangeOption.increase, fromUserId: fromUserId, toUserId: toUserId);
+    var successfulMessage = chat.getText(chatId, 'reputation.change.increase_success');
 
-    _handleReputationChange(event, result);
+    _reputation
+        .updateReputation(chatId: chatId, change: ReputationChangeOption.increase, fromUserId: fromUserId, toUserId: toUserId)
+        .then((result) => sendOperationMessage(chatId, platform: platform, operationResult: result, successfulMessage: successfulMessage))
+        .catchError((error) => handleException<ReputationException>(error, chatId, platform));
   }
 
   void decreaseReputation(MessageEvent event) async {
@@ -38,10 +40,12 @@ class ReputationManager {
     var chatId = event.chatId;
     var fromUserId = event.userId;
     var toUserId = event.otherUserIds[0];
-    var result = await _reputation.updateReputation(
-        chatId: chatId, change: ReputationChangeOption.decrease, fromUserId: fromUserId, toUserId: toUserId);
+    var successfulMessage = chat.getText(chatId, 'reputation.change.decrease_success');
 
-    _handleReputationChange(event, result);
+    _reputation
+        .updateReputation(chatId: chatId, change: ReputationChangeOption.decrease, fromUserId: fromUserId, toUserId: toUserId)
+        .then((result) => sendOperationMessage(chatId, platform: platform, operationResult: result, successfulMessage: successfulMessage))
+        .catchError((error) => handleException<ReputationException>(error, chatId, platform));
   }
 
   void sendReputationList(MessageEvent event) async {
@@ -62,36 +66,6 @@ class ReputationManager {
     var successfulMessage = chat.getText(chatId, 'general.success');
 
     sendOperationMessage(chatId, platform: platform, operationResult: result, successfulMessage: successfulMessage);
-  }
-
-  void _handleReputationChange(MessageEvent event, ReputationChangeResult change) async {
-    var chatId = event.chatId;
-
-    switch (change) {
-      case ReputationChangeResult.increaseSuccess:
-        await platform.sendMessage(chatId, translation: 'reputation.change.increase_success');
-        break;
-
-      case ReputationChangeResult.decreaseSuccess:
-        await platform.sendMessage(chatId, translation: 'reputation.change.decrease_success');
-        break;
-
-      case ReputationChangeResult.userNotFound:
-        await platform.sendMessage(event.chatId, translation: 'reputation.change.user_not_found');
-        break;
-
-      case ReputationChangeResult.selfUpdate:
-        await platform.sendMessage(event.chatId, translation: 'reputation.change.self_update');
-        break;
-
-      case ReputationChangeResult.notEnoughOptions:
-        await platform.sendMessage(event.chatId, translation: 'reputation.change.not_enough_options');
-        break;
-
-      case ReputationChangeResult.systemError:
-        await platform.sendMessage(event.chatId, translation: 'general.something_went_wrong');
-        break;
-    }
   }
 
   String _buildReputationListMessage(String chatId, List<ChatReputationData> reputationData) {

@@ -1,12 +1,15 @@
 import 'dart:async';
 import 'package:cron/cron.dart';
+import 'package:weather/src/globals/module_exception.dart';
 import 'events/accordion_poll_events.dart';
 import 'database.dart';
 import 'event_bus.dart';
 
 enum ReputationChangeOption { increase, decrease }
 
-enum ReputationChangeResult { increaseSuccess, decreaseSuccess, userNotFound, selfUpdate, notEnoughOptions, systemError }
+class ReputationException extends ModuleException {
+  ReputationException(super.cause);
+}
 
 const numberOfVoteOptions = 3;
 
@@ -37,23 +40,23 @@ class Reputation {
     _listenToAccordionPolls();
   }
 
-  Future<ReputationChangeResult> updateReputation(
+  Future<bool> updateReputation(
       {required String chatId, required ReputationChangeOption change, String? fromUserId, String? toUserId}) async {
     var fromUser = await db.reputation.getSingleReputationData(chatId, fromUserId ?? '');
     var toUser = await db.reputation.getSingleReputationData(chatId, toUserId ?? '');
 
     if (fromUser == null || toUser == null) {
-      return ReputationChangeResult.userNotFound;
+      throw ReputationException('reputation.change.user_not_found');
     }
 
     if (fromUserId == toUserId) {
-      return ReputationChangeResult.selfUpdate;
+      throw ReputationException('reputation.change.self_update');
     }
 
     if (change == ReputationChangeOption.increase && !_canIncreaseReputationCheck(fromUser)) {
-      return ReputationChangeResult.notEnoughOptions;
+      throw ReputationException('reputation.change.not_enough_options');
     } else if (change == ReputationChangeOption.decrease && !_canDecreaseReputationCheck(fromUser)) {
-      return ReputationChangeResult.notEnoughOptions;
+      throw ReputationException('reputation.change.not_enough_options');
     }
 
     var reputationValue = toUser.reputation;
@@ -71,16 +74,16 @@ class Reputation {
     var optionsUpdated = await _updateChangeOptions(chatId, fromUserId!, increaseOptions, decreaseOptions);
 
     if (!optionsUpdated) {
-      return ReputationChangeResult.systemError;
+      throw ReputationException('general.something_went_wrong');
     }
 
     var reputationUpdated = await _updateReputation(chatId, toUserId!, reputationValue);
 
     if (!reputationUpdated) {
-      return ReputationChangeResult.systemError;
+      throw ReputationException('general.something_went_wrong');
     }
 
-    return change == ReputationChangeOption.increase ? ReputationChangeResult.increaseSuccess : ReputationChangeResult.decreaseSuccess;
+    return true;
   }
 
   Future<bool> createReputationData(String chatId, String userId) async {

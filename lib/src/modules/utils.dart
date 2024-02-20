@@ -31,9 +31,6 @@ void sendOperationMessage(String chatId, {required Platform platform, required b
 }
 
 void handleException<CustomException>(error, String chatId, Platform platform) {
-  if (error is CustomException) {
-    platform.sendMessage(chatId, translation: error.toString());
-  } else {
-    platform.sendMessage(chatId, translation: 'general.something_went_wrong');
-  }
+  var errorMessage = error is CustomException ? error.toString() : 'general.something_went_wrong';
+  platform.sendMessage(chatId, translation: errorMessage);
 }

@@ -56,14 +56,8 @@ class ConversatorManager {
           currentMessageId: conversatorResponseMessageId,
           message: response,
           fromUser: false);
-    } catch (err) {
-      var errorMessage = err.toString().substring(11); // delete Exception:
-
-      if (errorMessage.startsWith('conversator')) {
-        platform.sendMessage(chatId, translation: errorMessage);
-      } else {
-        platform.sendMessage(chatId, translation: 'general.no_access');
-      }
+    } catch (error) {
+      handleException<ConversatorException>(error, chatId, platform);
     }
   }
 

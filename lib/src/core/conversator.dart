@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:cron/cron.dart';
 import 'package:http/http.dart' as http;
+import 'package:weather/src/globals/module_exception.dart';
 import 'database.dart';
 
 const String _converstorApiURL = 'https://api.openai.com/v1/chat/completions';
@@ -9,6 +10,10 @@ const String regularModel = 'gpt-3.5-turbo';
 const String advancedModel = 'gpt-4-turbo-preview';
 const int regularDailyLimit = 100;
 const int advancedDailyLimit = 10;
+
+class ConversatorException extends ModuleException {
+  ConversatorException(super.cause);
+}
 
 class ConversatorChatMessage {
   final String message;
@@ -101,7 +106,7 @@ class Conversator {
 
     if (model == regularModel) {
       if (conversatorUser.dailyRegularInvocations >= regularDailyLimit && userId != adminId) {
-        throw Exception(errorMessage);
+        throw ConversatorException(errorMessage);
       }
 
       await db.conversatorUser.updateRegularInvocations(userId);
@@ -111,7 +116,7 @@ class Conversator {
 
     if (model == advancedModel) {
       if (conversatorUser.dailyAdvancedInvocations >= advancedDailyLimit && userId != adminId) {
-        throw Exception(errorMessage);
+        throw ConversatorException(errorMessage);
       }
 
       await db.conversatorUser.updateAdvancedInvocations(userId);

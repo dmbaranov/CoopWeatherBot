@@ -3,4 +3,4 @@ WORKDIR /app
 COPY pubspec.yaml ./
 RUN dart pub get
 COPY . .
-CMD ["dart", "run", "bin/main.dart", "-p", "telegram"]
+CMD ["dart", "run", "bin/main.dart"]

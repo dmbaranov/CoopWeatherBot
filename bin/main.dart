@@ -1,7 +1,4 @@
-import 'dart:io';
 import 'dart:async';
-
-import 'package:args/args.dart';
 import 'package:dotenv/dotenv.dart';
 import 'package:postgres/postgres.dart';
 import 'package:weather/weather.dart';
@@ -17,39 +14,22 @@ Future<Pool> getDatabaseConnection(DotEnv env) async {
       settings: PoolSettings(maxConnectionCount: 4, sslMode: SslMode.disable));
 }
 
-ArgResults getRunArguments(List<String> args) {
-  var parser = ArgParser()..addOption('platform', abbr: 'p', allowed: ['discord', 'telegram'], mandatory: true);
-
-  ArgResults parsedArguments;
-
-  try {
-    parsedArguments = parser.parse(args);
-  } on FormatException {
-    print('Error: Pass -p parameter to specify discord or telegram version');
-    exit(1);
-  }
-
-  return parsedArguments;
-}
-
 Future<void> runMigrations(Pool dbConnection) async {
   MigrationsManager migrationsManager = MigrationsManager(dbConnection);
 
   await migrationsManager.runMigrations();
 }
 
-ChatPlatform getPlatform(ArgResults arguments) {
-  if (arguments['platform'] == 'telegram') return ChatPlatform.telegram;
-  if (arguments['platform'] == 'discord') return ChatPlatform.discord;
+ChatPlatform getPlatform(String envPlatform) {
+  if (envPlatform == 'telegram') return ChatPlatform.telegram;
+  if (envPlatform == 'discord') return ChatPlatform.discord;
 
-  throw Exception("Invalid platform ${arguments['platform']}");
+  throw Exception('Invalid platform $envPlatform');
 }
 
 void main(List<String> args) async {
   var env = DotEnv(includePlatformEnvironment: true)..load();
-
   final dbConnection = await getDatabaseConnection(env);
-  var arguments = getRunArguments(args);
 
   await runMigrations(dbConnection);
 
@@ -60,9 +40,10 @@ void main(List<String> args) async {
     final youtubeKey = env['youtube']!;
     final openweatherKey = env['openweather']!;
     final conversatorKey = env['conversatorkey']!;
+    final platformName = getPlatform(env['platform']!);
 
     Bot(
-      platformName: getPlatform(arguments),
+      platformName: platformName,
       botToken: token,
       adminId: adminId,
       repoUrl: repoUrl,

@@ -8,13 +8,12 @@ const String _migrationTableMigrationName = '1677944890_migration.sql';
 
 class MigrationsManager {
   final Pool dbConnection;
-  final Logger logger;
+  final Logger _logger;
   final String _migrationsDirectory = _pathToMigrations;
 
-  MigrationsManager(this.dbConnection) : logger = getIt<Logger>();
+  MigrationsManager(this.dbConnection) : _logger = getIt<Logger>();
 
   Future<void> runMigrations() async {
-    logger.i('Hello, world!');
     var migrationsLocation = Directory(_migrationsDirectory);
     var rawMigrationsContent = await migrationsLocation.list().toList()
       ..sort((a, b) => a.uri.pathSegments.last.compareTo(b.uri.pathSegments.last));
@@ -30,7 +29,7 @@ class MigrationsManager {
       var runMigration = await _shouldRunMigration(migrationName);
 
       if (runMigration) {
-        logger.w('Applying migration $migrationName');
+        _logger.w('Applying migration $migrationName');
         var query = await migration.readAsString();
 
         await _runMigration(query, migrationName);

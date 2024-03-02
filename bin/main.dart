@@ -41,8 +41,6 @@ void main(List<String> args) async {
   final conversatorKey = env['conversatorkey']!;
   final platformName = getPlatform(env['platform']);
 
-  var logger = Logger();
-
   await runMigrations(dbConnection);
 
   runZonedGuarded(() {
@@ -57,6 +55,8 @@ void main(List<String> args) async {
       dbConnection: dbConnection,
     ).startBot();
   }, (error, stack) {
+    var logger = getIt<Logger>();
+
     logger.e('Uncaught error', error);
   });
 }

@@ -8,7 +8,7 @@ class Logger {
   final bool isProduction;
   late final lg.Logger _logger;
 
-  Logger(this.isProduction) {
+  Logger({required this.isProduction}) {
     var printer = isProduction ? lg.SimplePrinter(printTime: true, colors: false) : lg.PrettyPrinter(printTime: true);
     var output = isProduction ? lg.MultiOutput([lg.FileOutput(file: logFile), lg.ConsoleOutput()]) : lg.ConsoleOutput();
 
@@ -33,8 +33,8 @@ class Logger {
 @module
 abstract class LoggerModule {
   @dev
-  Logger get devLogger => Logger(false);
+  Logger get devLogger => Logger(isProduction: false);
 
   @prod
-  Logger get prodLogger => Logger(true);
+  Logger get prodLogger => Logger(isProduction: true);
 }

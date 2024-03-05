@@ -1,12 +1,18 @@
+import 'dart:io';
 import 'package:injectable/injectable.dart';
 import 'package:logger/logger.dart' as lg;
+
+final logFile = File('logs.txt');
 
 class Logger {
   final bool isProduction;
   late final lg.Logger _logger;
 
   Logger(this.isProduction) {
-    _logger = lg.Logger(printer: lg.PrettyPrinter(methodCount: isProduction ? 0 : 6, printTime: true));
+    var printer = isProduction ? lg.SimplePrinter(printTime: true, colors: false) : lg.PrettyPrinter(printTime: true);
+    var output = isProduction ? lg.MultiOutput([lg.FileOutput(file: logFile), lg.ConsoleOutput()]) : lg.ConsoleOutput();
+
+    _logger = lg.Logger(printer: printer, output: output);
 
     i('Logger initialized in ${isProduction ? 'prod' : 'dev'} mode');
   }

@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:collection/collection.dart';
-import 'package:nyxx/nyxx.dart';
+import 'package:nyxx/nyxx.dart' hide Logger;
 import 'package:nyxx_commands/nyxx_commands.dart';
 import 'package:uuid/uuid.dart';
 import 'package:cron/cron.dart';
@@ -15,8 +15,11 @@ import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/bot_command.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/globals/access_level.dart';
+import 'package:weather/src/injector/injection.dart';
 
 import 'package:weather/src/platform/platform.dart';
+
+import 'package:weather/src/utils/logger.dart';
 
 const uuid = Uuid();
 const emptyCharacter = 'ㅤ';
@@ -30,6 +33,7 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
   final Access access;
   final Chat chat;
   final weather.User user;
+  final Logger _logger;
 
   final List<ChatCommand> _commands = [];
   final Map<String, Map<String, bool>> _usersOnlineStatus = {};
@@ -43,11 +47,12 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
       required this.eventBus,
       required this.access,
       required this.chat,
-      required this.user});
+      required this.user})
+      : _logger = getIt<Logger>();
 
   @override
   Future<void> initialize() async {
-    print('No initialize script for Discord');
+    _logger.i('No initialize script for Discord');
   }
 
   @override
@@ -60,7 +65,7 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
     _startHeroCheckJob();
     _watchUsersStatusUpdate();
 
-    print('Discord platform has been started!');
+    _logger.i('Discord platform has been started!');
   }
 
   @override
@@ -234,7 +239,7 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
       await Future.forEach(authorizedChats, (chatId) async {
         var chatOnlineUsers = _usersOnlineStatus[chatId];
         if (chatOnlineUsers == null) {
-          print('Attempt to get online users for empty chat $chatId');
+          _logger.w('Attempt to get online users for empty chat $chatId');
 
           return null;
         }

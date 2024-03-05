@@ -29,8 +29,11 @@ ChatPlatform getPlatform(String? envPlatform) {
   throw Exception('Invalid platform $envPlatform');
 }
 
+bool getIsProductionMode(String? envIsProduction) {
+  return int.parse(envIsProduction ?? '0') == 1;
+}
+
 void main(List<String> args) async {
-  setupInjection();
   var env = DotEnv(includePlatformEnvironment: true)..load();
   final dbConnection = await getDatabaseConnection(env);
   final token = env['bottoken']!;
@@ -40,7 +43,9 @@ void main(List<String> args) async {
   final openweatherKey = env['openweather']!;
   final conversatorKey = env['conversatorkey']!;
   final platformName = getPlatform(env['platform']);
+  final isProduction = getIsProductionMode(env['isproduction']);
 
+  setupInjection(isProduction);
   await runMigrations(dbConnection);
 
   runZonedGuarded(() {

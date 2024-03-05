@@ -13,6 +13,9 @@ import 'package:injectable/injectable.dart' as _i2;
 
 import '../utils/logger.dart' as _i3;
 
+const String _dev = 'dev';
+const String _prod = 'prod';
+
 extension GetItInjectableX on _i1.GetIt {
 // initializes the registration of main-scope dependencies inside of GetIt
   _i1.GetIt init({
@@ -24,7 +27,17 @@ extension GetItInjectableX on _i1.GetIt {
       environment,
       environmentFilter,
     );
-    gh.singleton<_i3.Logger>(_i3.Logger());
+    final loggerModule = _$LoggerModule();
+    gh.factory<_i3.Logger>(
+      () => loggerModule.devLogger,
+      registerFor: {_dev},
+    );
+    gh.factory<_i3.Logger>(
+      () => loggerModule.prodLogger,
+      registerFor: {_prod},
+    );
     return this;
   }
 }
+
+class _$LoggerModule extends _i3.LoggerModule {}

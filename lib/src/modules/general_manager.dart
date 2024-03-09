@@ -1,10 +1,10 @@
-import 'package:logger/logger.dart';
 import 'package:weather/src/core/chat.dart';
 import 'package:weather/src/core/general.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/modules/utils.dart';
+import 'package:weather/src/utils/logger.dart';
 
 class GeneralManager {
   final Platform platform;

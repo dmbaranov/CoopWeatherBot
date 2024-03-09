@@ -83,15 +83,7 @@ class Weather {
   }
 
   Future<num?> getWeatherForCity(String city) async {
-    try {
-      var weatherData = await _getCurrentWeather(city);
-
-      return weatherData.temp;
-    } catch (err) {
-      print(err);
-
-      return null;
-    }
+    return _getCurrentWeather(city).then((weatherData) => weatherData.temp);
   }
 
   Future<bool> setNotificationHour(String chatId, int notificationHour) async {

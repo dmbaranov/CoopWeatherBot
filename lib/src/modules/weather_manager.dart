@@ -65,11 +65,14 @@ class WeatherManager {
 
     var chatId = event.chatId;
     var city = event.parameters[0];
-    var temperature = await _weather.getWeatherForCity(city);
-    var result = temperature != null;
-    var successfulMessage = chat.getText(chatId, 'weather.cities.temperature', {'city': city, 'temperature': temperature.toString()});
 
-    sendOperationMessage(chatId, platform: platform, operationResult: result, successfulMessage: successfulMessage);
+    _weather
+        .getWeatherForCity(city)
+        .then((result) => sendOperationMessage(chatId,
+            platform: platform,
+            operationResult: true,
+            successfulMessage: chat.getText(chatId, 'weather.cities.temperature', {'city': city, 'temperature': result.toString()})))
+        .catchError((error) => handleException(error, chatId, platform));
   }
 
   void setWeatherNotificationHour(MessageEvent event) async {

@@ -17,7 +17,6 @@ class YoutubeManager {
 
   void searchSong(MessageEvent event) async {
     if (!messageEventParametersCheck(platform, event)) return;
-
     _logger.i('Searching for a song: $event');
 
     var chatId = event.chatId;

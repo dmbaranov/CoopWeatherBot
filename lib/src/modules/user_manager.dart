@@ -1,15 +1,18 @@
 import 'package:weather/src/core/user.dart';
 import 'package:weather/src/core/chat.dart';
 import 'package:weather/src/globals/message_event.dart';
+import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/modules/utils.dart';
+import 'package:weather/src/utils/logger.dart';
 
 class UserManager {
   final Platform platform;
   final Chat chat;
   final User user;
+  final Logger _logger;
 
-  UserManager({required this.platform, required this.chat, required this.user});
+  UserManager({required this.platform, required this.chat, required this.user}) : _logger = getIt<Logger>();
 
   void initialize() {
     _subscribeToUserUpdates();
@@ -17,6 +20,7 @@ class UserManager {
 
   void addUser(MessageEvent event) async {
     if (!messageEventParametersCheck(platform, event) || !userIdsCheck(platform, event)) return;
+    _logger.i('Adding a new user: $event');
 
     var chatId = event.chatId;
     var userId = event.otherUserIds[0];
@@ -30,6 +34,7 @@ class UserManager {
 
   void removeUser(MessageEvent event) async {
     if (!messageEventParametersCheck(platform, event)) return;
+    _logger.i('Removing user: $event');
 
     var chatId = event.chatId;
     var userId = event.otherUserIds[0];
@@ -57,7 +62,7 @@ class UserManager {
         var platformUserPremiumStatus = await platform.getUserPremiumStatus(chatId, chatUser.id);
 
         if (chatUser.isPremium != platformUserPremiumStatus) {
-          print('Updating premium status for ${chatUser.id}');
+          _logger.i('Updating premium status for ${chatUser.id}');
 
           await user.updatePremiumStatus(chatUser.id, platformUserPremiumStatus);
         }

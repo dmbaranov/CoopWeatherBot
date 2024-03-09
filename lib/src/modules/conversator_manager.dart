@@ -2,7 +2,9 @@ import 'package:weather/src/core/database.dart';
 import 'package:weather/src/core/conversator.dart';
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/message_event.dart';
+import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/platform/platform.dart';
+import 'package:weather/src/utils/logger.dart';
 import 'utils.dart';
 
 class ConversatorManager {
@@ -10,10 +12,12 @@ class ConversatorManager {
   final Database db;
   final String conversatorApiKey;
   final String adminId;
+  final Logger _logger;
   final Conversator _conversator;
 
   ConversatorManager({required this.platform, required this.db, required this.conversatorApiKey, required this.adminId})
-      : _conversator = Conversator(db: db, conversatorApiKey: conversatorApiKey, adminId: adminId);
+      : _logger = getIt<Logger>(),
+        _conversator = Conversator(db: db, conversatorApiKey: conversatorApiKey, adminId: adminId);
 
   void initialize() {
     _conversator.initialize();
@@ -29,6 +33,7 @@ class ConversatorManager {
 
   void _getConversatorReply(MessageEvent event, String model) async {
     if (!messageEventParametersCheck(platform, event)) return;
+    _logger.i('Getting conversator reply: $event');
 
     var chatId = event.chatId;
     var userId = event.userId;

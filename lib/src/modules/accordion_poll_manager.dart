@@ -4,7 +4,9 @@ import 'package:weather/src/core/user.dart';
 import 'package:weather/src/core/chat.dart';
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/message_event.dart';
+import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/platform/platform.dart';
+import 'package:weather/src/utils/logger.dart';
 import 'utils.dart';
 
 class AccordionPollManager {
@@ -12,10 +14,12 @@ class AccordionPollManager {
   final EventBus eventBus;
   final User user;
   final Chat chat;
+  final Logger _logger;
   final AccordionPoll _accordionPoll;
 
   AccordionPollManager({required this.platform, required this.eventBus, required this.user, required this.chat})
-      : _accordionPoll = AccordionPoll(eventBus: eventBus, chat: chat);
+      : _logger = getIt<Logger>(),
+        _accordionPoll = AccordionPoll(eventBus: eventBus, chat: chat);
 
   void startAccordionPoll(MessageEvent event) async {
     if (!userIdsCheck(platform, event)) return;
@@ -25,6 +29,8 @@ class AccordionPollManager {
 
       return;
     }
+
+    _logger.i('Starting accordion poll: $event');
 
     var chatId = event.chatId;
     var fromUser = await user.getSingleUserForChat(chatId, event.userId);

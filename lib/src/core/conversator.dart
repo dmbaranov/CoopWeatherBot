@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:cron/cron.dart';
 import 'package:http/http.dart' as http;
 import 'package:weather/src/globals/module_exception.dart';
+import 'package:weather/src/injector/injection.dart';
+import 'package:weather/src/utils/logger.dart';
 import 'database.dart';
 
 const String _converstorApiURL = 'https://api.openai.com/v1/chat/completions';
@@ -39,11 +41,12 @@ class ConversatorUser {
 
 class Conversator {
   final Database db;
+  final Logger _logger;
   final String conversatorApiKey;
   final String adminId;
   final String _apiBaseUrl = _converstorApiURL;
 
-  Conversator({required this.db, required this.conversatorApiKey, required this.adminId});
+  Conversator({required this.db, required this.conversatorApiKey, required this.adminId}) : _logger = getIt<Logger>();
 
   void initialize() {
     _startResetDailyInvocationsUsageJob();
@@ -130,9 +133,9 @@ class Conversator {
       var result = await db.conversatorUser.resetDailyInvocations();
 
       if (result == 0) {
-        print('Something went wrong with resetting conversator daily invocations usage');
+        _logger.w('Something went wrong with resetting conversator daily invocations usage');
       } else {
-        print('Reset conversator daily invocation usage for $result rows');
+        _logger.i('Reset conversator daily invocation usage for $result rows');
       }
     });
   }

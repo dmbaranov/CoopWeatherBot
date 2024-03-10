@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:cron/cron.dart';
 import 'package:weather/src/globals/module_exception.dart';
+import 'package:weather/src/injector/injection.dart';
+import 'package:weather/src/utils/logger.dart';
 import 'events/accordion_poll_events.dart';
 import 'database.dart';
 import 'event_bus.dart';
@@ -32,8 +34,9 @@ class ChatReputationData {
 class Reputation {
   final Database db;
   final EventBus eventBus;
+  final Logger _logger;
 
-  Reputation({required this.db, required this.eventBus});
+  Reputation({required this.db, required this.eventBus}) : _logger = getIt<Logger>();
 
   void initialize() {
     _startResetVotesJob();
@@ -137,9 +140,9 @@ class Reputation {
       var result = await db.reputation.resetChangeOptions(numberOfVoteOptions);
 
       if (result == 0) {
-        print('Something went wrong with resetting reputation change options');
+        _logger.w('Something went wrong with resetting reputation change options');
       } else {
-        print('Reset reputation change options for $result rows');
+        _logger.i('Reset reputation change options for $result rows');
       }
     });
   }

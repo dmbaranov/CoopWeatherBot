@@ -38,12 +38,6 @@ class WeatherRepository extends Repository {
       return [];
     }
 
-    if (data.length != 1) {
-      print('One piece of cities data was expected, got ${data.length} instead');
-
-      return null;
-    }
-
     var citiesData = data[0].toColumnMap();
 
     return citiesData['cities']?.split(',');

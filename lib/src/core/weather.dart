@@ -101,21 +101,12 @@ class Weather {
   }
 
   Future<List<OpenWeatherData>> getWeatherForCities(List<String> cities) async {
-    List<OpenWeatherData> result = [];
+    return Future.wait(cities.map((city) async {
+      var weather = await _getCurrentWeather(city);
+      await Future.delayed(Duration(milliseconds: 500));
 
-    await Future.forEach(cities, (city) async {
-      try {
-        var weather = await _getCurrentWeather(city);
-
-        result.add(OpenWeatherData(weather.city, weather.temp));
-
-        await Future.delayed(Duration(milliseconds: 500));
-      } catch (err) {
-        print("Can't get weather for city $city");
-      }
-    });
-
-    return result;
+      return OpenWeatherData(weather.city, weather.temp);
+    }));
   }
 
   Future<OpenWeatherData> _getCurrentWeather(String city) async {

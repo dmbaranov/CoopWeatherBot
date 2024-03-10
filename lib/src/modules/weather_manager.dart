@@ -101,11 +101,13 @@ class WeatherManager {
     _logger.i('Getting watchlist weather: $event');
 
     var chatId = event.chatId;
-    var watchlistCities = await _weather.getWatchList(chatId);
-    var weatherData = await _weather.getWeatherForCities(watchlistCities);
-    var weatherMessage = _buildWatchlistWeatherMessage(weatherData);
 
-    sendOperationMessage(chatId, platform: platform, operationResult: weatherMessage.isNotEmpty, successfulMessage: weatherMessage);
+    _weather
+        .getWatchList(chatId)
+        .then((watchlistCities) => _weather.getWeatherForCities(watchlistCities))
+        .then((weatherData) => sendOperationMessage(chatId,
+            platform: platform, operationResult: true, successfulMessage: _buildWatchlistWeatherMessage(weatherData)))
+        .catchError((error) => handleException(error, chatId, platform));
   }
 
   String _buildWatchlistWeatherMessage(List<OpenWeatherData> weatherData) {

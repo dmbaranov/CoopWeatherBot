@@ -6,7 +6,6 @@ import 'utils.dart';
 class YoutubeManager {
   final Platform platform;
   final String apiKey;
-
   final Youtube _youtube;
 
   YoutubeManager({required this.platform, required this.apiKey}) : _youtube = Youtube(apiKey);

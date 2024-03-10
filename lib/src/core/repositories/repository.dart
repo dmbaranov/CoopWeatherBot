@@ -1,18 +1,21 @@
 import 'dart:io';
 import 'package:meta/meta.dart';
 import 'package:postgres/postgres.dart';
+import 'package:weather/src/injector/injection.dart';
+import 'package:weather/src/utils/logger.dart';
 
 const String _pathToQueries = 'assets/db/queries';
 
 class Repository {
   final String repositoryName;
   final Pool dbConnection;
+  final Logger _logger;
   final String _queriesDirectory = _pathToQueries;
 
   @protected
   final Map<String, String> queriesMap = {};
 
-  Repository({required this.repositoryName, required this.dbConnection});
+  Repository({required this.repositoryName, required this.dbConnection}) : _logger = getIt<Logger>();
 
   initRepository() async {
     var queriesLocation = Directory('$_queriesDirectory/$repositoryName');
@@ -30,7 +33,7 @@ class Repository {
   @protected
   Future<Result?> executeQuery(String? query, [Map<String, dynamic>? parameters]) async {
     if (query == null) {
-      print('Wrong query $query');
+      _logger.e('Wrong query: $query');
 
       return null;
     }
@@ -41,7 +44,7 @@ class Repository {
   @protected
   Future<int> executeTransaction(String? query, [Map<String, dynamic>? parameters]) async {
     if (query == null) {
-      print('Wrong query $query');
+      _logger.e('Wrong query: $query');
 
       return 0;
     }
@@ -51,8 +54,7 @@ class Repository {
 
       return queryResult.affectedRows;
     }).catchError((error) {
-      print('DB transaction error');
-      print(error);
+      _logger.e('DB transaction error: $error');
 
       return 0;
     });

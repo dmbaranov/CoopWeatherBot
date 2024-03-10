@@ -3,7 +3,9 @@ import 'package:weather/src/core/command_statistics.dart';
 import 'package:weather/src/core/database.dart';
 import 'package:weather/src/core/event_bus.dart';
 import 'package:weather/src/globals/message_event.dart';
+import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/platform/platform.dart';
+import 'package:weather/src/utils/logger.dart';
 import 'utils.dart';
 
 class CommandStatisticsManager {
@@ -11,10 +13,12 @@ class CommandStatisticsManager {
   final Database db;
   final EventBus eventBus;
   final Chat chat;
+  final Logger _logger;
   final CommandStatistics _commandStatistics;
 
   CommandStatisticsManager({required this.platform, required this.db, required this.eventBus, required this.chat})
-      : _commandStatistics = CommandStatistics(db: db, eventBus: eventBus, chat: chat, chatPlatform: platform.chatPlatform);
+      : _logger = getIt<Logger>(),
+        _commandStatistics = CommandStatistics(db: db, eventBus: eventBus, chat: chat, chatPlatform: platform.chatPlatform);
 
   void initialize() {
     _commandStatistics.initialize();
@@ -49,6 +53,8 @@ class CommandStatisticsManager {
 
   void _subscribeToChatReports() {
     _commandStatistics.chatReportStream.listen((chatReport) async {
+      _logger.i('Handling chat report data: $chatReport');
+
       var chatId = chatReport.chatId;
 
       var successfulMessage = '';

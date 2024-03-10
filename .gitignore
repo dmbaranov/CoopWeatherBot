@@ -12,6 +12,7 @@ doc/api/
 
 .env
 .idea
+logs.txt
 
 assets/swearwords/swearwords.*.json
 !assets/swearwords/swearwords.sample.json

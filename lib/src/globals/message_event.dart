@@ -17,4 +17,9 @@ class MessageEvent<T> {
       required this.otherUserIds,
       required this.parameters,
       required this.rawMessage});
+
+  @override
+  String toString() {
+    return '{ platform: $platform, chatId: $chatId, userId: $userId, otherUserIds: $otherUserIds, parameters: $parameters, isBot: $isBot, rawMessage: $rawMessage }';
+  }
 }

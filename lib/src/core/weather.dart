@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'package:cron/cron.dart';
 import 'database.dart';
 
+const _weatherApiBase = 'https://api.openweathermap.org/data/2.5';
+
 class OpenWeatherData {
   final String city;
   final num temp;
@@ -28,7 +30,7 @@ class ChatNotificationHour {
 class Weather {
   final Database db;
   final String openweatherKey;
-  final String _apiBaseUrl = 'https://api.openweathermap.org/data/2.5';
+  final String _apiBaseUrl = _weatherApiBase;
 
   late StreamController<ChatWeatherData> _weatherStreamController;
   List<ScheduledTask> _weatherCronTasks = [];
@@ -83,15 +85,7 @@ class Weather {
   }
 
   Future<num?> getWeatherForCity(String city) async {
-    try {
-      var weatherData = await _getCurrentWeather(city);
-
-      return weatherData.temp;
-    } catch (err) {
-      print(err);
-
-      return null;
-    }
+    return _getCurrentWeather(city).then((weatherData) => weatherData.temp);
   }
 
   Future<bool> setNotificationHour(String chatId, int notificationHour) async {
@@ -107,21 +101,12 @@ class Weather {
   }
 
   Future<List<OpenWeatherData>> getWeatherForCities(List<String> cities) async {
-    List<OpenWeatherData> result = [];
+    return Future.wait(cities.map((city) async {
+      var weather = await _getCurrentWeather(city);
+      await Future.delayed(Duration(milliseconds: 500));
 
-    await Future.forEach(cities, (city) async {
-      try {
-        var weather = await _getCurrentWeather(city);
-
-        result.add(OpenWeatherData(weather.city, weather.temp));
-
-        await Future.delayed(Duration(milliseconds: 500));
-      } catch (err) {
-        print("Can't get weather for city $city");
-      }
-    });
-
-    return result;
+      return OpenWeatherData(weather.city, weather.temp);
+    }));
   }
 
   Future<OpenWeatherData> _getCurrentWeather(String city) async {

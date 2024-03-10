@@ -2,7 +2,9 @@ import 'package:weather/src/core/database.dart';
 import 'package:weather/src/core/weather.dart';
 import 'package:weather/src/core/chat.dart';
 import 'package:weather/src/globals/message_event.dart';
+import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/platform/platform.dart';
+import 'package:weather/src/utils/logger.dart';
 import 'utils.dart';
 
 class WeatherManager {
@@ -10,15 +12,17 @@ class WeatherManager {
   final Chat chat;
   final Database db;
   final String openweatherKey;
+  final Logger _logger;
   final Weather _weather;
 
   WeatherManager({required this.platform, required this.chat, required this.db, required this.openweatherKey})
-      : _weather = Weather(db: db, openweatherKey: openweatherKey);
+      : _logger = getIt<Logger>(),
+        _weather = Weather(db: db, openweatherKey: openweatherKey);
 
   void initialize() {
     _weather.initialize();
 
-    _subscribeToWeatherUpdates();
+    _subscribeToWeatherNotifications();
   }
 
   void addCity(MessageEvent event) async {
@@ -56,11 +60,14 @@ class WeatherManager {
 
     var chatId = event.chatId;
     var city = event.parameters[0];
-    var temperature = await _weather.getWeatherForCity(city);
-    var result = temperature != null;
-    var successfulMessage = chat.getText(chatId, 'weather.cities.temperature', {'city': city, 'temperature': temperature.toString()});
 
-    sendOperationMessage(chatId, platform: platform, operationResult: result, successfulMessage: successfulMessage);
+    _weather
+        .getWeatherForCity(city)
+        .then((result) => sendOperationMessage(chatId,
+            platform: platform,
+            operationResult: true,
+            successfulMessage: chat.getText(chatId, 'weather.cities.temperature', {'city': city, 'temperature': result.toString()})))
+        .catchError((error) => handleException(error, chatId, platform));
   }
 
   void setWeatherNotificationHour(MessageEvent event) async {
@@ -84,19 +91,23 @@ class WeatherManager {
 
   void getWatchlistWeather(MessageEvent event) async {
     var chatId = event.chatId;
-    var watchlistCities = await _weather.getWatchList(chatId);
-    var weatherData = await _weather.getWeatherForCities(watchlistCities);
-    var weatherMessage = _buildWatchlistWeatherMessage(weatherData);
 
-    sendOperationMessage(chatId, platform: platform, operationResult: weatherMessage.isNotEmpty, successfulMessage: weatherMessage);
+    _weather
+        .getWatchList(chatId)
+        .then((watchlistCities) => _weather.getWeatherForCities(watchlistCities))
+        .then((weatherData) => sendOperationMessage(chatId,
+            platform: platform, operationResult: true, successfulMessage: _buildWatchlistWeatherMessage(weatherData)))
+        .catchError((error) => handleException(error, chatId, platform));
   }
 
   String _buildWatchlistWeatherMessage(List<OpenWeatherData> weatherData) {
     return weatherData.map((data) => 'In city: ${data.city} the temperature is ${data.temp}\n\n').join();
   }
 
-  void _subscribeToWeatherUpdates() {
+  void _subscribeToWeatherNotifications() {
     _weather.weatherStream.listen((weatherData) async {
+      _logger.i('Handling weather notification data: $weatherData');
+
       var chatData = await chat.getSingleChat(chatId: weatherData.chatId);
 
       if (chatData?.platform != platform.chatPlatform) {

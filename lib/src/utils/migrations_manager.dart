@@ -1,14 +1,17 @@
 import 'dart:io';
 import 'package:postgres/postgres.dart';
+import 'package:weather/src/injector/injection.dart';
+import 'package:weather/src/utils/logger.dart';
 
 const String _pathToMigrations = 'assets/db/migrations';
 const String _migrationTableMigrationName = '1677944890_migration.sql';
 
 class MigrationsManager {
   final Pool dbConnection;
+  final Logger _logger;
   final String _migrationsDirectory = _pathToMigrations;
 
-  MigrationsManager(this.dbConnection);
+  MigrationsManager(this.dbConnection) : _logger = getIt<Logger>();
 
   Future<void> runMigrations() async {
     var migrationsLocation = Directory(_migrationsDirectory);
@@ -26,7 +29,7 @@ class MigrationsManager {
       var runMigration = await _shouldRunMigration(migrationName);
 
       if (runMigration) {
-        print('Applying migration $migrationName');
+        _logger.w('Applying migration $migrationName');
         var query = await migration.readAsString();
 
         await _runMigration(query, migrationName);

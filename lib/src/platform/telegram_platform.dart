@@ -16,8 +16,11 @@ import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/globals/bot_command.dart';
 import 'package:weather/src/globals/accordion_poll.dart';
+import 'package:weather/src/injector/injection.dart';
 
 import 'package:weather/src/platform/platform.dart';
+
+import 'package:weather/src/utils/logger.dart';
 
 class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   @override
@@ -28,6 +31,7 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   final Access access;
   final Chat chat;
   final User user;
+  final Logger _logger;
 
   // final Debouncer<TeleDartInlineQuery?> _debouncer = Debouncer(Duration(seconds: 1), initialValue: null);
 
@@ -41,7 +45,8 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
       required this.eventBus,
       required this.access,
       required this.chat,
-      required this.user});
+      required this.user})
+      : _logger = getIt<Logger>();
 
   @override
   Future<void> initialize() async {
@@ -54,12 +59,12 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
 
     _bot.start();
 
-    print('Telegram platform has been started!');
+    _logger.i('Telegram platform has been started!');
   }
 
   @override
   Future<void> postStart() async {
-    print('No post-start script for Telegram');
+    _logger.i('No post-start script for Telegram');
   }
 
   @override

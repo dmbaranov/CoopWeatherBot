@@ -1,6 +1,8 @@
 import 'package:collection/collection.dart';
 import 'package:weather/src/globals/message_event.dart';
+import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/platform/platform.dart';
+import 'package:weather/src/utils/logger.dart';
 
 bool messageEventParametersCheck(Platform platform, MessageEvent event, [int numberOfParameters = 1]) {
   if (event.parameters.whereNot((parameter) => parameter.isEmpty).length < numberOfParameters) {
@@ -31,6 +33,8 @@ void sendOperationMessage(String chatId, {required Platform platform, required b
 }
 
 void handleException<CustomException>(error, String chatId, Platform platform) {
-  var errorMessage = error is CustomException ? error.toString() : 'general.something_went_wrong';
+  getIt<Logger>().e('Handling module exception: $error');
+
+  var errorMessage = CustomException != dynamic && error is CustomException ? error.toString() : 'general.something_went_wrong';
   platform.sendMessage(chatId, translation: errorMessage);
 }

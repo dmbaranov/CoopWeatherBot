@@ -3,16 +3,21 @@ import 'package:weather/src/core/database.dart';
 import 'package:weather/src/core/panorama.dart';
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/message_event.dart';
+import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/modules/utils.dart';
+import 'package:weather/src/utils/logger.dart';
 
 class PanoramaManager {
   final Platform platform;
   final Chat chat;
   final Database db;
+  final Logger _logger;
   final PanoramaNews _panoramaNews;
 
-  PanoramaManager({required this.platform, required this.chat, required this.db}) : _panoramaNews = PanoramaNews(db: db);
+  PanoramaManager({required this.platform, required this.chat, required this.db})
+      : _logger = getIt<Logger>(),
+        _panoramaNews = PanoramaNews(db: db);
 
   void initialize() {
     _panoramaNews.initialize();
@@ -33,9 +38,9 @@ class PanoramaManager {
       return;
     }
 
-    var panoramaStream = _panoramaNews.panoramaStream;
+    _panoramaNews.panoramaStream.listen((event) async {
+      _logger.i('Handling Panorama stream data: $event');
 
-    panoramaStream.listen((event) async {
       var allChats = await chat.getAllChatIdsForPlatform(ChatPlatform.telegram);
 
       allChats.forEach((chatId) {

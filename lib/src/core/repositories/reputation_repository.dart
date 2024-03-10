@@ -24,12 +24,6 @@ class ReputationRepository extends Repository {
       return null;
     }
 
-    if (data.length != 1) {
-      print('One piece of reputation data data was expected, got ${data.length} instead');
-
-      return null;
-    }
-
     var reputationData = data[0].toColumnMap();
 
     return SingleReputationData(

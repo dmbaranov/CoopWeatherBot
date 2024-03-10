@@ -3,7 +3,9 @@ import 'package:weather/src/core/chat.dart';
 import 'package:weather/src/core/check_reminder.dart';
 import 'package:weather/src/core/user.dart';
 import 'package:weather/src/globals/message_event.dart';
+import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/platform/platform.dart';
+import 'package:weather/src/utils/logger.dart';
 import 'utils.dart';
 
 class CheckReminderManager {
@@ -11,10 +13,12 @@ class CheckReminderManager {
   final Database db;
   final Chat chat;
   final User user;
+  final Logger _logger;
   final CheckReminder _checkReminder;
 
   CheckReminderManager({required this.platform, required this.db, required this.chat, required this.user})
-      : _checkReminder = CheckReminder(db: db);
+      : _logger = getIt<Logger>(),
+        _checkReminder = CheckReminder(db: db);
 
   void initialize() {
     _checkReminder.initialize();
@@ -46,7 +50,7 @@ class CheckReminderManager {
 
         sendOperationMessage(checkReminder.chatId, platform: platform, operationResult: true, successfulMessage: checkReminderMessage);
       } else {
-        print("Could not send reminder, user not found. chatId: ${checkReminder.chatId}, userId: ${checkReminder.userId}");
+        _logger.e('Failed to send reminder: $checkReminder');
       }
     });
   }

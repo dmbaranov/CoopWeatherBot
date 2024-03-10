@@ -20,6 +20,6 @@ class MessageEvent<T> {
 
   @override
   String toString() {
-    return '{ platform: $platform, chatId: $chatId, userId: $userId, otherUserIds: $otherUserIds, parameters: $parameters, isBot: $isBot, rawMessage: $rawMessage }';
+    return 'MessageEvent({ platform: $platform, chatId: $chatId, userId: $userId, otherUserIds: $otherUserIds, parameters: $parameters, isBot: $isBot, rawMessage: $rawMessage })';
   }
 }

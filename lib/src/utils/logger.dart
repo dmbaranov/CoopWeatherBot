@@ -12,8 +12,9 @@ class Logger {
   Logger._internal(this.isProduction) {
     var printer = isProduction ? lg.SimplePrinter(printTime: true, colors: false) : lg.PrettyPrinter(printTime: true);
     var output = isProduction ? lg.MultiOutput([lg.FileOutput(file: logFile), lg.ConsoleOutput()]) : lg.ConsoleOutput();
+    var filter = CustomLogFilter();
 
-    _logger = lg.Logger(printer: printer, output: output);
+    _logger = lg.Logger(printer: printer, output: output, filter: filter);
     _logger.i('Logger initialized in ${isProduction ? 'prod' : 'dev'} mode');
   }
 
@@ -32,6 +33,14 @@ class Logger {
 
   void e(message, [Object? error]) {
     _logger.e(message, error: error);
+  }
+}
+
+class CustomLogFilter extends lg.LogFilter {
+  @override
+  bool shouldLog(lg.LogEvent event) {
+    // https: //github.com/simc/logger/issues/48
+    return true;
   }
 }
 

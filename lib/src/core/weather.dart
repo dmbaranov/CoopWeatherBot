@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'package:cron/cron.dart';
 import 'database.dart';
 
+const _weatherApiBase = 'https://api.openweathermap.org/data/2.5';
+
 class OpenWeatherData {
   final String city;
   final num temp;
@@ -28,7 +30,7 @@ class ChatNotificationHour {
 class Weather {
   final Database db;
   final String openweatherKey;
-  final String _apiBaseUrl = 'https://api.openweathermap.org/data/2.5';
+  final String _apiBaseUrl = _weatherApiBase;
 
   late StreamController<ChatWeatherData> _weatherStreamController;
   List<ScheduledTask> _weatherCronTasks = [];

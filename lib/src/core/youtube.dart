@@ -1,9 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
+const _youtubeApiBase = 'https://www.googleapis.com/youtube/v3/search';
+const _youtubeVideoUrlBase = 'https://www.youtube.com/watch';
+
 class Youtube {
   final String apiKey;
-  final String apiBaseUrl = 'https://www.googleapis.com/youtube/v3/search';
+  final String apiBaseUrl = _youtubeApiBase;
 
   Youtube(this.apiKey);
 
@@ -16,7 +19,7 @@ class Youtube {
 
     var videoId = response['items'][0]['id']['videoId'];
 
-    return 'https://www.youtube.com/watch?v=$videoId';
+    return '$_youtubeVideoUrlBase?v=$videoId';
   }
 
   Future<Map> getRawYoutubeSearchResults(String query) async {

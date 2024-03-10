@@ -2,10 +2,12 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'chat.dart';
 
+const _githubApiBase = 'https://api.github.com';
+
 class General {
   final Chat chat;
   final String repositoryUrl;
-  final String _baseGithubApiUrl = 'https://api.github.com';
+  final String _baseGithubApiUrl = _githubApiBase;
 
   General({required this.chat, required this.repositoryUrl});
 

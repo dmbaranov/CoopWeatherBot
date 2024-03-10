@@ -25,8 +25,6 @@ class PanoramaManager {
   }
 
   void sendNewsToChat(MessageEvent event) async {
-    _logger.i('Sending Panorama news: $event');
-
     var chatId = event.chatId;
     var news = await _panoramaNews.getNews(chatId);
     var successfulMessage = '${news?.title}\n\nFull: ${news?.url}';

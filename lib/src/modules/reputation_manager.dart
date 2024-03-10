@@ -3,9 +3,7 @@ import 'package:weather/src/core/event_bus.dart';
 import 'package:weather/src/core/chat.dart';
 import 'package:weather/src/core/reputation.dart';
 import 'package:weather/src/globals/message_event.dart';
-import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/platform/platform.dart';
-import 'package:weather/src/utils/logger.dart';
 import 'utils.dart';
 
 class ReputationManager {
@@ -13,12 +11,10 @@ class ReputationManager {
   final Database db;
   final EventBus eventBus;
   final Chat chat;
-  final Logger _logger;
   final Reputation _reputation;
 
   ReputationManager({required this.platform, required this.db, required this.eventBus, required this.chat})
-      : _logger = getIt<Logger>(),
-        _reputation = Reputation(db: db, eventBus: eventBus);
+      : _reputation = Reputation(db: db, eventBus: eventBus);
 
   void initialize() {
     _reputation.initialize();
@@ -26,7 +22,6 @@ class ReputationManager {
 
   void increaseReputation(MessageEvent event) async {
     if (!userIdsCheck(platform, event)) return;
-    _logger.i('Increasing reputation: $event');
 
     var chatId = event.chatId;
     var fromUserId = event.userId;
@@ -41,7 +36,6 @@ class ReputationManager {
 
   void decreaseReputation(MessageEvent event) async {
     if (!userIdsCheck(platform, event)) return;
-    _logger.i('Decreasing reputation: $event');
 
     var chatId = event.chatId;
     var fromUserId = event.userId;
@@ -55,8 +49,6 @@ class ReputationManager {
   }
 
   void sendReputationList(MessageEvent event) async {
-    _logger.i('Sending reputation list: $event');
-
     var chatId = event.chatId;
     var reputationData = await _reputation.getReputationData(chatId);
     var reputationMessage = _buildReputationListMessage(chatId, reputationData);
@@ -67,7 +59,6 @@ class ReputationManager {
 
   void createReputation(MessageEvent event) async {
     if (!userIdsCheck(platform, event)) return;
-    _logger.i('Creating reputation data: $event');
 
     var chatId = event.chatId;
     var userId = event.otherUserIds[0];

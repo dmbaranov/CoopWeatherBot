@@ -27,7 +27,6 @@ class WeatherManager {
 
   void addCity(MessageEvent event) async {
     if (!messageEventParametersCheck(platform, event)) return;
-    _logger.i('Adding a new city: $event');
 
     var chatId = event.chatId;
     var cityToAdd = event.parameters[0];
@@ -39,7 +38,6 @@ class WeatherManager {
 
   void removeCity(MessageEvent event) async {
     if (!messageEventParametersCheck(platform, event)) return;
-    _logger.i('Removing city: $event');
 
     var chatId = event.chatId;
     var cityToRemove = event.parameters[0];
@@ -50,8 +48,6 @@ class WeatherManager {
   }
 
   void getWeatherWatchlist(MessageEvent event) async {
-    _logger.i('Getting a weather watchlist: $event');
-
     var chatId = event.chatId;
     var cities = await _weather.getWatchList(chatId);
     var citiesString = cities.join('\n');
@@ -61,7 +57,6 @@ class WeatherManager {
 
   void getWeatherForCity(MessageEvent event) async {
     if (!messageEventParametersCheck(platform, event)) return;
-    _logger.i('Getting weather for city: $event');
 
     var chatId = event.chatId;
     var city = event.parameters[0];
@@ -77,7 +72,6 @@ class WeatherManager {
 
   void setWeatherNotificationHour(MessageEvent event) async {
     if (!messageEventParametersCheck(platform, event)) return;
-    _logger.i('Setting weather notification hour: $event');
 
     var chatId = event.chatId;
     var hour = event.parameters[0];
@@ -88,8 +82,6 @@ class WeatherManager {
   }
 
   void createWeather(MessageEvent event) async {
-    _logger.i('Creating weather data: $event');
-
     var chatId = event.chatId;
     var result = await _weather.createWeatherData(chatId);
     var successfulMessage = chat.getText(chatId, 'general.success');
@@ -98,8 +90,6 @@ class WeatherManager {
   }
 
   void getWatchlistWeather(MessageEvent event) async {
-    _logger.i('Getting watchlist weather: $event');
-
     var chatId = event.chatId;
 
     _weather

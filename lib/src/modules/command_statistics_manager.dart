@@ -26,7 +26,6 @@ class CommandStatisticsManager {
   }
 
   void getChatCommandInvocations(MessageEvent event) async {
-    _logger.i('Receiving chat command invocations: $event');
     var chatId = event.chatId;
     var commandInvocationData = await _commandStatistics.getChatCommandInvocations(chatId: chatId);
     var invocationsMessage = _buildCommandInvocationsMessage(commandInvocationData);
@@ -38,7 +37,6 @@ class CommandStatisticsManager {
 
   void getUserCommandInvocations(MessageEvent event) async {
     if (!userIdsCheck(platform, event)) return;
-    _logger.i('Receiving user command invocations: $event');
 
     var userId = event.otherUserIds[0];
     var chatId = event.chatId;

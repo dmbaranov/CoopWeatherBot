@@ -20,7 +20,6 @@ class UserManager {
 
   void addUser(MessageEvent event) async {
     if (!messageEventParametersCheck(platform, event) || !userIdsCheck(platform, event)) return;
-    _logger.i('Adding a new user: $event');
 
     var chatId = event.chatId;
     var userId = event.otherUserIds[0];
@@ -34,7 +33,6 @@ class UserManager {
 
   void removeUser(MessageEvent event) async {
     if (!messageEventParametersCheck(platform, event)) return;
-    _logger.i('Removing user: $event');
 
     var chatId = event.chatId;
     var userId = event.otherUserIds[0];

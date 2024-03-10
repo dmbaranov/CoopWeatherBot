@@ -28,8 +28,6 @@ class CheckReminderManager {
   void checkMessage(MessageEvent event) async {
     if (!messageEventParametersCheck(platform, event)) return;
 
-    _logger.i('Creating message check: $event');
-
     var chatId = event.chatId;
     var userId = event.userId;
     var period = event.parameters[0];

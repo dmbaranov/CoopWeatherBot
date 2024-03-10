@@ -7,6 +7,7 @@ import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/utils/migrations_manager.dart';
 import 'package:weather/src/utils/logger.dart';
 
+// TODO: move to database.dart
 Future<Pool> getDatabaseConnection(DotEnv env) async {
   final username = env['dbuser']!;
   final password = env['dbpassword']!;
@@ -36,6 +37,7 @@ bool getIsProductionMode(String? envIsProduction) {
 void main(List<String> args) async {
   var env = DotEnv(includePlatformEnvironment: true)..load();
   final dbConnection = await getDatabaseConnection(env);
+  // TODO: move to core config module
   final token = env['bottoken']!;
   final adminId = env['adminid']!;
   final repoUrl = env['githubrepo']!;

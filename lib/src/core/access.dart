@@ -25,7 +25,7 @@ class Access {
       required OnFailureCallback onFailure}) async {
     var user = await db.user.getSingleUserForChat(event.chatId, event.userId);
 
-    if (user == null || user.banned) {
+    if (user == null || user.banned || user.deleted) {
       return onFailure(event);
     }
 
@@ -33,7 +33,7 @@ class Access {
     var canExecuteAsModerator = accessLevel == AccessLevel.moderator && user.moderator;
     var canExecuteAsAdmin = user.id == adminId;
 
-    if (canExecuteAsUser || canExecuteAsAdmin || canExecuteAsModerator) {
+    if (canExecuteAsUser || canExecuteAsModerator || canExecuteAsAdmin) {
       _logger.i('Executing /$command with event: $event');
       eventBus.fire(AccessEvent(chatId: event.chatId, user: user, command: command));
 

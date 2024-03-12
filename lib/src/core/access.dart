@@ -29,10 +29,11 @@ class Access {
       return onFailure(event);
     }
 
-    var canExecuteAsAdmin = user.id == adminId;
+    var canExecuteAsUser = accessLevel == AccessLevel.user;
     var canExecuteAsModerator = accessLevel == AccessLevel.moderator && user.moderator;
+    var canExecuteAsAdmin = user.id == adminId;
 
-    if (canExecuteAsAdmin || canExecuteAsModerator) {
+    if (canExecuteAsUser || canExecuteAsAdmin || canExecuteAsModerator) {
       _logger.i('Executing /$command with event: $event');
       eventBus.fire(AccessEvent(chatId: event.chatId, user: user, command: command));
 

@@ -1,14 +1,13 @@
-import 'package:postgres/postgres.dart';
-
+import 'package:weather/src/core/config.dart';
 import 'package:weather/src/core/database.dart';
 import 'package:weather/src/core/chat.dart';
 import 'package:weather/src/core/user.dart';
 import 'package:weather/src/core/event_bus.dart';
 import 'package:weather/src/core/access.dart';
 
-import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/bot_command.dart';
 import 'package:weather/src/globals/access_level.dart';
+import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/platform/platform.dart';
 
 import 'package:weather/src/modules/chat_manager.dart';
@@ -25,17 +24,11 @@ import 'package:weather/src/modules/command_statistics_manager.dart';
 import 'package:weather/src/modules/check_reminder_manager.dart';
 
 class Bot {
-  final ChatPlatform platformName;
-  final String botToken;
-  final String adminId;
-  final String repoUrl;
-  final String openweatherKey;
-  final String youtubeKey;
-  final String conversatorKey;
-  final Pool dbConnection;
+  final Config _config;
+  final Database _db;
 
   late Platform _platform;
-  late Database _db;
+  
   late EventBus _eventBus;
   late Chat _chat;
   late User _user;
@@ -54,42 +47,39 @@ class Bot {
   late CommandStatisticsManager _commandStatisticsManager;
   late CheckReminderManager _checkReminderManager;
 
-  Bot(
-      {required this.platformName,
-      required this.botToken,
-      required this.adminId,
-      required this.repoUrl,
-      required this.openweatherKey,
-      required this.youtubeKey,
-      required this.conversatorKey,
-      required this.dbConnection});
+  Bot()
+      : _config = getIt<Config>(),
+        _db = getIt<Database>();
 
   Future<void> startBot() async {
-    _db = Database(dbConnection);
-    await _db.initialize();
-
     _eventBus = EventBus();
 
     _chat = Chat(db: _db);
     await _chat.initialize();
 
     _user = User(db: _db)..initialize();
-    _access = Access(db: _db, eventBus: _eventBus, adminId: adminId);
+    _access = Access(db: _db, eventBus: _eventBus, adminId: _config.adminId);
 
     _platform = Platform(
-        chatPlatform: platformName, token: botToken, adminId: adminId, eventBus: _eventBus, access: _access, chat: _chat, user: _user);
+        chatPlatform: _config.chatPlatform,
+        token: _config.token,
+        adminId: _config.adminId,
+        eventBus: _eventBus,
+        access: _access,
+        chat: _chat,
+        user: _user);
     await _platform.initialize();
 
     _dadJokesManager = DadJokesManager(platform: _platform);
-    _youtubeManager = YoutubeManager(platform: _platform, apiKey: youtubeKey);
-    _conversatorManager = ConversatorManager(platform: _platform, db: _db, conversatorApiKey: conversatorKey, adminId: adminId)
-      ..initialize();
-    _generalManager = GeneralManager(platform: _platform, chat: _chat, repositoryUrl: repoUrl);
+    _youtubeManager = YoutubeManager(platform: _platform, apiKey: _config.youtubeKey);
+    _conversatorManager =
+        ConversatorManager(platform: _platform, db: _db, conversatorApiKey: _config.conversatorKey, adminId: _config.adminId)..initialize();
+    _generalManager = GeneralManager(platform: _platform, chat: _chat, repositoryUrl: _config.githubRepo);
     _chatManager = ChatManager(platform: _platform, chat: _chat);
     _panoramaManager = PanoramaManager(platform: _platform, chat: _chat, db: _db)..initialize();
     _userManager = UserManager(platform: _platform, chat: _chat, user: _user)..initialize();
     _reputationManager = ReputationManager(platform: _platform, db: _db, eventBus: _eventBus, chat: _chat)..initialize();
-    _weatherManager = WeatherManager(platform: _platform, chat: _chat, db: _db, openweatherKey: openweatherKey)..initialize();
+    _weatherManager = WeatherManager(platform: _platform, chat: _chat, db: _db, openweatherKey: _config.openWeatherKey)..initialize();
     _accordionPollManager = AccordionPollManager(platform: _platform, eventBus: _eventBus, user: _user, chat: _chat);
     _commandStatisticsManager = CommandStatisticsManager(platform: _platform, db: _db, eventBus: _eventBus, chat: _chat)..initialize();
     _checkReminderManager = CheckReminderManager(platform: _platform, db: _db, chat: _chat, user: _user)..initialize();

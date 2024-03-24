@@ -1,9 +1,12 @@
 import 'package:dotenv/dotenv.dart';
+import 'package:injectable/injectable.dart';
 import 'package:weather/src/globals/chat_platform.dart';
 
+@singleton
 class Config {
   late final String _dbUser;
   late final String _dbPassword;
+  late final String _dbDatabase;
   late final String _token;
   late final String _adminId;
   late final String _githubRepo;
@@ -16,6 +19,8 @@ class Config {
   String get dbUser => _dbUser;
 
   String get dbPassword => _dbPassword;
+
+  String get dbDatabase => _dbDatabase;
 
   String get token => _token;
 
@@ -33,29 +38,31 @@ class Config {
 
   bool get isProduction => _isProduction;
 
+  @PostConstruct()
   void initialize() {
     var env = DotEnv(includePlatformEnvironment: true)..load();
 
     _dbUser = env['dbuser']!;
     _dbPassword = env['dbpassword']!;
+    _dbDatabase = env['dbdatabase']!;
     _token = env['bottoken']!;
     _adminId = env['adminid']!;
     _githubRepo = env['githubrepo']!;
     _youtubeKey = env['youtube']!;
     _openWeatherKey = env['openweather']!;
     _conversatorKey = env['conversatorkey']!;
-    _chatPlatform = _getPlatform(env['platform']!);
-    _isProduction = _getIsProductionMode(env['isproduction']!);
+    _chatPlatform = _getPlatform(env['platform']);
+    _isProduction = _getIsProductionMode(env['isproduction']);
   }
 
-  ChatPlatform _getPlatform(String envPlatform) {
+  ChatPlatform _getPlatform(String? envPlatform) {
     if (envPlatform == 'telegram') return ChatPlatform.telegram;
     if (envPlatform == 'discord') return ChatPlatform.discord;
 
     throw Exception('Invalid platform $envPlatform');
   }
 
-  bool _getIsProductionMode(String envIsProduction) {
+  bool _getIsProductionMode(String? envIsProduction) {
     return int.parse(envIsProduction ?? '0') == 1;
   }
 }

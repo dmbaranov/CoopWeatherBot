@@ -4,6 +4,8 @@ import 'package:weather/src/globals/chat_platform.dart';
 
 @singleton
 class Config {
+  late final String _dbHost;
+  late final int _dbPort;
   late final String _dbUser;
   late final String _dbPassword;
   late final String _dbDatabase;
@@ -15,6 +17,10 @@ class Config {
   late final String _conversatorKey;
   late final ChatPlatform _chatPlatform;
   late final bool _isProduction;
+
+  String get dbHost => _dbHost;
+
+  int get dbPort => _dbPort;
 
   String get dbUser => _dbUser;
 
@@ -42,6 +48,8 @@ class Config {
   void initialize() {
     var env = DotEnv(includePlatformEnvironment: true)..load();
 
+    _dbHost = env['dbhost']!;
+    _dbPort = int.parse(env['dbport']!);
     _dbUser = env['dbuser']!;
     _dbPassword = env['dbpassword']!;
     _dbDatabase = env['dbdatabase']!;

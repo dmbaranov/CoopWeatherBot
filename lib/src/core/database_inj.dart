@@ -12,9 +12,14 @@ class DatabaseInj {
   final Pool _connection;
 
   DatabaseInj(this._config, this._logger)
-      : _connection = Pool.withEndpoints(
-            [Endpoint(host: 'localhost', port: 5432, database: _config.dbDatabase, username: _config.dbUser, password: _config.dbPassword)],
-            settings: PoolSettings(maxConnectionCount: 4, sslMode: SslMode.disable));
+      : _connection = Pool.withEndpoints([
+          Endpoint(
+              host: _config.dbHost,
+              port: _config.dbPort,
+              database: _config.dbDatabase,
+              username: _config.dbUser,
+              password: _config.dbPassword)
+        ], settings: PoolSettings(maxConnectionCount: 4, sslMode: SslMode.disable));
 
   Future<Result?> executeQuery(String? query, [Map<String, dynamic>? parameters]) async {
     if (query == null) {

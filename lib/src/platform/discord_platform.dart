@@ -233,7 +233,7 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
   }
 
   void _startHeroCheckJob() {
-    Cron().schedule(Schedule.parse('0 4 * * 6,0'), () async {
+    Cron().schedule(Schedule.parse('0 5 * * 6,0'), () async {
       var authorizedChats = await chat.getAllChatIdsForPlatform(chatPlatform);
 
       await Future.forEach(authorizedChats, (chatId) async {

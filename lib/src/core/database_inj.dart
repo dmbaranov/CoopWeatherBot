@@ -3,16 +3,14 @@ import 'package:postgres/postgres.dart';
 import 'package:weather/src/core/config.dart';
 import 'package:weather/src/utils/logger.dart';
 
-// TODO: add database operations to this class, create separate repository classes
-
 @singleton
 class DatabaseInj {
   final Config _config;
   final Logger _logger;
   final Pool _connection;
 
-  DatabaseInj(this._config, this._logger)
-      : _connection = Pool.withEndpoints([
+  DatabaseInj(this._config, this._logger):
+        _connection = Pool.withEndpoints([
           Endpoint(
               host: _config.dbHost,
               port: _config.dbPort,
@@ -20,6 +18,9 @@ class DatabaseInj {
               username: _config.dbUser,
               password: _config.dbPassword)
         ], settings: PoolSettings(maxConnectionCount: 4, sslMode: SslMode.disable));
+
+  // avoid using connection directly if possible
+  Pool get connection => _connection;
 
   Future<Result?> executeQuery(String? query, [Map<String, dynamic>? parameters]) async {
     if (query == null) {

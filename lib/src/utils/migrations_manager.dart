@@ -1,5 +1,7 @@
 import 'dart:io';
+
 import 'package:postgres/postgres.dart';
+import 'package:weather/src/core/database_inj.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/utils/logger.dart';
 
@@ -7,11 +9,13 @@ const String _pathToMigrations = 'assets/db/migrations';
 const String _migrationTableMigrationName = '1677944890_migration.sql';
 
 class MigrationsManager {
-  final Pool dbConnection;
   final Logger _logger;
+  final DatabaseInj _db;
   final String _migrationsDirectory = _pathToMigrations;
 
-  MigrationsManager(this.dbConnection) : _logger = getIt<Logger>();
+  MigrationsManager()
+      : _logger = getIt<Logger>(),
+        _db = getIt<DatabaseInj>();
 
   Future<void> runMigrations() async {
     var migrationsLocation = Directory(_migrationsDirectory);
@@ -38,7 +42,7 @@ class MigrationsManager {
   }
 
   Future<void> _createMigrationsTableIfNeeded(File migration) async {
-    var migrationTable = await dbConnection.execute("SELECT * FROM information_schema.tables WHERE table_name = 'migration'");
+    var migrationTable = await _db.connection.execute("SELECT * FROM information_schema.tables WHERE table_name = 'migration'");
 
     if (migrationTable.isEmpty) {
       var query = await migration.readAsString();
@@ -47,14 +51,14 @@ class MigrationsManager {
   }
 
   Future<bool> _shouldRunMigration(String migrationName) async {
-    var savedMigration = await dbConnection
+    var savedMigration = await _db.connection
         .execute(Sql.named('SELECT id FROM migration WHERE name = @migrationName'), parameters: {'migrationName': migrationName});
 
     return savedMigration.isEmpty;
   }
 
   Future<void> _runMigration(String query, String migrationName) async {
-    await dbConnection.runTx((ctx) async {
+    await _db.connection.runTx((ctx) async {
       await ctx.execute(Sql.named(query));
       await ctx.execute(Sql.named('INSERT INTO migration(name) VALUES(@migrationName)'), parameters: {'migrationName': migrationName});
     });

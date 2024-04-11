@@ -13,6 +13,7 @@ import 'package:injectable/injectable.dart' as _i2;
 
 import '../core/config.dart' as _i3;
 import '../core/database_inj.dart' as _i5;
+import '../core/repositories/bot_user_repository_inj.dart' as _i6;
 import '../utils/logger.dart' as _i4;
 
 const String _dev = 'dev';
@@ -43,6 +44,8 @@ extension GetItInjectableX on _i1.GetIt {
           gh<_i3.Config>(),
           gh<_i4.Logger>(),
         ));
+    gh.singleton<_i6.BotUserRepositoryInj>(
+        () => _i6.BotUserRepositoryInj(db: gh<_i5.DatabaseInj>()));
     return this;
   }
 }

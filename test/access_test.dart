@@ -23,7 +23,7 @@ void main() {
     var db = Database(DbConnection.connection);
     await db.initialize();
 
-    chat = Chat(db: db);
+    chat = Chat();
     await chat.initialize();
 
     user = User();

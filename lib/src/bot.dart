@@ -57,7 +57,7 @@ class Bot {
 
     _eventBus = EventBus();
 
-    _chat = Chat(db: _db);
+    _chat = Chat();
     await _chat.initialize();
 
     _user = User()..initialize();

@@ -1,7 +1,8 @@
 import 'dart:io';
 import 'dart:convert';
+import 'package:weather/src/core/repositories/chat_repository_inj.dart';
 import 'package:weather/src/globals/chat_platform.dart';
-import 'database.dart';
+import 'package:weather/src/injector/injection.dart';
 
 class ChatData {
   final String id;
@@ -13,17 +14,17 @@ class ChatData {
 }
 
 class Chat {
-  final Database db;
+  ChatRepositoryInj _chatDb;
   final Map<String, Map<String, dynamic>> _chatToSwearwordsConfig = {};
 
-  Chat({required this.db});
+  Chat() : _chatDb = getIt<ChatRepositoryInj>();
 
   Future<void> initialize() async {
     await _updateSwearwordsConfigs();
   }
 
   Future<bool> createChat({required String id, required String name, required ChatPlatform platform}) async {
-    var creationResult = await db.chat.createChat(id, name, platform.value);
+    var creationResult = await _chatDb.createChat(id, name, platform.value);
 
     await _updateSwearwordsConfigs();
 
@@ -31,11 +32,11 @@ class Chat {
   }
 
   Future<ChatData?> getSingleChat({required String chatId}) {
-    return db.chat.getSingleChat(chatId: chatId);
+    return _chatDb.getSingleChat(chatId: chatId);
   }
 
   Future<List<String>> getAllChatIdsForPlatform(ChatPlatform platform) {
-    return db.chat.getAllChatIds(platform.value);
+    return _chatDb.getAllChatIds(platform.value);
   }
 
   String getText(String chatId, String path, [Map<String, String>? replacements]) {
@@ -65,7 +66,7 @@ class Chat {
       return false;
     }
 
-    var updateResult = await db.chat.setChatSwearwordsConfig(chatId, config);
+    var updateResult = await _chatDb.setChatSwearwordsConfig(chatId, config);
 
     if (updateResult != 1) {
       return false;
@@ -78,7 +79,7 @@ class Chat {
 
   // TODO: instead of this function, check _config every time check _config first, if not found, then fetch from database and update _config
   Future<void> _updateSwearwordsConfigs() async {
-    var allChats = await db.chat.getAllChats();
+    var allChats = await _chatDb.getAllChats();
 
     await Future.forEach(allChats, (chat) async {
       var chatConfig = await File('assets/swearwords/swearwords.${chat.swearwordsConfig}.json').readAsString();

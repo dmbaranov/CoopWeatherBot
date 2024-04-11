@@ -20,7 +20,7 @@ void main() {
     user = User();
     user.initialize();
 
-    chat = Chat(db: db);
+    chat = Chat();
     await chat.initialize();
   });
 

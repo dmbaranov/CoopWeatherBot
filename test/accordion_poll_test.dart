@@ -21,7 +21,7 @@ void main() {
 
     var eventBus = EventBus();
 
-    chat = Chat(db: db);
+    chat = Chat();
     await chat.initialize();
 
     user = User();

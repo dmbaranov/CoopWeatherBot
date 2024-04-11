@@ -26,12 +26,12 @@ void main() {
     chat = Chat(db: db);
     await chat.initialize();
 
-    user = User(db: db);
+    user = User();
     user.initialize();
 
     eventBus = EventBus();
 
-    access = Access(db: db, eventBus: eventBus, adminId: adminId);
+    access = Access(eventBus: eventBus, adminId: adminId);
   });
 
   group('Access', () {

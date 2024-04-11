@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:cron/cron.dart';
-import 'database.dart';
+import 'package:weather/src/injector/injection.dart';
+import 'repositories/bot_user_repository_inj.dart';
 
 class BotUser {
   final String id;
@@ -32,12 +33,12 @@ class BotUser {
 }
 
 class User {
-  final Database db;
+  final BotUserRepositoryInj _userDb;
 
   late StreamController<int> _userManagerStreamController;
   ScheduledTask? _userManagerCronTask;
 
-  User({required this.db});
+  User() : _userDb = getIt<BotUserRepositoryInj>();
 
   Stream<int> get userManagerStream => _userManagerStreamController.stream;
 
@@ -47,15 +48,15 @@ class User {
   }
 
   Future<BotUser?> getSingleUserForChat(String chatId, String userId) async {
-    return db.user.getSingleUserForChat(chatId, userId);
+    return _userDb.getSingleUserForChat(chatId, userId);
   }
 
   Future<List<BotUser>> getUsersForChat(String chatId) async {
-    return db.user.getAllUsersForChat(chatId);
+    return _userDb.getAllUsersForChat(chatId);
   }
 
   Future<bool> addUser({required String userId, required String chatId, required String name, bool isPremium = false}) async {
-    var creationResult = await db.user.createUser(userId: userId, chatId: chatId, name: name, isPremium: isPremium);
+    var creationResult = await _userDb.createUser(userId: userId, chatId: chatId, name: name, isPremium: isPremium);
 
     if (creationResult >= 1) {
       _userManagerStreamController.sink.add(0);
@@ -67,7 +68,7 @@ class User {
   }
 
   Future<bool> removeUser(String chatId, String userId) async {
-    var deletionResult = await db.user.deleteUser(chatId, userId);
+    var deletionResult = await _userDb.deleteUser(chatId, userId);
 
     if (deletionResult == 1) {
       _userManagerStreamController.sink.add(0);
@@ -79,7 +80,7 @@ class User {
   }
 
   Future<bool> updatePremiumStatus(String userId, bool isPremium) async {
-    var updateResult = await db.user.updatePremiumStatus(userId, isPremium);
+    var updateResult = await _userDb.updatePremiumStatus(userId, isPremium);
 
     return updateResult == 1;
   }

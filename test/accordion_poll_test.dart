@@ -24,7 +24,7 @@ void main() {
     chat = Chat(db: db);
     await chat.initialize();
 
-    user = User(db: db);
+    user = User();
     user.initialize();
 
     accordionPoll = AccordionPoll(eventBus: eventBus, chat: chat, pollTime: 1);

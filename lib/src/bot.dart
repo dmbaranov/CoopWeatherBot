@@ -1,3 +1,4 @@
+import 'package:postgres/postgres.dart';
 import 'package:weather/src/core/config.dart';
 import 'package:weather/src/core/database.dart';
 import 'package:weather/src/core/chat.dart';
@@ -25,10 +26,9 @@ import 'package:weather/src/modules/check_reminder_manager.dart';
 
 class Bot {
   final Config _config;
-  final Database _db;
 
   late Platform _platform;
-  
+
   late EventBus _eventBus;
   late Chat _chat;
   late User _user;
@@ -47,18 +47,21 @@ class Bot {
   late CommandStatisticsManager _commandStatisticsManager;
   late CheckReminderManager _checkReminderManager;
 
-  Bot()
-      : _config = getIt<Config>(),
-        _db = getIt<Database>();
+  Bot() : _config = getIt<Config>();
 
   Future<void> startBot() async {
+    var _db = Database(Pool.withEndpoints([
+      Endpoint(
+          host: _config.dbHost, port: _config.dbPort, database: _config.dbDatabase, username: _config.dbUser, password: _config.dbPassword)
+    ], settings: PoolSettings(maxConnectionCount: 4, sslMode: SslMode.disable)));
+
     _eventBus = EventBus();
 
     _chat = Chat(db: _db);
     await _chat.initialize();
 
-    _user = User(db: _db)..initialize();
-    _access = Access(db: _db, eventBus: _eventBus, adminId: _config.adminId);
+    _user = User()..initialize();
+    _access = Access(eventBus: _eventBus, adminId: _config.adminId);
 
     _platform = Platform(
         chatPlatform: _config.chatPlatform,

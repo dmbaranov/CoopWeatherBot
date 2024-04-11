@@ -23,9 +23,9 @@ void setupTestEnvironment() {
       );
     }
 
-    var dbConnection = DbConnection.connection;
+    
 
-    await MigrationsManager(dbConnection).runMigrations();
+    await MigrationsManager().runMigrations();
   });
 
   tearDownAll(() async {

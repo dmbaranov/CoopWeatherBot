@@ -14,7 +14,7 @@ class ChatData {
 }
 
 class Chat {
-  ChatRepositoryInj _chatDb;
+  final ChatRepositoryInj _chatDb;
   final Map<String, Map<String, dynamic>> _chatToSwearwordsConfig = {};
 
   Chat() : _chatDb = getIt<ChatRepositoryInj>();

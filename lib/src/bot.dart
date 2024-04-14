@@ -85,7 +85,7 @@ class Bot {
     _weatherManager = WeatherManager(platform: _platform, chat: _chat, db: _db, openweatherKey: _config.openWeatherKey)..initialize();
     _accordionPollManager = AccordionPollManager(platform: _platform, eventBus: _eventBus, user: _user, chat: _chat);
     _commandStatisticsManager = CommandStatisticsManager(platform: _platform, db: _db, eventBus: _eventBus, chat: _chat)..initialize();
-    _checkReminderManager = CheckReminderManager(platform: _platform, db: _db, chat: _chat, user: _user)..initialize();
+    _checkReminderManager = CheckReminderManager(platform: _platform, chat: _chat, user: _user)..initialize();
 
     _setupCommands();
 

@@ -1,4 +1,3 @@
-import 'package:weather/src/core/database.dart';
 import 'package:weather/src/core/chat.dart';
 import 'package:weather/src/core/check_reminder.dart';
 import 'package:weather/src/core/user.dart';
@@ -10,15 +9,14 @@ import 'utils.dart';
 
 class CheckReminderManager {
   final Platform platform;
-  final Database db;
   final Chat chat;
   final User user;
   final Logger _logger;
   final CheckReminder _checkReminder;
 
-  CheckReminderManager({required this.platform, required this.db, required this.chat, required this.user})
+  CheckReminderManager({required this.platform, required this.chat, required this.user})
       : _logger = getIt<Logger>(),
-        _checkReminder = CheckReminder(db: db);
+        _checkReminder = CheckReminder();
 
   void initialize() {
     _checkReminder.initialize();

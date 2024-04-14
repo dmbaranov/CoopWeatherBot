@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:cron/cron.dart';
+import 'package:weather/src/core/repositories/check_reminder_repository_inj.dart';
 import 'package:weather/src/globals/module_exception.dart';
-
-import 'database.dart';
+import 'package:weather/src/injector/injection.dart';
 
 // how many reminders from the DB can be active at the same time
 const remindersLimit = 50;
@@ -24,11 +24,11 @@ class CheckReminderData {
 }
 
 class CheckReminder {
-  final Database db;
-  List<Timer> _checkReminderTimers = [];
+  final CheckReminderRepositoryInj _checkReminderDb;
   late StreamController<CheckReminderData> _checkReminderController;
+  List<Timer> _checkReminderTimers = [];
 
-  CheckReminder({required this.db});
+  CheckReminder() : _checkReminderDb = getIt<CheckReminderRepositoryInj>();
 
   Stream<CheckReminderData> get checkReminderStream => _checkReminderController.stream;
 
@@ -43,7 +43,7 @@ class CheckReminder {
     var [reminderValue, reminderInterval] = _parseReminderPeriod(period);
     _validateCheckReminderParameters(reminderValue, reminderInterval, message);
     var checkReminderTimestamp = _generateReminderTimestamp(reminderValue, reminderInterval);
-    var result = await db.checkReminderRepository.createCheckReminder(chatId, userId, message, checkReminderTimestamp);
+    var result = await _checkReminderDb.createCheckReminder(chatId, userId, message, checkReminderTimestamp);
     _updateActiveCheckReminderTimers();
 
     return result == 1;
@@ -97,7 +97,7 @@ class CheckReminder {
 
   void _updateActiveCheckReminderTimers() async {
     var now = DateTime.now().toUtc();
-    var incompleteReminders = await db.checkReminderRepository.getIncompleteCheckReminders(remindersLimit, activeRemindersInterval);
+    var incompleteReminders = await _checkReminderDb.getIncompleteCheckReminders(remindersLimit, activeRemindersInterval);
 
     _checkReminderTimers.forEach((timer) => timer.cancel());
     _checkReminderTimers = incompleteReminders
@@ -111,6 +111,6 @@ class CheckReminder {
 
   void _completeCheckReminder(CheckReminderData checkReminder) {
     _checkReminderController.sink.add(checkReminder);
-    db.checkReminderRepository.completeCheckReminder(checkReminder.id);
+    _checkReminderDb.completeCheckReminder(checkReminder.id);
   }
 }

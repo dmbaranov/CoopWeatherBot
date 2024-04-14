@@ -1,4 +1,3 @@
-import 'package:weather/src/core/database.dart';
 import 'package:weather/src/core/weather.dart';
 import 'package:weather/src/core/chat.dart';
 import 'package:weather/src/globals/message_event.dart';
@@ -10,14 +9,13 @@ import 'utils.dart';
 class WeatherManager {
   final Platform platform;
   final Chat chat;
-  final Database db;
   final String openweatherKey;
   final Logger _logger;
   final Weather _weather;
 
-  WeatherManager({required this.platform, required this.chat, required this.db, required this.openweatherKey})
+  WeatherManager({required this.platform, required this.chat, required this.openweatherKey})
       : _logger = getIt<Logger>(),
-        _weather = Weather(db: db, openweatherKey: openweatherKey);
+        _weather = Weather(openweatherKey: openweatherKey);
 
   void initialize() {
     _weather.initialize();

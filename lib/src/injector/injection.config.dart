@@ -21,6 +21,7 @@ import '../core/repositories/conversator_chat_repository_inj.dart' as _i11;
 import '../core/repositories/conversator_user_repository_inj.dart' as _i10;
 import '../core/repositories/news_repository_inj.dart' as _i12;
 import '../core/repositories/reputation_repository_inj.dart' as _i13;
+import '../core/repositories/weather_repository_inj.dart' as _i14;
 import '../utils/logger.dart' as _i4;
 
 const String _dev = 'dev';
@@ -67,6 +68,8 @@ extension GetItInjectableX on _i1.GetIt {
         () => _i12.NewsRepositoryInj(db: gh<_i5.DatabaseInj>()));
     gh.singleton<_i13.ReputationRepositoryInj>(
         () => _i13.ReputationRepositoryInj(db: gh<_i5.DatabaseInj>()));
+    gh.singleton<_i14.WeatherRepositoryInj>(
+        () => _i14.WeatherRepositoryInj(db: gh<_i5.DatabaseInj>()));
     return this;
   }
 }

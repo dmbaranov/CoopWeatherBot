@@ -20,7 +20,7 @@ void main() {
     chat = Chat();
     await chat.initialize();
 
-    weather = Weather(db: db, openweatherKey: 'no-key-provided');
+    weather = Weather(openweatherKey: 'no-key-provided');
     weather.initialize();
   });
 

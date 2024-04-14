@@ -1,6 +1,4 @@
-import 'package:postgres/postgres.dart';
 import 'package:weather/src/core/config.dart';
-import 'package:weather/src/core/database.dart';
 import 'package:weather/src/core/chat.dart';
 import 'package:weather/src/core/user.dart';
 import 'package:weather/src/core/event_bus.dart';
@@ -50,11 +48,6 @@ class Bot {
   Bot() : _config = getIt<Config>();
 
   Future<void> startBot() async {
-    var _db = Database(Pool.withEndpoints([
-      Endpoint(
-          host: _config.dbHost, port: _config.dbPort, database: _config.dbDatabase, username: _config.dbUser, password: _config.dbPassword)
-    ], settings: PoolSettings(maxConnectionCount: 4, sslMode: SslMode.disable)));
-
     _eventBus = EventBus();
 
     _chat = Chat();
@@ -82,7 +75,7 @@ class Bot {
     _panoramaManager = PanoramaManager(platform: _platform, chat: _chat)..initialize();
     _userManager = UserManager(platform: _platform, chat: _chat, user: _user)..initialize();
     _reputationManager = ReputationManager(platform: _platform, eventBus: _eventBus, chat: _chat)..initialize();
-    _weatherManager = WeatherManager(platform: _platform, chat: _chat, db: _db, openweatherKey: _config.openWeatherKey)..initialize();
+    _weatherManager = WeatherManager(platform: _platform, chat: _chat, openweatherKey: _config.openWeatherKey)..initialize();
     _accordionPollManager = AccordionPollManager(platform: _platform, eventBus: _eventBus, user: _user, chat: _chat);
     _commandStatisticsManager = CommandStatisticsManager(platform: _platform, eventBus: _eventBus, chat: _chat)..initialize();
     _checkReminderManager = CheckReminderManager(platform: _platform, chat: _chat, user: _user)..initialize();

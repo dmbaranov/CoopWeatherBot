@@ -1,7 +1,6 @@
 import 'package:postgres/postgres.dart';
 import 'package:test/test.dart';
 import 'package:weather/src/core/chat.dart';
-import 'package:weather/src/core/database.dart';
 import 'package:weather/src/core/event_bus.dart';
 import 'package:weather/src/core/events/accordion_poll_events.dart';
 import 'package:weather/src/core/reputation.dart';
@@ -18,9 +17,6 @@ void main() {
   late User user;
 
   setUp(() async {
-    var db = Database(DbConnection.connection);
-    await db.initialize();
-
     chat = Chat();
     await chat.initialize();
 

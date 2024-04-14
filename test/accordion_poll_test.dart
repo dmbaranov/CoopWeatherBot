@@ -2,12 +2,10 @@ import 'package:test/test.dart';
 import 'package:weather/src/core/accordion_poll.dart';
 import 'package:weather/src/globals/accordion_poll.dart';
 import 'package:weather/src/globals/chat_platform.dart';
-import 'package:weather/src/core/database.dart';
 import 'package:weather/src/core/chat.dart';
 import 'package:weather/src/core/user.dart';
 import 'package:weather/src/core/event_bus.dart';
 import 'utils/setup.dart';
-import 'utils/db_connection.dart';
 
 void main() {
   setupTestEnvironment();
@@ -16,9 +14,6 @@ void main() {
   late AccordionPoll accordionPoll;
 
   setUp(() async {
-    var db = Database(DbConnection.connection);
-    await db.initialize();
-
     var eventBus = EventBus();
 
     chat = Chat();

@@ -17,7 +17,7 @@ class PanoramaManager {
 
   PanoramaManager({required this.platform, required this.chat, required this.db})
       : _logger = getIt<Logger>(),
-        _panoramaNews = PanoramaNews(db: db);
+        _panoramaNews = PanoramaNews();
 
   void initialize() {
     _panoramaNews.initialize();

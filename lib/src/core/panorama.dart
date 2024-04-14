@@ -2,7 +2,8 @@ import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as parser;
 import 'package:cron/cron.dart';
-import 'database.dart';
+import 'package:weather/src/core/repositories/news_repository_inj.dart';
+import 'package:weather/src/injector/injection.dart';
 
 const String _panoramaBaseUrl = 'https://panorama.pub';
 
@@ -14,12 +15,12 @@ class NewsData {
 }
 
 class PanoramaNews {
-  final Database db;
   final String _newsBaseUrl = _panoramaBaseUrl;
+  final NewsRepositoryInj _newsDb;
   late StreamController<int> _panoramaNewsStreamController;
   ScheduledTask? _panoramaNewsCronTask;
 
-  PanoramaNews({required this.db});
+  PanoramaNews() : _newsDb = getIt<NewsRepositoryInj>();
 
   Stream<int> get panoramaStream => _panoramaNewsStreamController.stream;
 
@@ -47,13 +48,13 @@ class PanoramaNews {
 
       var title = post.querySelector('.text-sm > div')?.text;
 
-      var existingNewsId = await db.news.getSingleNewsIdForChat(chatId, postHref);
+      var existingNewsId = await _newsDb.getSingleNewsIdForChat(chatId, postHref);
 
       if (title == null || existingNewsId != null) {
         continue;
       }
 
-      var createResult = await db.news.addNews(chatId, postHref);
+      var createResult = await _newsDb.addNews(chatId, postHref);
 
       if (createResult == 1) {
         return NewsData(title: title, url: _newsBaseUrl + postHref);

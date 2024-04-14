@@ -17,6 +17,8 @@ import '../core/repositories/bot_user_repository_inj.dart' as _i6;
 import '../core/repositories/chat_repository_inj.dart' as _i7;
 import '../core/repositories/check_reminder_repository_inj.dart' as _i8;
 import '../core/repositories/command_statistics_repository_inj.dart' as _i9;
+import '../core/repositories/conversator_chat_repository_inj.dart' as _i11;
+import '../core/repositories/conversator_user_repository_inj.dart' as _i10;
 import '../utils/logger.dart' as _i4;
 
 const String _dev = 'dev';
@@ -55,6 +57,10 @@ extension GetItInjectableX on _i1.GetIt {
         () => _i8.CheckReminderRepositoryInj(db: gh<_i5.DatabaseInj>()));
     gh.singleton<_i9.CommandStatisticsRepositoryInj>(
         () => _i9.CommandStatisticsRepositoryInj(db: gh<_i5.DatabaseInj>()));
+    gh.singleton<_i10.ConversatorUserRepositoryInj>(
+        () => _i10.ConversatorUserRepositoryInj(db: gh<_i5.DatabaseInj>()));
+    gh.singleton<_i11.ConversatorChatRepositoryInj>(
+        () => _i11.ConversatorChatRepositoryInj(db: gh<_i5.DatabaseInj>()));
     return this;
   }
 }

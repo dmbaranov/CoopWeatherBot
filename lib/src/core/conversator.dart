@@ -1,10 +1,11 @@
 import 'dart:convert';
 import 'package:cron/cron.dart';
 import 'package:http/http.dart' as http;
+import 'package:weather/src/core/repositories/conversator_chat_repository_inj.dart';
+import 'package:weather/src/core/repositories/conversator_user_repository_inj.dart';
 import 'package:weather/src/globals/module_exception.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/utils/logger.dart';
-import 'database.dart';
 
 const String _converstorApiURL = 'https://api.openai.com/v1/chat/completions';
 const int maxTokens = 4096;
@@ -40,13 +41,17 @@ class ConversatorUser {
 }
 
 class Conversator {
-  final Database db;
   final Logger _logger;
   final String conversatorApiKey;
   final String adminId;
   final String _apiBaseUrl = _converstorApiURL;
+  final ConversatorChatRepositoryInj _conversatorChatDb;
+  final ConversatorUserRepositoryInj _conversatorUserDb;
 
-  Conversator({required this.db, required this.conversatorApiKey, required this.adminId}) : _logger = getIt<Logger>();
+  Conversator({required this.conversatorApiKey, required this.adminId})
+      : _conversatorChatDb = getIt<ConversatorChatRepositoryInj>(),
+        _conversatorUserDb = getIt<ConversatorUserRepositoryInj>(),
+        _logger = getIt<Logger>();
 
   void initialize() {
     _startResetDailyInvocationsUsageJob();
@@ -62,7 +67,7 @@ class Conversator {
     await _registerConversatorInvocation(userId, model);
 
     var conversationId = await getConversationId(chatId, parentMessageId);
-    var previousMessages = await db.conversatorChat.getMessagesForConversation(chatId, conversationId);
+    var previousMessages = await _conversatorChatDb.getMessagesForConversation(chatId, conversationId);
     await saveConversationMessage(
         chatId: chatId, conversationId: conversationId, currentMessageId: currentMessageId, message: message, fromUser: true);
 
@@ -81,11 +86,11 @@ class Conversator {
       required String currentMessageId,
       required String message,
       required bool fromUser}) async {
-    await db.conversatorChat.createMessage(chatId, conversationId, currentMessageId, message, fromUser);
+    await _conversatorChatDb.createMessage(chatId, conversationId, currentMessageId, message, fromUser);
   }
 
   Future<String> getConversationId(String chatId, String messageId) async {
-    var conversationId = await db.conversatorChat.findConversationById(chatId, messageId) ?? messageId;
+    var conversationId = await _conversatorChatDb.findConversationById(chatId, messageId) ?? messageId;
 
     return conversationId;
   }
@@ -104,7 +109,7 @@ class Conversator {
   }
 
   Future<void> _registerConversatorInvocation(String userId, String model) async {
-    var conversatorUser = await db.conversatorUser.getConversatorUser(userId);
+    var conversatorUser = await _conversatorUserDb.getConversatorUser(userId);
     var errorMessage = 'conversator.daily_invocation_limit_hit';
 
     if (model == regularModel) {
@@ -112,7 +117,7 @@ class Conversator {
         throw ConversatorException(errorMessage);
       }
 
-      await db.conversatorUser.updateRegularInvocations(userId);
+      await _conversatorUserDb.updateRegularInvocations(userId);
 
       return;
     }
@@ -122,7 +127,7 @@ class Conversator {
         throw ConversatorException(errorMessage);
       }
 
-      await db.conversatorUser.updateAdvancedInvocations(userId);
+      await _conversatorUserDb.updateAdvancedInvocations(userId);
 
       return;
     }
@@ -130,7 +135,7 @@ class Conversator {
 
   void _startResetDailyInvocationsUsageJob() {
     Cron().schedule(Schedule.parse('0 0 * * *'), () async {
-      var result = await db.conversatorUser.resetDailyInvocations();
+      var result = await _conversatorUserDb.resetDailyInvocations();
 
       if (result == 0) {
         _logger.w('Something went wrong with resetting conversator daily invocations usage');

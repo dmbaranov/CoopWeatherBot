@@ -10,7 +10,7 @@ class Logger {
   static Logger? _instance;
 
   Logger._internal(this.isProduction) {
-    var printer = isProduction ? lg.SimplePrinter(printTime: true, colors: false) : lg.PrettyPrinter(printTime: true);
+    var printer = isProduction ? lg.SimplePrinter(printTime: true, colors: false) : lg.PrettyPrinter(printTime: true, methodCount: 4);
     var output = isProduction ? lg.MultiOutput([lg.FileOutput(file: logFile), lg.ConsoleOutput()]) : lg.ConsoleOutput();
     var filter = CustomLogFilter();
 
@@ -33,6 +33,9 @@ class Logger {
 
   void e(message, [Object? error]) {
     _logger.e(message, error: error);
+    if (isProduction) {
+      _logger.e(StackTrace.current);
+    }
   }
 }
 

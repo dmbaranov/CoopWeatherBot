@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'package:cron/cron.dart';
+import 'package:weather/src/core/repositories/command_statistics_repository_inj.dart';
 import 'package:weather/src/globals/chat_platform.dart';
+import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/utils/wait_concurrently.dart';
 import 'events/access_events.dart';
-import 'database.dart';
 import 'event_bus.dart';
 import 'chat.dart';
 
@@ -18,14 +19,15 @@ class ChatReport {
 }
 
 class CommandStatistics {
-  final Database db;
   final EventBus eventBus;
   final Chat chat;
   final ChatPlatform chatPlatform;
+  final CommandStatisticsRepositoryInj _commandStatisticsDb;
 
   late StreamController<ChatReport> _chatReportController;
 
-  CommandStatistics({required this.db, required this.eventBus, required this.chat, required this.chatPlatform});
+  CommandStatistics({required this.eventBus, required this.chat, required this.chatPlatform})
+      : _commandStatisticsDb = getIt<CommandStatisticsRepositoryInj>();
 
   Stream<ChatReport> get chatReportStream => _chatReportController.stream;
 
@@ -39,15 +41,15 @@ class CommandStatistics {
   Future<void> _registerCommandInvocation({required String chatId, required String userId, required String command}) async {
     var timestamp = DateTime.now().toString();
 
-    await db.commandStatistics.createCommandInvocationRecord(chatId: chatId, userId: userId, command: command, timestamp: timestamp);
+    await _commandStatisticsDb.createCommandInvocationRecord(chatId: chatId, userId: userId, command: command, timestamp: timestamp);
   }
 
   Future<List<(String, int)>> getChatCommandInvocations({required String chatId}) {
-    return db.commandStatistics.getChatCommandInvocations(chatId: chatId);
+    return _commandStatisticsDb.getChatCommandInvocations(chatId: chatId);
   }
 
   Future<List<(String, String, int)>> getUserCommandInvocations({required String userId}) {
-    return db.commandStatistics.getUserInvocationsStatistics(userId: userId);
+    return _commandStatisticsDb.getUserInvocationsStatistics(userId: userId);
   }
 
   void _listenToAccessEvents() {
@@ -63,9 +65,9 @@ class CommandStatistics {
       Future.forEach(platformChatIds, (chatId) async {
         var (totalCommandsInvoked, topInvokedCommands, topInvocationUsers) =
             await waitConcurrently3<int, List<(String, int, int)>, List<(String, int)>>(
-                db.commandStatistics.getMonthlyCommandInvokesNumber(chatId: chatId),
-                db.commandStatistics.getTopMonthlyCommandInvocations(chatId: chatId),
-                db.commandStatistics.getTopMonthlyCommandInvocationUsers(chatId: chatId));
+                _commandStatisticsDb.getMonthlyCommandInvokesNumber(chatId: chatId),
+                _commandStatisticsDb.getTopMonthlyCommandInvocations(chatId: chatId),
+                _commandStatisticsDb.getTopMonthlyCommandInvocationUsers(chatId: chatId));
 
         _chatReportController.sink.add(ChatReport(
             chatId: chatId,

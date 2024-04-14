@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:cron/cron.dart';
-import 'package:weather/src/core/repositories/weather_repository_inj.dart';
+import 'package:weather/src/core/repositories/weather_repository.dart';
 import 'package:weather/src/injector/injection.dart';
 
 const _weatherApiBase = 'https://api.openweathermap.org/data/2.5';
@@ -30,13 +30,13 @@ class ChatNotificationHour {
 
 class Weather {
   final String openweatherKey;
-  final WeatherRepositoryInj _weatherDb;
+  final WeatherRepository _weatherDb;
   final String _apiBaseUrl = _weatherApiBase;
 
   late StreamController<ChatWeatherData> _weatherStreamController;
   List<ScheduledTask> _weatherCronTasks = [];
 
-  Weather({required this.openweatherKey}) : _weatherDb = getIt<WeatherRepositoryInj>();
+  Weather({required this.openweatherKey}) : _weatherDb = getIt<WeatherRepository>();
 
   Stream<ChatWeatherData> get weatherStream => _weatherStreamController.stream;
 

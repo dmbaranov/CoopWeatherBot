@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:cron/cron.dart';
-import 'package:weather/src/core/repositories/reputation_repository_inj.dart';
+import 'package:weather/src/core/repositories/reputation_repository.dart';
 import 'package:weather/src/globals/module_exception.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/utils/logger.dart';
@@ -33,11 +33,11 @@ class ChatReputationData {
 
 class Reputation {
   final EventBus eventBus;
-  final ReputationRepositoryInj _reputationDb;
+  final ReputationRepository _reputationDb;
   final Logger _logger;
 
   Reputation({required this.eventBus})
-      : _reputationDb = getIt<ReputationRepositoryInj>(),
+      : _reputationDb = getIt<ReputationRepository>(),
         _logger = getIt<Logger>();
 
   void initialize() {

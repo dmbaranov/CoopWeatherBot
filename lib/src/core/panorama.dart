@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as parser;
 import 'package:cron/cron.dart';
-import 'package:weather/src/core/repositories/news_repository_inj.dart';
+import 'package:weather/src/core/repositories/news_repository.dart';
 import 'package:weather/src/injector/injection.dart';
 
 const String _panoramaBaseUrl = 'https://panorama.pub';
@@ -16,11 +16,11 @@ class NewsData {
 
 class PanoramaNews {
   final String _newsBaseUrl = _panoramaBaseUrl;
-  final NewsRepositoryInj _newsDb;
+  final NewsRepository _newsDb;
   late StreamController<int> _panoramaNewsStreamController;
   ScheduledTask? _panoramaNewsCronTask;
 
-  PanoramaNews() : _newsDb = getIt<NewsRepositoryInj>();
+  PanoramaNews() : _newsDb = getIt<NewsRepository>();
 
   Stream<int> get panoramaStream => _panoramaNewsStreamController.stream;
 

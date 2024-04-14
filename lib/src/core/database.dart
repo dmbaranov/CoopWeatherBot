@@ -4,13 +4,13 @@ import 'package:weather/src/core/config.dart';
 import 'package:weather/src/utils/logger.dart';
 
 @singleton
-class DatabaseInj {
+class Database {
   final Config _config;
   final Logger _logger;
   final Pool _connection;
 
-  DatabaseInj(this._config, this._logger):
-        _connection = Pool.withEndpoints([
+  Database(this._config, this._logger)
+      : _connection = Pool.withEndpoints([
           Endpoint(
               host: _config.dbHost,
               port: _config.dbPort,

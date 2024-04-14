@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:cron/cron.dart';
 import 'package:http/http.dart' as http;
-import 'package:weather/src/core/repositories/conversator_chat_repository_inj.dart';
-import 'package:weather/src/core/repositories/conversator_user_repository_inj.dart';
+import 'package:weather/src/core/repositories/conversator_chat_repository.dart';
+import 'package:weather/src/core/repositories/conversator_user_repository.dart';
 import 'package:weather/src/globals/module_exception.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/utils/logger.dart';
@@ -45,12 +45,12 @@ class Conversator {
   final String conversatorApiKey;
   final String adminId;
   final String _apiBaseUrl = _converstorApiURL;
-  final ConversatorChatRepositoryInj _conversatorChatDb;
-  final ConversatorUserRepositoryInj _conversatorUserDb;
+  final ConversatorChatRepository _conversatorChatDb;
+  final ConversatorUserRepository _conversatorUserDb;
 
   Conversator({required this.conversatorApiKey, required this.adminId})
-      : _conversatorChatDb = getIt<ConversatorChatRepositoryInj>(),
-        _conversatorUserDb = getIt<ConversatorUserRepositoryInj>(),
+      : _conversatorChatDb = getIt<ConversatorChatRepository>(),
+        _conversatorUserDb = getIt<ConversatorUserRepository>(),
         _logger = getIt<Logger>();
 
   void initialize() {

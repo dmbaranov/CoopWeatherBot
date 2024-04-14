@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:cron/cron.dart';
-import 'package:weather/src/core/repositories/check_reminder_repository_inj.dart';
+import 'package:weather/src/core/repositories/check_reminder_repository.dart';
 import 'package:weather/src/globals/module_exception.dart';
 import 'package:weather/src/injector/injection.dart';
 
@@ -24,11 +24,11 @@ class CheckReminderData {
 }
 
 class CheckReminder {
-  final CheckReminderRepositoryInj _checkReminderDb;
+  final CheckReminderRepository _checkReminderDb;
   late StreamController<CheckReminderData> _checkReminderController;
   List<Timer> _checkReminderTimers = [];
 
-  CheckReminder() : _checkReminderDb = getIt<CheckReminderRepositoryInj>();
+  CheckReminder() : _checkReminderDb = getIt<CheckReminderRepository>();
 
   Stream<CheckReminderData> get checkReminderStream => _checkReminderController.stream;
 

@@ -3,7 +3,7 @@ import 'package:weather/src/globals/access_level.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/utils/logger.dart';
 import 'events/access_events.dart';
-import 'repositories/bot_user_repository_inj.dart';
+import 'repositories/bot_user_repository.dart';
 import 'event_bus.dart';
 
 typedef OnSuccessCallback = void Function(MessageEvent event);
@@ -12,11 +12,11 @@ typedef OnFailureCallback = Future Function(MessageEvent event);
 class Access {
   final EventBus eventBus;
   final String adminId;
-  final BotUserRepositoryInj _userDb;
+  final BotUserRepository _userDb;
   final Logger _logger;
 
   Access({required this.eventBus, required this.adminId})
-      : _userDb = getIt<BotUserRepositoryInj>(),
+      : _userDb = getIt<BotUserRepository>(),
         _logger = getIt<Logger>();
 
   void execute(

@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
-import 'package:weather/src/core/repositories/chat_repository_inj.dart';
+import 'package:weather/src/core/repositories/chat_repository.dart';
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/injector/injection.dart';
 
@@ -14,10 +14,10 @@ class ChatData {
 }
 
 class Chat {
-  final ChatRepositoryInj _chatDb;
+  final ChatRepository _chatDb;
   final Map<String, Map<String, dynamic>> _chatToSwearwordsConfig = {};
 
-  Chat() : _chatDb = getIt<ChatRepositoryInj>();
+  Chat() : _chatDb = getIt<ChatRepository>();
 
   Future<void> initialize() async {
     await _updateSwearwordsConfigs();

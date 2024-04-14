@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:postgres/postgres.dart';
-import 'package:weather/src/core/database_inj.dart';
+import 'package:weather/src/core/database.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/utils/logger.dart';
 
@@ -10,12 +10,12 @@ const String _migrationTableMigrationName = '1677944890_migration.sql';
 
 class MigrationsManager {
   final Logger _logger;
-  final DatabaseInj _db;
+  final Database _db;
   final String _migrationsDirectory = _pathToMigrations;
 
   MigrationsManager()
       : _logger = getIt<Logger>(),
-        _db = getIt<DatabaseInj>();
+        _db = getIt<Database>();
 
   Future<void> runMigrations() async {
     var migrationsLocation = Directory(_migrationsDirectory);

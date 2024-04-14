@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:cron/cron.dart';
 import 'package:weather/src/injector/injection.dart';
-import 'repositories/bot_user_repository_inj.dart';
+import 'repositories/bot_user_repository.dart';
 
 class BotUser {
   final String id;
@@ -33,12 +33,12 @@ class BotUser {
 }
 
 class User {
-  final BotUserRepositoryInj _userDb;
+  final BotUserRepository _userDb;
 
   late StreamController<int> _userManagerStreamController;
   ScheduledTask? _userManagerCronTask;
 
-  User() : _userDb = getIt<BotUserRepositoryInj>();
+  User() : _userDb = getIt<BotUserRepository>();
 
   Stream<int> get userManagerStream => _userManagerStreamController.stream;
 

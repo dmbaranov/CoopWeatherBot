@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:cron/cron.dart';
-import 'package:weather/src/core/repositories/command_statistics_repository_inj.dart';
+import 'package:weather/src/core/repositories/command_statistics_repository.dart';
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/utils/wait_concurrently.dart';
@@ -22,12 +22,12 @@ class CommandStatistics {
   final EventBus eventBus;
   final Chat chat;
   final ChatPlatform chatPlatform;
-  final CommandStatisticsRepositoryInj _commandStatisticsDb;
+  final CommandStatisticsRepository _commandStatisticsDb;
 
   late StreamController<ChatReport> _chatReportController;
 
   CommandStatistics({required this.eventBus, required this.chat, required this.chatPlatform})
-      : _commandStatisticsDb = getIt<CommandStatisticsRepositoryInj>();
+      : _commandStatisticsDb = getIt<CommandStatisticsRepository>();
 
   Stream<ChatReport> get chatReportStream => _chatReportController.stream;
 

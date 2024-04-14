@@ -79,9 +79,9 @@ class Bot {
       ..initialize();
     _generalManager = GeneralManager(platform: _platform, chat: _chat, repositoryUrl: _config.githubRepo);
     _chatManager = ChatManager(platform: _platform, chat: _chat);
-    _panoramaManager = PanoramaManager(platform: _platform, chat: _chat, db: _db)..initialize();
+    _panoramaManager = PanoramaManager(platform: _platform, chat: _chat)..initialize();
     _userManager = UserManager(platform: _platform, chat: _chat, user: _user)..initialize();
-    _reputationManager = ReputationManager(platform: _platform, db: _db, eventBus: _eventBus, chat: _chat)..initialize();
+    _reputationManager = ReputationManager(platform: _platform, eventBus: _eventBus, chat: _chat)..initialize();
     _weatherManager = WeatherManager(platform: _platform, chat: _chat, db: _db, openweatherKey: _config.openWeatherKey)..initialize();
     _accordionPollManager = AccordionPollManager(platform: _platform, eventBus: _eventBus, user: _user, chat: _chat);
     _commandStatisticsManager = CommandStatisticsManager(platform: _platform, eventBus: _eventBus, chat: _chat)..initialize();

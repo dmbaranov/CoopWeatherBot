@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:cron/cron.dart';
+import 'package:weather/src/core/repositories/reputation_repository_inj.dart';
 import 'package:weather/src/globals/module_exception.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/utils/logger.dart';
 import 'events/accordion_poll_events.dart';
-import 'database.dart';
 import 'event_bus.dart';
 
 enum ReputationChangeOption { increase, decrease }
@@ -32,11 +32,13 @@ class ChatReputationData {
 }
 
 class Reputation {
-  final Database db;
   final EventBus eventBus;
+  final ReputationRepositoryInj _reputationDb;
   final Logger _logger;
 
-  Reputation({required this.db, required this.eventBus}) : _logger = getIt<Logger>();
+  Reputation({required this.eventBus})
+      : _reputationDb = getIt<ReputationRepositoryInj>(),
+        _logger = getIt<Logger>();
 
   void initialize() {
     _startResetVotesJob();
@@ -45,8 +47,8 @@ class Reputation {
 
   Future<bool> updateReputation(
       {required String chatId, required ReputationChangeOption change, String? fromUserId, String? toUserId}) async {
-    var fromUser = await db.reputation.getSingleReputationData(chatId, fromUserId ?? '');
-    var toUser = await db.reputation.getSingleReputationData(chatId, toUserId ?? '');
+    var fromUser = await _reputationDb.getSingleReputationData(chatId, fromUserId ?? '');
+    var toUser = await _reputationDb.getSingleReputationData(chatId, toUserId ?? '');
 
     if (fromUser == null || toUser == null) {
       throw ReputationException('reputation.change.user_not_found');
@@ -91,38 +93,38 @@ class Reputation {
 
   Future<bool> createReputationData(String chatId, String userId) async {
     // TODO: add 6 options for premium users
-    var result = await db.reputation.createReputationData(chatId, userId, numberOfVoteOptions);
+    var result = await _reputationDb.createReputationData(chatId, userId, numberOfVoteOptions);
 
     return result == 1;
   }
 
   Future<List<ChatReputationData>> getReputationData(String chatId) async {
-    var reputation = await db.reputation.getReputationForChat(chatId);
+    var reputation = await _reputationDb.getReputationForChat(chatId);
 
     return reputation;
   }
 
   Future<bool> _forceUpdateReputation(String chatId, String userId, int reputation) async {
     // This method is intended to be used only by the system
-    var existingUser = await db.reputation.getSingleReputationData(chatId, userId);
+    var existingUser = await _reputationDb.getSingleReputationData(chatId, userId);
 
     if (existingUser == null) {
       return false;
     }
 
-    var result = await db.reputation.updateReputation(chatId, userId, reputation);
+    var result = await _reputationDb.updateReputation(chatId, userId, reputation);
 
     return result == 1;
   }
 
   Future<bool> _updateReputation(String chatId, String userId, int reputation) async {
-    var result = await db.reputation.updateReputation(chatId, userId, reputation);
+    var result = await _reputationDb.updateReputation(chatId, userId, reputation);
 
     return result == 1;
   }
 
   Future<bool> _updateChangeOptions(String chatId, String userId, int increaseOptions, int decreaseOptions) async {
-    var result = await db.reputation.updateChangeOptions(chatId, userId, increaseOptions, decreaseOptions);
+    var result = await _reputationDb.updateChangeOptions(chatId, userId, increaseOptions, decreaseOptions);
 
     return result == 1;
   }
@@ -137,7 +139,7 @@ class Reputation {
 
   void _startResetVotesJob() {
     Cron().schedule(Schedule.parse('0 0 * * *'), () async {
-      var result = await db.reputation.resetChangeOptions(numberOfVoteOptions);
+      var result = await _reputationDb.resetChangeOptions(numberOfVoteOptions);
 
       if (result == 0) {
         _logger.w('Something went wrong with resetting reputation change options');
@@ -153,7 +155,7 @@ class Reputation {
   }
 
   void _updateAccordionPollReputation(String chatId, String userId) async {
-    var userReputationData = await db.reputation.getSingleReputationData(chatId, userId);
+    var userReputationData = await _reputationDb.getSingleReputationData(chatId, userId);
 
     if (userReputationData != null) {
       _forceUpdateReputation(chatId, userId, userReputationData.reputation - 1);

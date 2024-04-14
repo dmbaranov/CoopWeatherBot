@@ -1,5 +1,4 @@
 import 'package:weather/src/core/chat.dart';
-import 'package:weather/src/core/database.dart';
 import 'package:weather/src/core/panorama.dart';
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/message_event.dart';
@@ -11,11 +10,10 @@ import 'package:weather/src/utils/logger.dart';
 class PanoramaManager {
   final Platform platform;
   final Chat chat;
-  final Database db;
   final Logger _logger;
   final PanoramaNews _panoramaNews;
 
-  PanoramaManager({required this.platform, required this.chat, required this.db})
+  PanoramaManager({required this.platform, required this.chat})
       : _logger = getIt<Logger>(),
         _panoramaNews = PanoramaNews();
 

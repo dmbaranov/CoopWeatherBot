@@ -1,4 +1,3 @@
-import 'package:weather/src/core/database.dart';
 import 'package:weather/src/core/event_bus.dart';
 import 'package:weather/src/core/chat.dart';
 import 'package:weather/src/core/reputation.dart';
@@ -8,13 +7,11 @@ import 'utils.dart';
 
 class ReputationManager {
   final Platform platform;
-  final Database db;
   final EventBus eventBus;
   final Chat chat;
   final Reputation _reputation;
 
-  ReputationManager({required this.platform, required this.db, required this.eventBus, required this.chat})
-      : _reputation = Reputation(db: db, eventBus: eventBus);
+  ReputationManager({required this.platform, required this.eventBus, required this.chat}) : _reputation = Reputation(eventBus: eventBus);
 
   void initialize() {
     _reputation.initialize();

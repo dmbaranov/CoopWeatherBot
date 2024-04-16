@@ -11,7 +11,7 @@ import 'package:weather/src/modules/chat/chat_manager.dart';
 import 'package:weather/src/modules/user/user_manager.dart';
 import 'package:weather/src/modules/weather_manager.dart';
 import 'package:weather/src/modules/panorama_manager.dart';
-import 'package:weather/src/modules/dadjokes_manager.dart';
+import 'package:weather/src/modules/dadjokes/dadjokes_manager.dart';
 import 'package:weather/src/modules/reputation_manager.dart';
 import 'package:weather/src/modules/youtube_manager.dart';
 import 'package:weather/src/modules/conversator/conversator_manager.dart';

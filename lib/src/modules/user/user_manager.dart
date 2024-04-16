@@ -3,8 +3,8 @@ import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/modules/user/user.dart';
 import 'package:weather/src/modules/chat/chat.dart';
-import 'package:weather/src/modules/utils.dart';
 import 'package:weather/src/utils/logger.dart';
+import '../utils.dart';
 
 class UserManager {
   final Platform platform;

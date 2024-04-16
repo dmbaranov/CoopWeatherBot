@@ -1,5 +1,5 @@
 import 'package:injectable/injectable.dart';
-import 'package:weather/src/core/check_reminder.dart' show CheckReminderData;
+import 'package:weather/src/globals/check_reminder_data.dart';
 import 'repository.dart';
 
 @singleton

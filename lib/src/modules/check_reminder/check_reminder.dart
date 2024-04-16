@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:cron/cron.dart';
 import 'package:weather/src/core/repositories/check_reminder_repository.dart';
+import 'package:weather/src/globals/check_reminder_data.dart';
 import 'package:weather/src/globals/module_exception.dart';
 import 'package:weather/src/injector/injection.dart';
 
@@ -11,16 +12,6 @@ const activeRemindersInterval = 10;
 
 class CheckReminderException extends ModuleException {
   CheckReminderException(super.cause);
-}
-
-class CheckReminderData {
-  final int id;
-  final String chatId;
-  final String userId;
-  final String message;
-  final DateTime timestamp;
-
-  CheckReminderData({required this.id, required this.chatId, required this.userId, required this.message, required this.timestamp});
 }
 
 class CheckReminder {

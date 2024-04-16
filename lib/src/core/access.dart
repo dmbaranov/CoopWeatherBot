@@ -1,3 +1,4 @@
+import 'package:injectable/injectable.dart';
 import 'package:weather/src/core/config.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/globals/access_level.dart';
@@ -10,6 +11,8 @@ import 'event_bus.dart';
 typedef OnSuccessCallback = void Function(MessageEvent event);
 typedef OnFailureCallback = Future Function(MessageEvent event);
 
+@Order(2)
+@singleton
 class Access {
   final Config _config;
   final BotUserRepository _userDb;

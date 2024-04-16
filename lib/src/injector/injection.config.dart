@@ -11,6 +11,7 @@
 import 'package:get_it/get_it.dart' as _i1;
 import 'package:injectable/injectable.dart' as _i2;
 
+import '../core/access.dart' as _i16;
 import '../core/config.dart' as _i4;
 import '../core/database.dart' as _i6;
 import '../core/event_bus.dart' as _i3;
@@ -72,6 +73,7 @@ extension GetItInjectableX on _i1.GetIt {
         () => _i14.WeatherRepository(db: gh<_i6.Database>()));
     gh.singleton<_i15.ConversatorChatRepository>(
         () => _i15.ConversatorChatRepository(db: gh<_i6.Database>()));
+    gh.singleton<_i16.Access>(() => _i16.Access());
     return this;
   }
 }

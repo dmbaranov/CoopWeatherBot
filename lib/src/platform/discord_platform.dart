@@ -28,9 +28,9 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
   late ChatPlatform chatPlatform;
   final String token;
   final String adminId;
-  final Access access;
   final Chat chat;
   final weather.User user;
+  final Access _access;
   final Logger _logger;
 
   final List<ChatCommand> _commands = [];
@@ -38,14 +38,9 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
 
   late NyxxGateway bot;
 
-  DiscordPlatform(
-      {required this.chatPlatform,
-      required this.token,
-      required this.adminId,
-      required this.access,
-      required this.chat,
-      required this.user})
-      : _logger = getIt<Logger>();
+  DiscordPlatform({required this.chatPlatform, required this.token, required this.adminId, required this.chat, required this.user})
+      : _access = getIt<Access>(),
+        _logger = getIt<Logger>();
 
   @override
   Future<void> initialize() async {
@@ -155,7 +150,7 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
         (ChatContext context, GuildVoiceChannel fromChannel, GuildVoiceChannel toChannel) async {
       await context.respond(MessageBuilder(content: '${fromChannel.name} -> ${toChannel.name}'));
 
-      access.execute(
+      _access.execute(
           event: transformPlatformMessageToGeneralMessageEvent(context),
           command: 'moveall',
           accessLevel: AccessLevel.moderator,
@@ -176,7 +171,7 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
     _commands.add(ChatCommand(command.command, command.description, (ChatContext context) async {
       await context.respond(MessageBuilder(content: emptyCharacter));
 
-      access.execute(
+      _access.execute(
           event: transformPlatformMessageToGeneralMessageEvent(context),
           command: command.command,
           accessLevel: command.accessLevel,
@@ -189,7 +184,7 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
     _commands.add(ChatCommand(command.command, command.description, (ChatContext context, String what) async {
       await context.respond(MessageBuilder(content: what));
 
-      access.execute(
+      _access.execute(
           event: transformPlatformMessageToMessageEventWithParameters(context, [what]),
           command: command.command,
           accessLevel: command.accessLevel,
@@ -204,7 +199,7 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
       var isPremium = user.nitroType.value > 0 ? 'true' : 'false';
       await context.respond(MessageBuilder(content: user.username));
 
-      access.execute(
+      _access.execute(
           event: transformPlatformMessageToMessageEventWithOtherUserIds(context, [who.id])..parameters.addAll([user.username, isPremium]),
           command: command.command,
           accessLevel: command.accessLevel,
@@ -220,7 +215,7 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
       conversationId ??= uuid.v4();
       var currentMessageId = uuid.v4();
 
-      access.execute(
+      _access.execute(
           event: transformPlatformMessageToConversatorMessageEvent(context, [conversationId, currentMessageId, what]),
           command: command.command,
           accessLevel: command.accessLevel,

@@ -1,7 +1,6 @@
 import 'package:weather/src/core/config.dart';
 import 'package:weather/src/core/chat.dart';
 import 'package:weather/src/core/user.dart';
-import 'package:weather/src/core/access.dart';
 
 import 'package:weather/src/globals/bot_command.dart';
 import 'package:weather/src/globals/access_level.dart';
@@ -28,7 +27,6 @@ class Bot {
 
   late Chat _chat;
   late User _user;
-  late Access _access;
 
   late UserManager _userManager;
   late WeatherManager _weatherManager;
@@ -50,10 +48,8 @@ class Bot {
     await _chat.initialize();
 
     _user = User()..initialize();
-    _access = Access();
 
-    _platform = Platform(
-        chatPlatform: _config.chatPlatform, token: _config.token, adminId: _config.adminId, access: _access, chat: _chat, user: _user);
+    _platform = Platform(chatPlatform: _config.chatPlatform, token: _config.token, adminId: _config.adminId, chat: _chat, user: _user);
     await _platform.initialize();
 
     _dadJokesManager = DadJokesManager(platform: _platform);

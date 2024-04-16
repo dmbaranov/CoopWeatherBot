@@ -26,9 +26,9 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   late ChatPlatform chatPlatform;
   final String token;
   final String adminId;
-  final Access access;
   final Chat chat;
   final User user;
+  final Access _access;
   final Logger _logger;
 
   // final Debouncer<TeleDartInlineQuery?> _debouncer = Debouncer(Duration(seconds: 1), initialValue: null);
@@ -36,14 +36,9 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   late TeleDart _bot;
   late Telegram _telegram;
 
-  TelegramPlatform(
-      {required this.chatPlatform,
-      required this.token,
-      required this.adminId,
-      required this.access,
-      required this.chat,
-      required this.user})
-      : _logger = getIt<Logger>();
+  TelegramPlatform({required this.chatPlatform, required this.token, required this.adminId, required this.chat, required this.user})
+      : _access = getIt<Access>(),
+        _logger = getIt<Logger>();
 
   @override
   Future<void> initialize() async {
@@ -107,7 +102,7 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
 
     _bot.onCommand(command.command).listen((event) {
       if (event.text?.startsWith('/') == true) {
-        access.execute(
+        _access.execute(
             event: eventMapper(event),
             command: command.command,
             accessLevel: command.accessLevel,

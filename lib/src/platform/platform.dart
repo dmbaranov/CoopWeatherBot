@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:weather/src/core/chat.dart';
 import 'package:weather/src/core/user.dart';
-import 'package:weather/src/core/access.dart';
 
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/message_event.dart';
@@ -16,18 +15,12 @@ abstract class Platform<T> {
   late ChatPlatform chatPlatform;
 
   factory Platform(
-      {required Chat chat,
-      required User user,
-      required String token,
-      required Access access,
-      required String adminId,
-      required ChatPlatform chatPlatform}) {
+      {required Chat chat, required User user, required String token, required String adminId, required ChatPlatform chatPlatform}) {
     switch (chatPlatform) {
       case ChatPlatform.telegram:
-        return TelegramPlatform(
-            chatPlatform: ChatPlatform.telegram, token: token, adminId: adminId, access: access, chat: chat, user: user);
+        return TelegramPlatform(chatPlatform: ChatPlatform.telegram, token: token, adminId: adminId, chat: chat, user: user);
       case ChatPlatform.discord:
-        return DiscordPlatform(chatPlatform: ChatPlatform.discord, token: token, adminId: adminId, access: access, chat: chat, user: user);
+        return DiscordPlatform(chatPlatform: ChatPlatform.discord, token: token, adminId: adminId, chat: chat, user: user);
       default:
         throw Exception('Platform $chatPlatform is not supported');
     }

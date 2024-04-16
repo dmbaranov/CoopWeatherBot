@@ -1,5 +1,4 @@
 import 'package:weather/src/core/accordion_poll.dart';
-import 'package:weather/src/core/event_bus.dart';
 import 'package:weather/src/core/user.dart';
 import 'package:weather/src/core/chat.dart';
 import 'package:weather/src/globals/chat_platform.dart';
@@ -9,13 +8,11 @@ import 'utils.dart';
 
 class AccordionPollManager {
   final Platform platform;
-  final EventBus eventBus;
   final User user;
   final Chat chat;
   final AccordionPoll _accordionPoll;
 
-  AccordionPollManager({required this.platform, required this.eventBus, required this.user, required this.chat})
-      : _accordionPoll = AccordionPoll(eventBus: eventBus, chat: chat);
+  AccordionPollManager({required this.platform, required this.user, required this.chat}) : _accordionPoll = AccordionPoll(chat: chat);
 
   void startAccordionPoll(MessageEvent event) async {
     if (!userIdsCheck(platform, event)) return;

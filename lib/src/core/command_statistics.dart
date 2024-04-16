@@ -19,15 +19,16 @@ class ChatReport {
 }
 
 class CommandStatistics {
-  final EventBus eventBus;
   final Chat chat;
   final ChatPlatform chatPlatform;
+  final EventBus _eventBus;
   final CommandStatisticsRepository _commandStatisticsDb;
 
   late StreamController<ChatReport> _chatReportController;
 
-  CommandStatistics({required this.eventBus, required this.chat, required this.chatPlatform})
-      : _commandStatisticsDb = getIt<CommandStatisticsRepository>();
+  CommandStatistics({required this.chat, required this.chatPlatform})
+      : _commandStatisticsDb = getIt<CommandStatisticsRepository>(),
+        _eventBus = getIt<EventBus>();
 
   Stream<ChatReport> get chatReportStream => _chatReportController.stream;
 
@@ -53,7 +54,7 @@ class CommandStatistics {
   }
 
   void _listenToAccessEvents() {
-    eventBus
+    _eventBus
         .on<AccessEvent>()
         .listen((event) => _registerCommandInvocation(chatId: event.chatId, userId: event.user.id, command: event.command));
   }

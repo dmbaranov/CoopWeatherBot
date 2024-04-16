@@ -24,7 +24,7 @@ void main() {
     user.initialize();
 
     eventBus = EventBus();
-    reputation = Reputation(eventBus: eventBus);
+    reputation = Reputation();
     reputation.initialize();
   });
 

@@ -8,7 +8,6 @@ import 'package:teledart/teledart.dart';
 import 'package:teledart/telegram.dart';
 
 import 'package:weather/src/core/chat.dart';
-import 'package:weather/src/core/event_bus.dart';
 import 'package:weather/src/core/user.dart';
 import 'package:weather/src/core/access.dart';
 
@@ -27,7 +26,6 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   late ChatPlatform chatPlatform;
   final String token;
   final String adminId;
-  final EventBus eventBus;
   final Access access;
   final Chat chat;
   final User user;
@@ -42,7 +40,6 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
       {required this.chatPlatform,
       required this.token,
       required this.adminId,
-      required this.eventBus,
       required this.access,
       required this.chat,
       required this.user})

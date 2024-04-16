@@ -8,7 +8,6 @@ import 'package:cron/cron.dart';
 
 import 'package:weather/src/core/chat.dart';
 import 'package:weather/src/core/user.dart' as weather;
-import 'package:weather/src/core/event_bus.dart';
 import 'package:weather/src/core/access.dart';
 
 import 'package:weather/src/globals/chat_platform.dart';
@@ -29,7 +28,6 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
   late ChatPlatform chatPlatform;
   final String token;
   final String adminId;
-  final EventBus eventBus;
   final Access access;
   final Chat chat;
   final weather.User user;
@@ -44,7 +42,6 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
       {required this.chatPlatform,
       required this.token,
       required this.adminId,
-      required this.eventBus,
       required this.access,
       required this.chat,
       required this.user})

@@ -4,7 +4,6 @@ import 'package:weather/src/globals/access_level.dart';
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/core/chat.dart';
 import 'package:weather/src/core/user.dart';
-import 'package:weather/src/core/event_bus.dart';
 import 'utils/setup.dart';
 import 'utils/helpers.dart';
 
@@ -15,7 +14,6 @@ void main() {
   late Access access;
   late Chat chat;
   late User user;
-  late EventBus eventBus;
 
   setUp(() async {
     chat = Chat();
@@ -24,9 +22,7 @@ void main() {
     user = User();
     user.initialize();
 
-    eventBus = EventBus();
-
-    access = Access(eventBus: eventBus, adminId: adminId);
+    access = Access();
   });
 
   group('Access', () {

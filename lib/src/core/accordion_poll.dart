@@ -1,20 +1,21 @@
 import 'package:weather/src/globals/accordion_poll.dart';
+import 'package:weather/src/injector/injection.dart';
 import 'events/accordion_poll_events.dart';
 import 'event_bus.dart';
 import 'chat.dart';
 import 'user.dart' show BotUser;
 
 class AccordionPoll {
-  final EventBus eventBus;
   final Chat chat;
   final int pollTime;
+  final EventBus _eventBus;
   late BotUser _fromUser;
   late BotUser _toUser;
   late String _chatId;
   bool _isVoteActive = false;
   Map<AccordionVoteOption, int> _voteResult = {};
 
-  AccordionPoll({required this.eventBus, required this.chat, this.pollTime = 180});
+  AccordionPoll({required this.chat, this.pollTime = 180}) : _eventBus = getIt<EventBus>();
 
   get pollOptions => [
         chat.getText(_chatId, 'accordion.options.yes'),
@@ -69,12 +70,12 @@ class AccordionPoll {
 
     switch (winnerOption) {
       case AccordionVoteOption.yes:
-        eventBus.fire(PollCompletedYes(fromUser: _fromUser, toUser: _toUser, chatId: _chatId));
+        _eventBus.fire(PollCompletedYes(fromUser: _fromUser, toUser: _toUser, chatId: _chatId));
         winningTranslation = 'accordion.results.yes';
         break;
 
       case AccordionVoteOption.no:
-        eventBus.fire(PollCompletedNo(fromUser: _fromUser, toUser: _toUser, chatId: _chatId));
+        _eventBus.fire(PollCompletedNo(fromUser: _fromUser, toUser: _toUser, chatId: _chatId));
         winningTranslation = 'accordion.results.no';
         break;
 

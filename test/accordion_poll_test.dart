@@ -4,7 +4,6 @@ import 'package:weather/src/globals/accordion_poll.dart';
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/core/chat.dart';
 import 'package:weather/src/core/user.dart';
-import 'package:weather/src/core/event_bus.dart';
 import 'utils/setup.dart';
 
 void main() {
@@ -14,15 +13,13 @@ void main() {
   late AccordionPoll accordionPoll;
 
   setUp(() async {
-    var eventBus = EventBus();
-
     chat = Chat();
     await chat.initialize();
 
     user = User();
     user.initialize();
 
-    accordionPoll = AccordionPoll(eventBus: eventBus, chat: chat, pollTime: 1);
+    accordionPoll = AccordionPoll(chat: chat, pollTime: 1);
   });
 
   group('Accordion Poll', () {

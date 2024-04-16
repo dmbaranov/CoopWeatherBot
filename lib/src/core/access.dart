@@ -1,3 +1,4 @@
+import 'package:weather/src/core/config.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/globals/access_level.dart';
 import 'package:weather/src/injector/injection.dart';
@@ -10,13 +11,15 @@ typedef OnSuccessCallback = void Function(MessageEvent event);
 typedef OnFailureCallback = Future Function(MessageEvent event);
 
 class Access {
-  final EventBus eventBus;
-  final String adminId;
+  final Config _config;
   final BotUserRepository _userDb;
+  final EventBus _eventBus;
   final Logger _logger;
 
-  Access({required this.eventBus, required this.adminId})
-      : _userDb = getIt<BotUserRepository>(),
+  Access()
+      : _config = getIt<Config>(),
+        _userDb = getIt<BotUserRepository>(),
+        _eventBus = getIt<EventBus>(),
         _logger = getIt<Logger>();
 
   void execute(
@@ -33,11 +36,11 @@ class Access {
 
     var canExecuteAsUser = accessLevel == AccessLevel.user;
     var canExecuteAsModerator = accessLevel == AccessLevel.moderator && user.moderator;
-    var canExecuteAsAdmin = user.id == adminId;
+    var canExecuteAsAdmin = user.id == _config.adminId;
 
     if (canExecuteAsUser || canExecuteAsModerator || canExecuteAsAdmin) {
       _logger.i('Executing /$command with event: $event');
-      eventBus.fire(AccessEvent(chatId: event.chatId, user: user, command: command));
+      _eventBus.fire(AccessEvent(chatId: event.chatId, user: user, command: command));
 
       return onSuccess(event);
     }

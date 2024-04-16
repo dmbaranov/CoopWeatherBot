@@ -32,12 +32,13 @@ class ChatReputationData {
 }
 
 class Reputation {
-  final EventBus eventBus;
+  final EventBus _eventBus;
   final ReputationRepository _reputationDb;
   final Logger _logger;
 
-  Reputation({required this.eventBus})
+  Reputation()
       : _reputationDb = getIt<ReputationRepository>(),
+        _eventBus = getIt<EventBus>(),
         _logger = getIt<Logger>();
 
   void initialize() {
@@ -150,8 +151,8 @@ class Reputation {
   }
 
   void _listenToAccordionPolls() {
-    eventBus.on<PollCompletedYes>().listen((event) => _updateAccordionPollReputation(event.chatId, event.toUser.id));
-    eventBus.on<PollCompletedNo>().listen((event) => _updateAccordionPollReputation(event.chatId, event.fromUser.id));
+    _eventBus.on<PollCompletedYes>().listen((event) => _updateAccordionPollReputation(event.chatId, event.toUser.id));
+    _eventBus.on<PollCompletedNo>().listen((event) => _updateAccordionPollReputation(event.chatId, event.fromUser.id));
   }
 
   void _updateAccordionPollReputation(String chatId, String userId) async {

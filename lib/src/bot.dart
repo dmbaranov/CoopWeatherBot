@@ -1,7 +1,6 @@
 import 'package:weather/src/core/config.dart';
 import 'package:weather/src/core/chat.dart';
 import 'package:weather/src/core/user.dart';
-import 'package:weather/src/core/event_bus.dart';
 import 'package:weather/src/core/access.dart';
 
 import 'package:weather/src/globals/bot_command.dart';
@@ -27,7 +26,6 @@ class Bot {
 
   late Platform _platform;
 
-  late EventBus _eventBus;
   late Chat _chat;
   late User _user;
   late Access _access;
@@ -48,22 +46,14 @@ class Bot {
   Bot() : _config = getIt<Config>();
 
   Future<void> startBot() async {
-    _eventBus = EventBus();
-
     _chat = Chat();
     await _chat.initialize();
 
     _user = User()..initialize();
-    _access = Access(eventBus: _eventBus, adminId: _config.adminId);
+    _access = Access();
 
     _platform = Platform(
-        chatPlatform: _config.chatPlatform,
-        token: _config.token,
-        adminId: _config.adminId,
-        eventBus: _eventBus,
-        access: _access,
-        chat: _chat,
-        user: _user);
+        chatPlatform: _config.chatPlatform, token: _config.token, adminId: _config.adminId, access: _access, chat: _chat, user: _user);
     await _platform.initialize();
 
     _dadJokesManager = DadJokesManager(platform: _platform);
@@ -74,10 +64,10 @@ class Bot {
     _chatManager = ChatManager(platform: _platform, chat: _chat);
     _panoramaManager = PanoramaManager(platform: _platform, chat: _chat)..initialize();
     _userManager = UserManager(platform: _platform, chat: _chat, user: _user)..initialize();
-    _reputationManager = ReputationManager(platform: _platform, eventBus: _eventBus, chat: _chat)..initialize();
+    _reputationManager = ReputationManager(platform: _platform, chat: _chat)..initialize();
     _weatherManager = WeatherManager(platform: _platform, chat: _chat, openweatherKey: _config.openWeatherKey)..initialize();
-    _accordionPollManager = AccordionPollManager(platform: _platform, eventBus: _eventBus, user: _user, chat: _chat);
-    _commandStatisticsManager = CommandStatisticsManager(platform: _platform, eventBus: _eventBus, chat: _chat)..initialize();
+    _accordionPollManager = AccordionPollManager(platform: _platform, user: _user, chat: _chat);
+    _commandStatisticsManager = CommandStatisticsManager(platform: _platform, chat: _chat)..initialize();
     _checkReminderManager = CheckReminderManager(platform: _platform, chat: _chat, user: _user)..initialize();
 
     _setupCommands();

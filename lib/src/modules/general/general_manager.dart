@@ -7,11 +7,9 @@ import '../utils.dart';
 class GeneralManager {
   final Platform platform;
   final Chat chat;
-  final String repositoryUrl;
   final General _general;
 
-  GeneralManager({required this.platform, required this.chat, required this.repositoryUrl})
-      : _general = General(chat: chat, repositoryUrl: repositoryUrl);
+  GeneralManager({required this.platform, required this.chat}) : _general = General(chat: chat);
 
   void postHealthCheck(MessageEvent event) {
     var chatId = event.chatId;

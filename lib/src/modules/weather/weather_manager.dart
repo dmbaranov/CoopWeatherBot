@@ -9,13 +9,12 @@ import '../utils.dart';
 class WeatherManager {
   final Platform platform;
   final Chat chat;
-  final String openweatherKey;
   final Logger _logger;
   final Weather _weather;
 
-  WeatherManager({required this.platform, required this.chat, required this.openweatherKey})
+  WeatherManager({required this.platform, required this.chat})
       : _logger = getIt<Logger>(),
-        _weather = Weather(openweatherKey: openweatherKey);
+        _weather = Weather();
 
   void initialize() {
     _weather.initialize();

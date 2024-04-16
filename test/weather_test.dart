@@ -16,7 +16,7 @@ void main() {
     chat = Chat();
     await chat.initialize();
 
-    weather = Weather(openweatherKey: 'no-key-provided');
+    weather = Weather();
     weather.initialize();
   });
 

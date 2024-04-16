@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:cron/cron.dart';
 import 'package:http/http.dart' as http;
+import 'package:weather/src/core/config.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/core/repositories/conversator_chat_repository.dart';
 import 'package:weather/src/core/repositories/conversator_user_repository.dart';
@@ -20,15 +21,15 @@ class ConversatorException extends ModuleException {
 }
 
 class Conversator {
+  final Config _config;
   final Logger _logger;
-  final String conversatorApiKey;
-  final String adminId;
   final String _apiBaseUrl = _converstorApiURL;
   final ConversatorChatRepository _conversatorChatDb;
   final ConversatorUserRepository _conversatorUserDb;
 
-  Conversator({required this.conversatorApiKey, required this.adminId})
-      : _conversatorChatDb = getIt<ConversatorChatRepository>(),
+  Conversator()
+      : _config = getIt<Config>(),
+        _conversatorChatDb = getIt<ConversatorChatRepository>(),
         _conversatorUserDb = getIt<ConversatorUserRepository>(),
         _logger = getIt<Logger>();
 
@@ -78,7 +79,7 @@ class Conversator {
     var formattedMessages =
         conversation.map((message) => {'role': message.fromUser ? 'user' : 'system', 'content': message.message}).toList();
 
-    var headers = {'Content-Type': 'application/json', 'Authorization': 'Bearer $conversatorApiKey'};
+    var headers = {'Content-Type': 'application/json', 'Authorization': 'Bearer ${_config.conversatorKey}'};
     var body = {'model': model, 'messages': formattedMessages};
 
     var response =
@@ -92,7 +93,7 @@ class Conversator {
     var errorMessage = 'conversator.daily_invocation_limit_hit';
 
     if (model == regularModel) {
-      if (conversatorUser.dailyRegularInvocations >= regularDailyLimit && userId != adminId) {
+      if (conversatorUser.dailyRegularInvocations >= regularDailyLimit && userId != _config.adminId) {
         throw ConversatorException(errorMessage);
       }
 
@@ -102,7 +103,7 @@ class Conversator {
     }
 
     if (model == advancedModel) {
-      if (conversatorUser.dailyAdvancedInvocations >= advancedDailyLimit && userId != adminId) {
+      if (conversatorUser.dailyAdvancedInvocations >= advancedDailyLimit && userId != _config.adminId) {
         throw ConversatorException(errorMessage);
       }
 

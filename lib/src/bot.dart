@@ -1,9 +1,9 @@
+import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/core/config.dart';
 
+import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/globals/bot_command.dart';
 import 'package:weather/src/globals/access_level.dart';
-import 'package:weather/src/injector/injection.dart';
-import 'package:weather/src/platform/platform.dart';
 
 import 'package:weather/src/modules/user/user.dart';
 import 'package:weather/src/modules/chat/chat.dart';
@@ -49,19 +49,18 @@ class Bot {
 
     _user = User()..initialize();
 
-    _platform = Platform(chatPlatform: _config.chatPlatform, token: _config.token, adminId: _config.adminId, chat: _chat, user: _user);
+    _platform = Platform(chatPlatform: _config.chatPlatform, chat: _chat, user: _user);
     await _platform.initialize();
 
     _dadJokesManager = DadJokesManager(platform: _platform);
-    _youtubeManager = YoutubeManager(platform: _platform, apiKey: _config.youtubeKey);
-    _conversatorManager = ConversatorManager(platform: _platform, conversatorApiKey: _config.conversatorKey, adminId: _config.adminId)
-      ..initialize();
-    _generalManager = GeneralManager(platform: _platform, chat: _chat, repositoryUrl: _config.githubRepo);
+    _youtubeManager = YoutubeManager(platform: _platform);
+    _conversatorManager = ConversatorManager(platform: _platform)..initialize();
+    _generalManager = GeneralManager(platform: _platform, chat: _chat);
     _chatManager = ChatManager(platform: _platform, chat: _chat);
     _panoramaManager = PanoramaManager(platform: _platform, chat: _chat)..initialize();
     _userManager = UserManager(platform: _platform, chat: _chat, user: _user)..initialize();
     _reputationManager = ReputationManager(platform: _platform, chat: _chat)..initialize();
-    _weatherManager = WeatherManager(platform: _platform, chat: _chat, openweatherKey: _config.openWeatherKey)..initialize();
+    _weatherManager = WeatherManager(platform: _platform, chat: _chat)..initialize();
     _accordionPollManager = AccordionPollManager(platform: _platform, user: _user, chat: _chat);
     _commandStatisticsManager = CommandStatisticsManager(platform: _platform, chat: _chat)..initialize();
     _checkReminderManager = CheckReminderManager(platform: _platform, chat: _chat, user: _user)..initialize();

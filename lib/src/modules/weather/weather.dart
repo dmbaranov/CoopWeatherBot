@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:cron/cron.dart';
+import 'package:weather/src/core/config.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/core/repositories/weather_repository.dart';
 
@@ -22,14 +23,16 @@ class ChatWeatherData {
 }
 
 class Weather {
-  final String openweatherKey;
+  final Config _config;
   final WeatherRepository _weatherDb;
   final String _apiBaseUrl = _weatherApiBase;
 
   late StreamController<ChatWeatherData> _weatherStreamController;
   List<ScheduledTask> _weatherCronTasks = [];
 
-  Weather({required this.openweatherKey}) : _weatherDb = getIt<WeatherRepository>();
+  Weather()
+      : _config = getIt<Config>(),
+        _weatherDb = getIt<WeatherRepository>();
 
   Stream<ChatWeatherData> get weatherStream => _weatherStreamController.stream;
 
@@ -104,7 +107,7 @@ class Weather {
   }
 
   Future<OpenWeatherData> _getCurrentWeather(String city) async {
-    var url = '$_apiBaseUrl/weather?q=$city&appid=$openweatherKey&units=metric';
+    var url = '$_apiBaseUrl/weather?q=$city&appid=${_config.openWeatherKey}&units=metric';
 
     var response = await http.get(Uri.parse(url));
     var responseJson = jsonDecode(response.body);

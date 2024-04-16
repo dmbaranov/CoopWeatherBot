@@ -5,10 +5,9 @@ import '../utils.dart';
 
 class YoutubeManager {
   final Platform platform;
-  final String apiKey;
   final Youtube _youtube;
 
-  YoutubeManager({required this.platform, required this.apiKey}) : _youtube = Youtube(apiKey);
+  YoutubeManager({required this.platform}) : _youtube = Youtube();
 
   void searchSong(MessageEvent event) async {
     if (!messageEventParametersCheck(platform, event)) return;

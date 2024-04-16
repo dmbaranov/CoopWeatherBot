@@ -7,6 +7,7 @@ import 'package:teledart/model.dart' show TeleDartMessage, Message;
 import 'package:teledart/teledart.dart';
 import 'package:teledart/telegram.dart';
 import 'package:weather/src/core/access.dart';
+import 'package:weather/src/core/config.dart';
 
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/message_event.dart';
@@ -23,10 +24,9 @@ import 'package:weather/src/utils/logger.dart';
 class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   @override
   late ChatPlatform chatPlatform;
-  final String token;
-  final String adminId;
   final Chat chat;
   final User user;
+  final Config _config;
   final Access _access;
   final Logger _logger;
 
@@ -35,16 +35,18 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   late TeleDart _bot;
   late Telegram _telegram;
 
-  TelegramPlatform({required this.chatPlatform, required this.token, required this.adminId, required this.chat, required this.user})
-      : _access = getIt<Access>(),
+  TelegramPlatform({required this.chatPlatform, required this.chat, required this.user})
+      : _config = getIt<Config>(),
+        _access = getIt<Access>(),
         _logger = getIt<Logger>();
 
   @override
   Future<void> initialize() async {
-    var botName = (await Telegram(token).getMe()).username;
+    _telegram = Telegram(_config.token);
 
-    _telegram = Telegram(token);
-    _bot = TeleDart(token, Event(botName!), fetcher: LongPolling(Telegram(token), limit: 100, timeout: 50));
+    var botName = (await _telegram.getMe()).username;
+
+    _bot = TeleDart(_config.token, Event(botName!), fetcher: LongPolling(_telegram, limit: 100, timeout: 50));
 
     _setupPlatformSpecificCommands();
 
@@ -215,7 +217,7 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
     var messageAuthorId = message.from?.id.toString();
     var chatId = message.chat.id.toString();
 
-    if (messageAuthorId == adminId) {
+    if (messageAuthorId == _config.adminId) {
       await sendMessage(chatId, message: '@daimonil');
     } else if (messageAuthorId == denisId) {
       await sendMessage(chatId, message: '@dmbaranov_io');

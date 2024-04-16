@@ -5,6 +5,7 @@ import 'package:nyxx/nyxx.dart' hide Logger, User;
 import 'package:nyxx_commands/nyxx_commands.dart';
 import 'package:uuid/uuid.dart';
 import 'package:cron/cron.dart';
+import 'package:weather/src/core/config.dart';
 
 import 'package:weather/src/modules/chat/chat.dart';
 import 'package:weather/src/core/access.dart';
@@ -26,10 +27,9 @@ const emptyCharacter = 'ㅤ';
 class DiscordPlatform<T extends ChatContext> implements Platform<T> {
   @override
   late ChatPlatform chatPlatform;
-  final String token;
-  final String adminId;
   final Chat chat;
   final User user;
+  final Config _config;
   final Access _access;
   final Logger _logger;
 
@@ -38,8 +38,9 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
 
   late NyxxGateway bot;
 
-  DiscordPlatform({required this.chatPlatform, required this.token, required this.adminId, required this.chat, required this.user})
-      : _access = getIt<Access>(),
+  DiscordPlatform({required this.chatPlatform, required this.chat, required this.user})
+      : _config = getIt<Config>(),
+        _access = getIt<Access>(),
         _logger = getIt<Logger>();
 
   @override
@@ -51,7 +52,7 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
   Future<void> postStart() async {
     _setupPlatformSpecificCommands();
 
-    bot = await Nyxx.connectGateway(token, GatewayIntents.all,
+    bot = await Nyxx.connectGateway(_config.token, GatewayIntents.all,
         options: GatewayClientOptions(plugins: [_setupDiscordCommands(), logging, cliIntegration, ignoreExceptions]));
 
     _startHeroCheckJob();

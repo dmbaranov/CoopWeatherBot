@@ -6,12 +6,9 @@ import '../utils.dart';
 
 class ConversatorManager {
   final Platform platform;
-  final String conversatorApiKey;
-  final String adminId;
   final Conversator _conversator;
 
-  ConversatorManager({required this.platform, required this.conversatorApiKey, required this.adminId})
-      : _conversator = Conversator(conversatorApiKey: conversatorApiKey, adminId: adminId);
+  ConversatorManager({required this.platform}) : _conversator = Conversator();
 
   void initialize() {
     _conversator.initialize();

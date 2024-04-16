@@ -1,7 +1,7 @@
-import 'package:weather/src/core/youtube.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/platform/platform.dart';
-import 'utils.dart';
+import 'youtube.dart';
+import '../utils.dart';
 
 class YoutubeManager {
   final Platform platform;

@@ -1,7 +1,7 @@
 import 'package:injectable/injectable.dart';
 import 'package:postgres/postgres.dart';
-import 'package:weather/src/core/config.dart';
 import 'package:weather/src/utils/logger.dart';
+import 'config.dart';
 
 @singleton
 class Database {

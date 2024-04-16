@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'package:cron/cron.dart';
+import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/core/event_bus.dart';
 import 'package:weather/src/core/repositories/reputation_repository.dart';
 import 'package:weather/src/events/accordion_poll_events.dart';
 import 'package:weather/src/globals/chat_reputation_data.dart';
 import 'package:weather/src/globals/single_reputation_data.dart';
 import 'package:weather/src/globals/module_exception.dart';
-import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/utils/logger.dart';
 
 enum ReputationChangeOption { increase, decrease }

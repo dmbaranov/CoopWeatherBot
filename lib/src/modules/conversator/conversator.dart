@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'package:cron/cron.dart';
 import 'package:http/http.dart' as http;
+import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/core/repositories/conversator_chat_repository.dart';
 import 'package:weather/src/core/repositories/conversator_user_repository.dart';
 import 'package:weather/src/globals/conversator_chat_message.dart';
 import 'package:weather/src/globals/module_exception.dart';
-import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/utils/logger.dart';
 
 const String _converstorApiURL = 'https://api.openai.com/v1/chat/completions';

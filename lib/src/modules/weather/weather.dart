@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:cron/cron.dart';
-import 'package:weather/src/core/repositories/weather_repository.dart';
 import 'package:weather/src/injector/injection.dart';
+import 'package:weather/src/core/repositories/weather_repository.dart';
 
 const _weatherApiBase = 'https://api.openweathermap.org/data/2.5';
 

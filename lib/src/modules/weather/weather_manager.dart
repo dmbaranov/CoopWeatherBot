@@ -1,6 +1,6 @@
-import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/platform/platform.dart';
+import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/modules/chat/chat.dart';
 import 'package:weather/src/utils/logger.dart';
 import 'weather.dart';

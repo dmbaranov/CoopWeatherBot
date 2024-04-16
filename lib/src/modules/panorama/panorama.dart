@@ -2,8 +2,8 @@ import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as parser;
 import 'package:cron/cron.dart';
-import 'package:weather/src/core/repositories/news_repository.dart';
 import 'package:weather/src/injector/injection.dart';
+import 'package:weather/src/core/repositories/news_repository.dart';
 
 const String _panoramaBaseUrl = 'https://panorama.pub';
 

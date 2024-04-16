@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'dart:convert';
+import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/core/repositories/chat_repository.dart';
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/chat_data.dart';
-import 'package:weather/src/injector/injection.dart';
 
 class Chat {
   final ChatRepository _chatDb;

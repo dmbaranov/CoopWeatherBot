@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'package:cron/cron.dart';
+import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/core/repositories/command_statistics_repository.dart';
 import 'package:weather/src/core/event_bus.dart';
-import 'package:weather/src/globals/chat_platform.dart';
-import 'package:weather/src/injector/injection.dart';
-import 'package:weather/src/utils/wait_concurrently.dart';
 import 'package:weather/src/events/access_events.dart';
+import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/modules/chat/chat.dart';
+import 'package:weather/src/utils/wait_concurrently.dart';
 
 class ChatReport {
   final String chatId;

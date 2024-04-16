@@ -1,5 +1,5 @@
-import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/platform/platform.dart';
+import 'package:weather/src/globals/message_event.dart';
 import 'youtube.dart';
 import '../utils.dart';
 

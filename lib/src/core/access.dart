@@ -1,11 +1,11 @@
 import 'package:injectable/injectable.dart';
-import 'package:weather/src/core/config.dart';
+import 'package:weather/src/injector/injection.dart';
+import 'package:weather/src/events/access_events.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/globals/access_level.dart';
-import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/utils/logger.dart';
-import 'package:weather/src/events/access_events.dart';
 import 'repositories/bot_user_repository.dart';
+import 'config.dart';
 import 'event_bus.dart';
 
 typedef OnSuccessCallback = void Function(MessageEvent event);

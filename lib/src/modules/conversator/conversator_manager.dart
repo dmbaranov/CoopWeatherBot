@@ -1,7 +1,7 @@
+import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/message_event.dart';
-import 'package:weather/src/platform/platform.dart';
-import 'package:weather/src/modules/conversator/conversator.dart';
+import 'conversator.dart';
 import '../utils.dart';
 
 class ConversatorManager {

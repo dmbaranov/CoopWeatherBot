@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'package:cron/cron.dart';
+import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/core/repositories/check_reminder_repository.dart';
 import 'package:weather/src/globals/check_reminder_data.dart';
 import 'package:weather/src/globals/module_exception.dart';
-import 'package:weather/src/injector/injection.dart';
 
 // how many reminders from the DB can be active at the same time
 const remindersLimit = 50;

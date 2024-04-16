@@ -1,6 +1,6 @@
-import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/platform/platform.dart';
-import 'package:weather/src/modules/dadjokes/dadjokes.dart';
+import 'package:weather/src/globals/message_event.dart';
+import 'dadjokes.dart';
 import '../utils.dart';
 
 class DadJokesManager {

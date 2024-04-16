@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import 'package:weather/src/core/accordion_poll.dart';
+import 'package:weather/src/modules/accordion_poll/accordion_poll.dart';
 import 'package:weather/src/globals/accordion_poll.dart';
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/core/chat.dart';

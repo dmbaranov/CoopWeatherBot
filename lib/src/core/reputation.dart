@@ -4,7 +4,7 @@ import 'package:weather/src/core/repositories/reputation_repository.dart';
 import 'package:weather/src/globals/module_exception.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/utils/logger.dart';
-import 'events/accordion_poll_events.dart';
+import 'package:weather/src/events/accordion_poll_events.dart';
 import 'event_bus.dart';
 
 enum ReputationChangeOption { increase, decrease }

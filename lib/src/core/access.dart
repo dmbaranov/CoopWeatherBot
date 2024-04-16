@@ -4,7 +4,7 @@ import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/globals/access_level.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/utils/logger.dart';
-import 'events/access_events.dart';
+import 'package:weather/src/events/access_events.dart';
 import 'repositories/bot_user_repository.dart';
 import 'event_bus.dart';
 

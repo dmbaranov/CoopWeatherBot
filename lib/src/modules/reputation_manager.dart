@@ -1,4 +1,4 @@
-import 'package:weather/src/core/chat.dart';
+import 'package:weather/src/modules/chat/chat.dart';
 import 'package:weather/src/core/reputation.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/platform/platform.dart';

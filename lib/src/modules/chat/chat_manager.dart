@@ -1,9 +1,8 @@
-import 'package:weather/src/core/chat.dart';
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/platform/platform.dart';
-
-import 'utils.dart';
+import 'chat.dart';
+import '../utils.dart';
 
 class ChatManager {
   final Platform platform;

@@ -5,8 +5,8 @@ import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/utils/wait_concurrently.dart';
 import 'package:weather/src/events/access_events.dart';
+import 'package:weather/src/modules/chat/chat.dart';
 import 'event_bus.dart';
-import 'chat.dart';
 
 class ChatReport {
   final String chatId;

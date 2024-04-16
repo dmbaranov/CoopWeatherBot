@@ -2,16 +2,8 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:weather/src/core/repositories/chat_repository.dart';
 import 'package:weather/src/globals/chat_platform.dart';
+import 'package:weather/src/globals/chat_data.dart';
 import 'package:weather/src/injector/injection.dart';
-
-class ChatData {
-  final String id;
-  final String name;
-  final ChatPlatform platform;
-  final String swearwordsConfig;
-
-  ChatData({required this.id, required this.name, required this.platform, required this.swearwordsConfig});
-}
 
 class Chat {
   final ChatRepository _chatDb;

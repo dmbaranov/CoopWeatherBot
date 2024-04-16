@@ -1,6 +1,6 @@
 import 'package:injectable/injectable.dart';
-import 'package:weather/src/core/chat.dart';
 import 'package:weather/src/globals/chat_platform.dart';
+import 'package:weather/src/globals/chat_data.dart';
 import 'repository.dart';
 
 @singleton

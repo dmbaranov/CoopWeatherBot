@@ -6,7 +6,7 @@ import 'package:nyxx_commands/nyxx_commands.dart';
 import 'package:uuid/uuid.dart';
 import 'package:cron/cron.dart';
 
-import 'package:weather/src/core/chat.dart';
+import 'package:weather/src/modules/chat/chat.dart';
 import 'package:weather/src/core/user.dart' as weather;
 import 'package:weather/src/core/access.dart';
 
@@ -224,6 +224,7 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
     }));
   }
 
+  // TODO: move to the module e.g. discord_module to avoid User dependency here. Move all platform specific commands to this module. Do the same for Telegram
   void _startHeroCheckJob() {
     Cron().schedule(Schedule.parse('0 4 * * 6,0'), () async {
       var authorizedChats = await chat.getAllChatIdsForPlatform(chatPlatform);

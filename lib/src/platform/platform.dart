@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:weather/src/core/chat.dart';
 import 'package:weather/src/core/user.dart';
 
 import 'package:weather/src/globals/chat_platform.dart';
@@ -10,6 +9,8 @@ import 'package:weather/src/globals/accordion_poll.dart';
 
 import 'package:weather/src/platform/telegram_platform.dart';
 import 'package:weather/src/platform/discord_platform.dart';
+
+import 'package:weather/src/modules/chat/chat.dart';
 
 abstract class Platform<T> {
   late ChatPlatform chatPlatform;

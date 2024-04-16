@@ -1,8 +1,8 @@
-import 'package:weather/src/core/chat.dart';
 import 'package:weather/src/core/command_statistics.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/platform/platform.dart';
+import 'package:weather/src/modules/chat/chat.dart';
 import 'package:weather/src/utils/logger.dart';
 import 'utils.dart';
 

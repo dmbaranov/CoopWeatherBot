@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'chat.dart';
+import 'package:weather/src/modules/chat/chat.dart';
 
 const _githubApiBase = 'https://api.github.com';
 

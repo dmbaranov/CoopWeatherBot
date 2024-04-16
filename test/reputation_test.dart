@@ -1,10 +1,10 @@
 import 'package:postgres/postgres.dart';
 import 'package:test/test.dart';
-import 'package:weather/src/core/chat.dart';
 import 'package:weather/src/core/event_bus.dart';
 import 'package:weather/src/events/accordion_poll_events.dart';
 import 'package:weather/src/core/reputation.dart';
 import 'package:weather/src/core/user.dart';
+import 'package:weather/src/modules/chat/chat.dart';
 import 'utils/setup.dart';
 import 'utils/db_connection.dart';
 import 'utils/helpers.dart';

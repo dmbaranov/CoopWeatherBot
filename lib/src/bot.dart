@@ -1,14 +1,14 @@
 import 'package:weather/src/core/config.dart';
-import 'package:weather/src/core/user.dart';
 
 import 'package:weather/src/globals/bot_command.dart';
 import 'package:weather/src/globals/access_level.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/platform/platform.dart';
 
+import 'package:weather/src/modules/user/user.dart';
 import 'package:weather/src/modules/chat/chat.dart';
 import 'package:weather/src/modules/chat/chat_manager.dart';
-import 'package:weather/src/modules/user_manager.dart';
+import 'package:weather/src/modules/user/user_manager.dart';
 import 'package:weather/src/modules/weather_manager.dart';
 import 'package:weather/src/modules/panorama_manager.dart';
 import 'package:weather/src/modules/dadjokes_manager.dart';

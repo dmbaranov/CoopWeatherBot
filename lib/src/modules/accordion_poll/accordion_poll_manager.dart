@@ -1,8 +1,8 @@
-import 'package:weather/src/core/user.dart';
-import 'package:weather/src/modules/chat/chat.dart';
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/platform/platform.dart';
+import 'package:weather/src/modules/user/user.dart';
+import 'package:weather/src/modules/chat/chat.dart';
 import 'accordion_poll.dart';
 import '../utils.dart';
 

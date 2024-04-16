@@ -3,7 +3,7 @@ import 'package:weather/src/modules/accordion_poll/accordion_poll.dart';
 import 'package:weather/src/globals/accordion_poll.dart';
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/modules/chat/chat.dart';
-import 'package:weather/src/core/user.dart';
+import 'package:weather/src/modules/user/user.dart';
 import 'utils/setup.dart';
 
 void main() {

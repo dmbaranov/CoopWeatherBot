@@ -1,4 +1,4 @@
-import 'package:weather/src/core/user.dart';
+import 'package:weather/src/globals/bot_user.dart';
 
 class AccessEvent {
   final String chatId;

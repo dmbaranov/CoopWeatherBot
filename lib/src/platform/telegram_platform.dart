@@ -6,7 +6,6 @@ import 'package:collection/collection.dart';
 import 'package:teledart/model.dart' show TeleDartMessage, Message;
 import 'package:teledart/teledart.dart';
 import 'package:teledart/telegram.dart';
-import 'package:weather/src/core/user.dart';
 import 'package:weather/src/core/access.dart';
 
 import 'package:weather/src/globals/chat_platform.dart';
@@ -16,6 +15,7 @@ import 'package:weather/src/globals/accordion_poll.dart';
 import 'package:weather/src/injector/injection.dart';
 
 import 'package:weather/src/platform/platform.dart';
+import 'package:weather/src/modules/user/user.dart';
 import 'package:weather/src/modules/chat/chat.dart';
 
 import 'package:weather/src/utils/logger.dart';

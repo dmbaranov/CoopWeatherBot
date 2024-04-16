@@ -1,13 +1,12 @@
 import 'dart:async';
 
 import 'package:collection/collection.dart';
-import 'package:nyxx/nyxx.dart' hide Logger;
+import 'package:nyxx/nyxx.dart' hide Logger, User;
 import 'package:nyxx_commands/nyxx_commands.dart';
 import 'package:uuid/uuid.dart';
 import 'package:cron/cron.dart';
 
 import 'package:weather/src/modules/chat/chat.dart';
-import 'package:weather/src/core/user.dart' as weather;
 import 'package:weather/src/core/access.dart';
 
 import 'package:weather/src/globals/chat_platform.dart';
@@ -15,6 +14,7 @@ import 'package:weather/src/globals/bot_command.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/globals/access_level.dart';
 import 'package:weather/src/injector/injection.dart';
+import 'package:weather/src/modules/user/user.dart';
 
 import 'package:weather/src/platform/platform.dart';
 
@@ -29,7 +29,7 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
   final String token;
   final String adminId;
   final Chat chat;
-  final weather.User user;
+  final User user;
   final Access _access;
   final Logger _logger;
 

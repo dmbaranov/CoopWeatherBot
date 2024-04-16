@@ -1,5 +1,5 @@
 import 'package:injectable/injectable.dart';
-import 'package:weather/src/core/user.dart' show BotUser;
+import 'package:weather/src/globals/bot_user.dart';
 import 'repository.dart';
 
 @singleton

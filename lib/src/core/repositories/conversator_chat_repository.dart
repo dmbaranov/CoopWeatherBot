@@ -1,5 +1,5 @@
 import 'package:injectable/injectable.dart';
-import 'package:weather/src/core/conversator.dart' show ConversatorChatMessage;
+import 'package:weather/src/globals/conversator_chat_message.dart';
 import 'repository.dart';
 
 @singleton

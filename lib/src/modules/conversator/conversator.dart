@@ -3,6 +3,7 @@ import 'package:cron/cron.dart';
 import 'package:http/http.dart' as http;
 import 'package:weather/src/core/repositories/conversator_chat_repository.dart';
 import 'package:weather/src/core/repositories/conversator_user_repository.dart';
+import 'package:weather/src/globals/conversator_chat_message.dart';
 import 'package:weather/src/globals/module_exception.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/utils/logger.dart';
@@ -16,28 +17,6 @@ const int advancedDailyLimit = 10;
 
 class ConversatorException extends ModuleException {
   ConversatorException(super.cause);
-}
-
-class ConversatorChatMessage {
-  final String message;
-  final bool fromUser;
-
-  ConversatorChatMessage({required this.message, required this.fromUser});
-}
-
-class ConversatorUser {
-  final String id;
-  final int dailyRegularInvocations;
-  final int totalRegularInvocations;
-  final int dailyAdvancedInvocations;
-  final int totalAdvancedInvocations;
-
-  ConversatorUser(
-      {required this.id,
-      required this.dailyRegularInvocations,
-      required this.totalRegularInvocations,
-      required this.dailyAdvancedInvocations,
-      required this.totalAdvancedInvocations});
 }
 
 class Conversator {

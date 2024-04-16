@@ -1,8 +1,8 @@
-import 'package:weather/src/core/conversator.dart';
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/platform/platform.dart';
-import 'utils.dart';
+import 'package:weather/src/modules/conversator/conversator.dart';
+import '../utils.dart';
 
 class ConversatorManager {
   final Platform platform;

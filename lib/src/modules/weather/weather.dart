@@ -21,13 +21,6 @@ class ChatWeatherData {
   ChatWeatherData({required this.chatId, required this.weatherData});
 }
 
-class ChatNotificationHour {
-  final String chatId;
-  final int notificationHour;
-
-  ChatNotificationHour({required this.chatId, required this.notificationHour});
-}
-
 class Weather {
   final String openweatherKey;
   final WeatherRepository _weatherDb;

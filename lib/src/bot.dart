@@ -9,7 +9,7 @@ import 'package:weather/src/modules/user/user.dart';
 import 'package:weather/src/modules/chat/chat.dart';
 import 'package:weather/src/modules/chat/chat_manager.dart';
 import 'package:weather/src/modules/user/user_manager.dart';
-import 'package:weather/src/modules/weather_manager.dart';
+import 'package:weather/src/modules/weather/weather_manager.dart';
 import 'package:weather/src/modules/panorama/panorama_manager.dart';
 import 'package:weather/src/modules/dadjokes/dadjokes_manager.dart';
 import 'package:weather/src/modules/reputation/reputation_manager.dart';

@@ -1,5 +1,5 @@
 import 'package:injectable/injectable.dart';
-import 'package:weather/src/core/weather.dart' show ChatNotificationHour;
+import 'package:weather/src/globals/weather_chat_notification_hour.dart';
 import 'repository.dart';
 
 @singleton
@@ -20,7 +20,7 @@ class WeatherRepository extends Repository {
     return db.executeTransaction(queriesMap['set_notification_hour'], {'chatId': chatId, 'notificationHour': notificationHour});
   }
 
-  Future<List<ChatNotificationHour>> getNotificationHours() async {
+  Future<List<WeatherChatNotificationHour>> getNotificationHours() async {
     var hoursForChats = await db.executeQuery(queriesMap['get_notification_hours']);
 
     if (hoursForChats == null || hoursForChats.isEmpty) {
@@ -29,7 +29,7 @@ class WeatherRepository extends Repository {
 
     return hoursForChats
         .map((config) => config.toColumnMap())
-        .map((config) => ChatNotificationHour(chatId: config['chat_id'], notificationHour: config['notification_hour']))
+        .map((config) => WeatherChatNotificationHour(chatId: config['chat_id'], notificationHour: config['notification_hour']))
         .toList();
   }
 

@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'package:cron/cron.dart';
+import 'package:weather/src/core/event_bus.dart';
 import 'package:weather/src/core/repositories/reputation_repository.dart';
+import 'package:weather/src/events/accordion_poll_events.dart';
+import 'package:weather/src/globals/chat_reputation_data.dart';
+import 'package:weather/src/globals/single_reputation_data.dart';
 import 'package:weather/src/globals/module_exception.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/utils/logger.dart';
-import 'package:weather/src/events/accordion_poll_events.dart';
-import 'event_bus.dart';
 
 enum ReputationChangeOption { increase, decrease }
 
@@ -14,22 +16,6 @@ class ReputationException extends ModuleException {
 }
 
 const numberOfVoteOptions = 3;
-
-class SingleReputationData {
-  final String id;
-  final int reputation;
-  final int increaseOptionsLeft;
-  final int decreaseOptionsLeft;
-
-  SingleReputationData({required this.id, required this.reputation, required this.increaseOptionsLeft, required this.decreaseOptionsLeft});
-}
-
-class ChatReputationData {
-  final String name;
-  final int reputation;
-
-  ChatReputationData({required this.name, required this.reputation});
-}
 
 class Reputation {
   final EventBus _eventBus;

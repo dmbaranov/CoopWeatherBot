@@ -12,7 +12,7 @@ import 'package:weather/src/modules/user/user_manager.dart';
 import 'package:weather/src/modules/weather_manager.dart';
 import 'package:weather/src/modules/panorama/panorama_manager.dart';
 import 'package:weather/src/modules/dadjokes/dadjokes_manager.dart';
-import 'package:weather/src/modules/reputation_manager.dart';
+import 'package:weather/src/modules/reputation/reputation_manager.dart';
 import 'package:weather/src/modules/youtube_manager.dart';
 import 'package:weather/src/modules/conversator/conversator_manager.dart';
 import 'package:weather/src/modules/general/general_manager.dart';

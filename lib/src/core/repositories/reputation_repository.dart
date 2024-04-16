@@ -1,5 +1,6 @@
 import 'package:injectable/injectable.dart';
-import 'package:weather/src/core/reputation.dart' show SingleReputationData, ChatReputationData;
+import 'package:weather/src/globals/chat_reputation_data.dart';
+import 'package:weather/src/globals/single_reputation_data.dart';
 import 'repository.dart';
 
 @singleton

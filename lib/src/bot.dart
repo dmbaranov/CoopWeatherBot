@@ -15,7 +15,7 @@ import 'package:weather/src/modules/dadjokes/dadjokes_manager.dart';
 import 'package:weather/src/modules/reputation_manager.dart';
 import 'package:weather/src/modules/youtube_manager.dart';
 import 'package:weather/src/modules/conversator/conversator_manager.dart';
-import 'package:weather/src/modules/general_manager.dart';
+import 'package:weather/src/modules/general/general_manager.dart';
 import 'package:weather/src/modules/accordion_poll/accordion_poll_manager.dart';
 import 'package:weather/src/modules/command_statistics/command_statistics_manager.dart';
 import 'package:weather/src/modules/check_reminder/check_reminder_manager.dart';

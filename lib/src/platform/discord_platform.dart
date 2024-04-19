@@ -1,24 +1,20 @@
 import 'dart:async';
 
-import 'package:collection/collection.dart';
 import 'package:nyxx/nyxx.dart' hide Logger, User;
 import 'package:nyxx_commands/nyxx_commands.dart';
 import 'package:uuid/uuid.dart';
-import 'package:cron/cron.dart';
+
+import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/core/config.dart';
-
-import 'package:weather/src/modules/chat/chat.dart';
 import 'package:weather/src/core/access.dart';
-
+import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/bot_command.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/globals/access_level.dart';
-import 'package:weather/src/injector/injection.dart';
+import 'package:weather/src/modules/chat/chat.dart';
 import 'package:weather/src/modules/user/user.dart';
-
-import 'package:weather/src/platform/platform.dart';
-
+import 'package:weather/src/modules/discord_module/discord_module.dart';
 import 'package:weather/src/utils/logger.dart';
 
 const uuid = Uuid();
@@ -32,9 +28,9 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
   final Config _config;
   final Access _access;
   final Logger _logger;
+  late final DiscordModule _discordModule;
 
   final List<ChatCommand> _commands = [];
-  final Map<String, Map<String, bool>> _usersOnlineStatus = {};
 
   late NyxxGateway bot;
 
@@ -55,8 +51,7 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
     bot = await Nyxx.connectGateway(_config.token, GatewayIntents.all,
         options: GatewayClientOptions(plugins: [_setupDiscordCommands(), logging, cliIntegration, ignoreExceptions]));
 
-    _startHeroCheckJob();
-    _watchUsersStatusUpdate();
+    _discordModule = DiscordModule(bot: bot, platform: this, user: user, chat: chat)..initialize();
 
     _logger.i('Discord platform has been started!');
   }
@@ -155,7 +150,7 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
           event: transformPlatformMessageToGeneralMessageEvent(context),
           command: 'moveall',
           accessLevel: AccessLevel.moderator,
-          onSuccess: (_) => _moveAll(context, fromChannel, toChannel),
+          onSuccess: (_) => _discordModule.moveAll(context, fromChannel, toChannel),
           onFailure: sendNoAccessMessage);
     }));
   }
@@ -223,65 +218,5 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
           onSuccess: command.onSuccess,
           onFailure: sendNoAccessMessage);
     }));
-  }
-
-  // TODO: move to the module e.g. discord_module to avoid User dependency here. Move all platform specific commands to this module. Do the same for Telegram
-  void _startHeroCheckJob() {
-    Cron().schedule(Schedule.parse('0 4 * * 6,0'), () async {
-      var authorizedChats = await chat.getAllChatIdsForPlatform(chatPlatform);
-
-      await Future.forEach(authorizedChats, (chatId) async {
-        var chatOnlineUsers = _usersOnlineStatus[chatId];
-        if (chatOnlineUsers == null) {
-          _logger.w('Attempt to get online users for empty chat $chatId');
-
-          return null;
-        }
-
-        var listOfOnlineUsers = chatOnlineUsers.entries.where((entry) => entry.value == true).map((entry) => entry.key).toList();
-        if (listOfOnlineUsers.isEmpty) {
-          return sendMessage(chatId, translation: 'hero.users_at_five.no_users');
-        }
-
-        var chatUsers = await user.getUsersForChat(chatId);
-        var heroesMessage = chat.getText(chatId, 'hero.users_at_five.list');
-
-        listOfOnlineUsers.forEach((userId) {
-          var onlineUser = chatUsers.firstWhereOrNull((user) => user.id == userId);
-
-          if (onlineUser != null) {
-            heroesMessage += onlineUser.name;
-            heroesMessage += '\n';
-          }
-        });
-
-        await sendMessage(chatId, message: heroesMessage);
-      });
-    });
-  }
-
-  void _watchUsersStatusUpdate() {
-    bot.onPresenceUpdate.listen((event) {
-      var userId = event.user?.id.toString();
-      var guildId = event.guildId?.toString();
-
-      if (userId == null || guildId == null) {
-        return;
-      }
-
-      if (event.status == UserStatus.online) {
-        (_usersOnlineStatus[guildId] ??= {})[userId] = true;
-      } else {
-        (_usersOnlineStatus[guildId] ??= {})[userId] = false;
-      }
-    });
-  }
-
-  void _moveAll(ChatContext context, Channel fromChannel, Channel toChannel) async {
-    context.guild?.voiceStates.entries.toList().forEach((voiceState) {
-      if (voiceState.value.channelId == fromChannel.id) {
-        context.guild?.members.update(voiceState.value.userId, MemberUpdateBuilder(voiceChannelId: toChannel.id));
-      }
-    });
   }
 }

@@ -15,7 +15,7 @@ bool messageEventParametersCheck(Platform platform, MessageEvent event, [int num
 }
 
 bool userIdsCheck(Platform platform, MessageEvent event, [int numberOfIds = 1]) {
-  if (event.parameters.whereNot((parameter) => parameter.isEmpty).length < numberOfIds) {
+  if (event.otherUserIds.whereNot((parameter) => parameter.isEmpty).length < numberOfIds) {
     platform.sendMessage(event.chatId, translation: 'general.something_went_wrong');
 
     return false;

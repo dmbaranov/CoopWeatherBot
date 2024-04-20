@@ -22,7 +22,7 @@ const emptyCharacter = 'ㅤ';
 
 class DiscordPlatform<T extends ChatContext> implements Platform<T> {
   @override
-  late ChatPlatform chatPlatform;
+  late final ChatPlatform chatPlatform;
   final Chat chat;
   final User user;
   final Config _config;

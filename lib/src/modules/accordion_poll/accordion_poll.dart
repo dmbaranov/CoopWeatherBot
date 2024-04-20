@@ -1,7 +1,7 @@
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/core/event_bus.dart';
 import 'package:weather/src/events/accordion_poll_events.dart';
-import 'package:weather/src/globals/accordion_poll.dart';
+import 'package:weather/src/globals/accordion_vote_option.dart';
 import 'package:weather/src/globals/bot_user.dart';
 import 'package:weather/src/modules/chat/chat.dart';
 

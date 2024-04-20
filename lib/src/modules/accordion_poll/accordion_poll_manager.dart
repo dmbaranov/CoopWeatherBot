@@ -39,6 +39,8 @@ class AccordionPollManager {
     pollStream.stream.listen((pollResults) => _accordionPoll.updatePollResults(pollResults));
 
     var pollResult = await _accordionPoll.endVoteAndGetResults();
+    
+    pollStream.close();
 
     await platform.sendMessage(chatId, translation: pollResult);
   }

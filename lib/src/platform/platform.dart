@@ -3,16 +3,16 @@ import 'dart:async';
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/globals/bot_command.dart';
-import 'package:weather/src/globals/accordion_poll.dart';
+import 'package:weather/src/globals/accordion_vote_option.dart';
 
-import 'package:weather/src/platform/telegram_platform.dart';
+import 'package:weather/src/platform/telegram/telegram_platform.dart';
 import 'package:weather/src/platform/discord_platform.dart';
 
 import 'package:weather/src/modules/user/user.dart';
 import 'package:weather/src/modules/chat/chat.dart';
 
 abstract class Platform<T> {
-  late ChatPlatform chatPlatform;
+  late final ChatPlatform chatPlatform;
 
   factory Platform({required Chat chat, required User user, required ChatPlatform chatPlatform}) {
     switch (chatPlatform) {

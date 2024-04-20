@@ -3,8 +3,8 @@ import 'package:cron/cron.dart';
 import 'package:nyxx/nyxx.dart' hide Logger, User;
 import 'package:nyxx_commands/nyxx_commands.dart';
 import 'package:weather/src/injector/injection.dart';
-import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/platform/platform.dart';
+import 'package:weather/src/globals/chat_platform.dart';
 
 import 'package:weather/src/modules/user/user.dart';
 import 'package:weather/src/modules/chat/chat.dart';

@@ -1,29 +1,26 @@
 import 'dart:async';
-import 'dart:math';
 import 'dart:io' as io;
 
 import 'package:collection/collection.dart';
 import 'package:teledart/model.dart' show TeleDartMessage, Message;
 import 'package:teledart/teledart.dart';
 import 'package:teledart/telegram.dart';
+import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/core/access.dart';
 import 'package:weather/src/core/config.dart';
-
+import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/globals/bot_command.dart';
-import 'package:weather/src/globals/accordion_poll.dart';
-import 'package:weather/src/injector/injection.dart';
-
-import 'package:weather/src/platform/platform.dart';
+import 'package:weather/src/globals/accordion_vote_option.dart';
 import 'package:weather/src/modules/user/user.dart';
 import 'package:weather/src/modules/chat/chat.dart';
-
 import 'package:weather/src/utils/logger.dart';
+import 'telegram_module.dart';
 
 class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   @override
-  late ChatPlatform chatPlatform;
+  late final ChatPlatform chatPlatform;
   final Chat chat;
   final User user;
   final Config _config;
@@ -32,8 +29,9 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
 
   // final Debouncer<TeleDartInlineQuery?> _debouncer = Debouncer(Duration(seconds: 1), initialValue: null);
 
-  late TeleDart _bot;
-  late Telegram _telegram;
+  late final TeleDart _bot;
+  late final Telegram _telegram;
+  late final TelegramModule _telegramModule;
 
   TelegramPlatform({required this.chatPlatform, required this.chat, required this.user})
       : _config = getIt<Config>(),
@@ -51,6 +49,8 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
     _setupPlatformSpecificCommands();
 
     _bot.start();
+
+    _telegramModule = TelegramModule(bot: _bot, telegram: _telegram, platform: this, user: user, chat: chat)..initialize();
 
     _logger.i('Telegram platform has been started!');
   }
@@ -152,7 +152,7 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
     var bullyTagUserRegexpRaw = await io.File('assets/misc/bully_tag_user.txt').readAsString();
     var bullyTagUserRegexp = bullyTagUserRegexpRaw.replaceAll('\n', '');
 
-    _bot.onMessage(keyword: RegExp(bullyTagUserRegexp, caseSensitive: false)).listen((event) => _bullyTagUser(event));
+    _bot.onMessage(keyword: RegExp(bullyTagUserRegexp, caseSensitive: false)).listen((event) => _telegramModule.bullyTagUser(event));
     // _bot.onInlineQuery().listen((query) {
     //   _debouncer.value = query;
     // });
@@ -163,23 +163,10 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
 
   @override
   Future<StreamController<Map<AccordionVoteOption, int>>> startAccordionPoll(String chatId, List<String> pollOptions, int pollTime) async {
-    var stream = StreamController<Map<AccordionVoteOption, int>>();
-
-    await _telegram.sendPoll(chatId, chat.getText(chatId, 'accordion.other.title'), pollOptions,
-        explanation: chat.getText(chatId, 'accordion.other.explanation'),
-        type: 'quiz',
-        correctOptionId: Random().nextInt(pollOptions.length),
-        openPeriod: pollTime);
-
-    stream.addStream(_bot.onPoll().map((event) => ({
-          AccordionVoteOption.yes: event.options[0].voterCount,
-          AccordionVoteOption.no: event.options[1].voterCount,
-          AccordionVoteOption.maybe: event.options[2].voterCount
-        })));
-
-    return stream;
+    return _telegramModule.startAccordionPoll(chatId, pollOptions, pollTime);
   }
 
+  // TODO: make required property for Platform?
   List<String> _getUserInfo(TeleDartMessage message) {
     var fullUsername = '';
     var repliedUser = message.replyToMessage?.from;
@@ -209,19 +196,6 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
     }
 
     return transformPlatformMessageToGeneralMessageEvent;
-  }
-
-  void _bullyTagUser(TeleDartMessage message) async {
-    // just an original feature of this bot that will stay here forever
-    var denisId = '354903232';
-    var messageAuthorId = message.from?.id.toString();
-    var chatId = message.chat.id.toString();
-
-    if (messageAuthorId == _config.adminId) {
-      await sendMessage(chatId, message: '@daimonil');
-    } else if (messageAuthorId == denisId) {
-      await sendMessage(chatId, message: '@dmbaranov_io');
-    }
   }
 
 // TODO: temporarily disabled, figure out the way how to provide YouTube to the platform

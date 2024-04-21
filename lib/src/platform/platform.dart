@@ -6,7 +6,7 @@ import 'package:weather/src/globals/bot_command.dart';
 import 'package:weather/src/globals/accordion_vote_option.dart';
 
 import 'package:weather/src/platform/telegram/telegram_platform.dart';
-import 'package:weather/src/platform/discord_platform.dart';
+import 'package:weather/src/platform/discord/discord_platform.dart';
 
 import 'package:weather/src/modules/user/user.dart';
 import 'package:weather/src/modules/chat/chat.dart';

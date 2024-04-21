@@ -14,8 +14,8 @@ import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/globals/access_level.dart';
 import 'package:weather/src/modules/chat/chat.dart';
 import 'package:weather/src/modules/user/user.dart';
-import 'package:weather/src/modules/discord_module/discord_module.dart';
 import 'package:weather/src/utils/logger.dart';
+import 'discord_module.dart';
 
 const uuid = Uuid();
 const emptyCharacter = 'ㅤ';

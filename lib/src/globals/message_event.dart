@@ -1,6 +1,7 @@
 import 'chat_platform.dart';
 
 class MessageEvent<T> {
+  // TODO: once accordion poll is not coupled with Telegram platform, remove this field
   final ChatPlatform platform;
   final String chatId;
   final String userId;

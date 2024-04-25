@@ -6,7 +6,6 @@ import 'package:weather/src/globals/bot_command.dart';
 import 'package:weather/src/globals/access_level.dart';
 
 import 'package:weather/src/modules/modules_mediator.dart';
-import 'package:weather/src/modules/user/user.dart';
 import 'package:weather/src/modules/chat/chat_manager.dart';
 import 'package:weather/src/modules/user/user_manager.dart';
 import 'package:weather/src/modules/weather/weather_manager.dart';
@@ -22,10 +21,7 @@ import 'package:weather/src/modules/check_reminder/check_reminder_manager.dart';
 
 class Bot {
   final Config _config;
-
   late Platform _platform;
-
-  late User _user;
 
   late UserManager _userManager;
   late WeatherManager _weatherManager;
@@ -44,9 +40,8 @@ class Bot {
 
   Future<void> startBot() async {
     var modulesMediator = ModulesMediator();
-    _user = User()..initialize();
 
-    _platform = Platform(chatPlatform: _config.chatPlatform, user: _user, modulesMediator: modulesMediator);
+    _platform = Platform(chatPlatform: _config.chatPlatform, modulesMediator: modulesMediator);
     await _platform.initialize();
 
     _dadJokesManager = DadJokesManager(platform: _platform, modulesMediator: modulesMediator)..initialize();
@@ -55,12 +50,12 @@ class Bot {
     _generalManager = GeneralManager(platform: _platform, modulesMediator: modulesMediator)..initialize();
     _chatManager = ChatManager(platform: _platform, modulesMediator: modulesMediator)..initialize();
     _panoramaManager = PanoramaManager(platform: _platform, modulesMediator: modulesMediator)..initialize();
-    _userManager = UserManager(platform: _platform, user: _user, modulesMediator: modulesMediator)..initialize();
+    _userManager = UserManager(platform: _platform, modulesMediator: modulesMediator)..initialize();
     _reputationManager = ReputationManager(platform: _platform, modulesMediator: modulesMediator)..initialize();
     _weatherManager = WeatherManager(platform: _platform, modulesMediator: modulesMediator)..initialize();
-    _accordionPollManager = AccordionPollManager(platform: _platform, modulesMediator: modulesMediator, user: _user)..initialize();
+    _accordionPollManager = AccordionPollManager(platform: _platform, modulesMediator: modulesMediator)..initialize();
     _commandStatisticsManager = CommandStatisticsManager(platform: _platform, modulesMediator: modulesMediator)..initialize();
-    _checkReminderManager = CheckReminderManager(platform: _platform, user: _user, modulesMediator: modulesMediator)..initialize();
+    _checkReminderManager = CheckReminderManager(platform: _platform, modulesMediator: modulesMediator)..initialize();
 
     _setupCommands();
 

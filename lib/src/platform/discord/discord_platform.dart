@@ -14,7 +14,6 @@ import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/bot_command.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/globals/access_level.dart';
-import 'package:weather/src/modules/user/user.dart';
 import 'package:weather/src/modules/modules_mediator.dart';
 import 'package:weather/src/utils/logger.dart';
 import 'discord_module.dart';
@@ -26,7 +25,6 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
   @override
   late final ChatPlatform chatPlatform;
   final ModulesMediator modulesMediator;
-  final User user;
   final Config _config;
   final Access _access;
   final Logger _logger;
@@ -37,7 +35,7 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
 
   late NyxxGateway bot;
 
-  DiscordPlatform({required this.chatPlatform, required this.modulesMediator, required this.user})
+  DiscordPlatform({required this.chatPlatform, required this.modulesMediator})
       : _config = getIt<Config>(),
         _access = getIt<Access>(),
         _logger = getIt<Logger>(),
@@ -55,7 +53,7 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
     bot = await Nyxx.connectGateway(_config.token, GatewayIntents.all,
         options: GatewayClientOptions(plugins: [_setupDiscordCommands(), logging, cliIntegration, ignoreExceptions]));
 
-    _discordModule = DiscordModule(bot: bot, platform: this, user: user, modulesMediator: modulesMediator)..initialize();
+    _discordModule = DiscordModule(bot: bot, platform: this, modulesMediator: modulesMediator)..initialize();
 
     _logger.i('Discord platform has been started!');
   }

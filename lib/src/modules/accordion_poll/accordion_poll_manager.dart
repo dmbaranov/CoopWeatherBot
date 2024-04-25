@@ -1,7 +1,6 @@
 import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/message_event.dart';
-import 'package:weather/src/modules/user/user.dart';
 import 'accordion_poll.dart';
 import '../modules_mediator.dart';
 import '../utils.dart';
@@ -9,10 +8,9 @@ import '../utils.dart';
 class AccordionPollManager {
   final Platform platform;
   final ModulesMediator modulesMediator;
-  final User user;
   final AccordionPoll _accordionPoll;
 
-  AccordionPollManager({required this.platform, required this.user, required this.modulesMediator}) : _accordionPoll = AccordionPoll();
+  AccordionPollManager({required this.platform, required this.modulesMediator}) : _accordionPoll = AccordionPoll();
 
   void initialize() {
     modulesMediator.registerModule(_accordionPoll);
@@ -28,8 +26,8 @@ class AccordionPollManager {
     }
 
     var chatId = event.chatId;
-    var fromUser = await user.getSingleUserForChat(chatId, event.userId);
-    var toUser = await user.getSingleUserForChat(chatId, event.otherUserIds[0]);
+    var fromUser = await modulesMediator.user.getSingleUserForChat(chatId, event.userId);
+    var toUser = await modulesMediator.user.getSingleUserForChat(chatId, event.otherUserIds[0]);
     var pollStartError = _accordionPoll.startPoll(chatId: chatId, fromUser: fromUser, toUser: toUser, isBot: event.isBot);
 
     if (pollStartError != null) {

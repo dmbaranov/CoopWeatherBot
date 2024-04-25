@@ -2,7 +2,6 @@ import 'package:weather/src/core/swearwords.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/globals/message_event.dart';
-import 'package:weather/src/modules/user/user.dart';
 import 'package:weather/src/utils/logger.dart';
 import 'check_reminder.dart';
 import '../modules_mediator.dart';
@@ -11,12 +10,11 @@ import '../utils.dart';
 class CheckReminderManager {
   final Platform platform;
   final ModulesMediator modulesMediator;
-  final User user;
   final Logger _logger;
   final Swearwords _sw;
   final CheckReminder _checkReminder;
 
-  CheckReminderManager({required this.platform, required this.user, required this.modulesMediator})
+  CheckReminderManager({required this.platform, required this.modulesMediator})
       : _logger = getIt<Logger>(),
         _sw = getIt<Swearwords>(),
         _checkReminder = CheckReminder();
@@ -44,7 +42,7 @@ class CheckReminderManager {
 
   void _subscribeToCheckUpdates() {
     _checkReminder.checkReminderStream.listen((checkReminder) async {
-      var userData = await user.getSingleUserForChat(checkReminder.chatId, checkReminder.userId);
+      var userData = await modulesMediator.user.getSingleUserForChat(checkReminder.chatId, checkReminder.userId);
 
       if (userData != null) {
         var checkReminderMessage =

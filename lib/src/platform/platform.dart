@@ -8,18 +8,17 @@ import 'package:weather/src/globals/accordion_vote_option.dart';
 import 'package:weather/src/platform/telegram/telegram_platform.dart';
 import 'package:weather/src/platform/discord/discord_platform.dart';
 
-import 'package:weather/src/modules/user/user.dart';
 import 'package:weather/src/modules/modules_mediator.dart';
 
 abstract class Platform<T> {
   late final ChatPlatform chatPlatform;
 
-  factory Platform({required User user, required ChatPlatform chatPlatform, required ModulesMediator modulesMediator}) {
+  factory Platform({required ChatPlatform chatPlatform, required ModulesMediator modulesMediator}) {
     switch (chatPlatform) {
       case ChatPlatform.telegram:
-        return TelegramPlatform(chatPlatform: ChatPlatform.telegram, user: user);
+        return TelegramPlatform(chatPlatform: ChatPlatform.telegram);
       case ChatPlatform.discord:
-        return DiscordPlatform(chatPlatform: ChatPlatform.discord, user: user, modulesMediator: modulesMediator);
+        return DiscordPlatform(chatPlatform: ChatPlatform.discord, modulesMediator: modulesMediator);
       default:
         throw Exception('Platform $chatPlatform is not supported');
     }

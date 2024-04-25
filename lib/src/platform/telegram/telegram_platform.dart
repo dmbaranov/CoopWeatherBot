@@ -14,14 +14,12 @@ import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/globals/bot_command.dart';
 import 'package:weather/src/globals/accordion_vote_option.dart';
-import 'package:weather/src/modules/user/user.dart';
 import 'package:weather/src/utils/logger.dart';
 import 'telegram_module.dart';
 
 class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   @override
   late final ChatPlatform chatPlatform;
-  final User user;
   final Config _config;
   final Access _access;
   final Logger _logger;
@@ -33,7 +31,7 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   late final Telegram _telegram;
   late final TelegramModule _telegramModule;
 
-  TelegramPlatform({required this.chatPlatform, required this.user})
+  TelegramPlatform({required this.chatPlatform})
       : _config = getIt<Config>(),
         _access = getIt<Access>(),
         _logger = getIt<Logger>(),
@@ -51,7 +49,7 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
 
     _bot.start();
 
-    _telegramModule = TelegramModule(bot: _bot, telegram: _telegram, platform: this, user: user)..initialize();
+    _telegramModule = TelegramModule(bot: _bot, telegram: _telegram, platform: this)..initialize();
 
     _logger.i('Telegram platform has been started!');
   }

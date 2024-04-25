@@ -6,20 +6,18 @@ import 'package:weather/src/core/swearwords.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/globals/chat_platform.dart';
-import 'package:weather/src/modules/user/user.dart';
 import 'package:weather/src/modules/modules_mediator.dart';
 import 'package:weather/src/utils/logger.dart';
 
 class DiscordModule {
   final NyxxGateway bot;
   final Platform platform;
-  final User user;
   final ModulesMediator modulesMediator;
   final Logger _logger;
   final Swearwords _sw;
   final Map<String, Map<String, bool>> _usersOnlineStatus = {};
 
-  DiscordModule({required this.bot, required this.platform, required this.user, required this.modulesMediator})
+  DiscordModule({required this.bot, required this.platform, required this.modulesMediator})
       : _logger = getIt<Logger>(),
         _sw = getIt<Swearwords>();
 
@@ -70,7 +68,7 @@ class DiscordModule {
           return platform.sendMessage(chatId, translation: 'hero.users_at_five.no_users');
         }
 
-        var chatUsers = await user.getUsersForChat(chatId);
+        var chatUsers = await modulesMediator.user.getUsersForChat(chatId);
         var heroesMessage = _sw.getText(chatId, 'hero.users_at_five.list');
 
         listOfOnlineUsers.forEach((userId) {

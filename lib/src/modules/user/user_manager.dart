@@ -14,11 +14,13 @@ class UserManager {
   final Swearwords _sw;
   final Logger _logger;
 
-  UserManager({required this.platform, required this.modulesMediator, required this.user})
-      : _logger = getIt<Logger>(),
+  UserManager({required this.platform, required this.modulesMediator})
+      : user = User(),
+        _logger = getIt<Logger>(),
         _sw = getIt<Swearwords>();
 
   void initialize() {
+    user.initialize();
     _subscribeToUserUpdates();
     modulesMediator.registerModule(user);
   }

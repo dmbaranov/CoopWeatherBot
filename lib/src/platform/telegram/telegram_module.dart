@@ -9,17 +9,15 @@ import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/core/config.dart';
 import 'package:weather/src/core/swearwords.dart';
 import 'package:weather/src/platform/platform.dart';
-import 'package:weather/src/modules/user/user.dart';
 
 class TelegramModule {
   final TeleDart bot;
   final Telegram telegram;
   final Platform platform;
-  final User user;
   final Config _config;
   final Swearwords _sw;
 
-  TelegramModule({required this.bot, required this.telegram, required this.platform, required this.user})
+  TelegramModule({required this.bot, required this.telegram, required this.platform})
       : _config = getIt<Config>(),
         _sw = getIt<Swearwords>();
 

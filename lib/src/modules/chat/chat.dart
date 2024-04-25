@@ -35,6 +35,11 @@ class Chat {
 
     var updateResult = await _chatDb.setChatSwearwordsConfig(chatId, config);
 
-    return updateResult == 1;
+    if (updateResult != 1) {
+      return false;
+    }
+
+    _swearwords.setChatConfig(chatId, config);
+    return true;
   }
 }

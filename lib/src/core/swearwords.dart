@@ -12,7 +12,8 @@ const defaultSwearwords = 'basic';
 @singleton
 class Swearwords {
   final Logger _logger;
-  final Map<String, Map<String, String>> _swearwordsTypeToSwearwords = {};
+  final Map<String, Map<String, dynamic>> _swearwordsTypeToSwearwords = {};
+  final Map<String, Map<String, dynamic>> _chatIdsToSwearwords = {};
 
   Swearwords() : _logger = getIt<Logger>();
 
@@ -24,15 +25,20 @@ class Swearwords {
       try {
         var file = File('$configsBasePath/swearwords.$config.json').readAsStringSync();
 
-        _swearwordsTypeToSwearwords[config] = Map.castFrom(jsonDecode(file));
+        _swearwordsTypeToSwearwords[config] = json.decode(file);
       } catch (e) {
         _logger.e('Cannot setup $config swearwords config', e);
       }
     });
   }
 
-  String getText(String swearwordsType, String path, [Map<String, String>? replacements]) {
-    Map<String, String> swearwords = _swearwordsTypeToSwearwords[swearwordsType] ?? _swearwordsTypeToSwearwords[defaultSwearwords]!;
+  String getText(String chatId, String path, [Map<String, String>? replacements]) {
+    var swearwords = _chatIdsToSwearwords[chatId];
+
+    if (swearwords == null) {
+      return path;
+    }
+
     var text = _getNestedProperty(swearwords, path.split('.')) ?? path;
 
     if (replacements == null) {
@@ -48,6 +54,10 @@ class Swearwords {
 
   Future<bool> canSetSwearwordsConfig(String config) async {
     return File('$configsBasePath/swearwords.$config.json').exists();
+  }
+
+  void setChatConfig(String chatId, String config) {
+    _chatIdsToSwearwords[chatId] = _swearwordsTypeToSwearwords[config]!;
   }
 
   String? _getNestedProperty(Map<String, dynamic> object, List<String> path) {

@@ -18,6 +18,7 @@ class ChatManager {
         _sw = getIt<Swearwords>();
 
   void initialize() {
+    _initializeSwearwords();
     modulesMediator.registerModule(_chat);
   }
 
@@ -58,5 +59,17 @@ class ChatManager {
     }
 
     return 'unknown';
+  }
+
+  void _initializeSwearwords() async {
+    var platformChats = await _chat.getAllChatIdsForPlatform(platform.chatPlatform);
+
+    await Future.forEach(platformChats, (chatId) async {
+      var chat = await _chat.getSingleChat(chatId: chatId);
+
+      if (chat != null) {
+        _sw.setChatConfig(chatId, chat.swearwordsConfig);
+      }
+    });
   }
 }

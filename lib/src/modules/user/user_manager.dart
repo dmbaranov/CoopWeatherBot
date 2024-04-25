@@ -2,8 +2,8 @@ import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/core/swearwords.dart';
 import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/globals/message_event.dart';
-import 'package:weather/src/modules/user/user.dart';
 import 'package:weather/src/utils/logger.dart';
+import 'user.dart';
 import '../modules_mediator.dart';
 import '../utils.dart';
 

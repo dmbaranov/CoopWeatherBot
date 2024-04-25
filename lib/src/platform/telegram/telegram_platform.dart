@@ -5,6 +5,7 @@ import 'package:collection/collection.dart';
 import 'package:teledart/model.dart' show TeleDartMessage, Message;
 import 'package:teledart/teledart.dart';
 import 'package:teledart/telegram.dart';
+import 'package:weather/src/core/swearwords.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/core/access.dart';
 import 'package:weather/src/core/config.dart';
@@ -14,18 +15,17 @@ import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/globals/bot_command.dart';
 import 'package:weather/src/globals/accordion_vote_option.dart';
 import 'package:weather/src/modules/user/user.dart';
-import 'package:weather/src/modules/chat/chat.dart';
 import 'package:weather/src/utils/logger.dart';
 import 'telegram_module.dart';
 
 class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   @override
   late final ChatPlatform chatPlatform;
-  final Chat chat;
   final User user;
   final Config _config;
   final Access _access;
   final Logger _logger;
+  final Swearwords _sw;
 
   // final Debouncer<TeleDartInlineQuery?> _debouncer = Debouncer(Duration(seconds: 1), initialValue: null);
 
@@ -33,10 +33,11 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   late final Telegram _telegram;
   late final TelegramModule _telegramModule;
 
-  TelegramPlatform({required this.chatPlatform, required this.chat, required this.user})
+  TelegramPlatform({required this.chatPlatform, required this.user})
       : _config = getIt<Config>(),
         _access = getIt<Access>(),
-        _logger = getIt<Logger>();
+        _logger = getIt<Logger>(),
+        _sw = getIt<Swearwords>();
 
   @override
   Future<void> initialize() async {
@@ -50,7 +51,7 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
 
     _bot.start();
 
-    _telegramModule = TelegramModule(bot: _bot, telegram: _telegram, platform: this, user: user, chat: chat)..initialize();
+    _telegramModule = TelegramModule(bot: _bot, telegram: _telegram, platform: this, user: user)..initialize();
 
     _logger.i('Telegram platform has been started!');
   }
@@ -118,10 +119,10 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
     if (message != null) {
       return _telegram.sendMessage(chatId, message);
     } else if (translation != null) {
-      return _telegram.sendMessage(chatId, chat.getText(chatId, translation));
+      return _telegram.sendMessage(chatId, _sw.getText(chatId, translation));
     }
 
-    return _telegram.sendMessage(chatId, chat.getText(chatId, 'something_went_wrong'));
+    return _telegram.sendMessage(chatId, _sw.getText(chatId, 'something_went_wrong'));
   }
 
   @override

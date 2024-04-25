@@ -1,20 +1,22 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:weather/src/core/config.dart';
 import 'package:weather/src/injector/injection.dart';
-import 'package:weather/src/modules/chat/chat.dart';
+import 'package:weather/src/core/config.dart';
+import 'package:weather/src/core/swearwords.dart';
 
 const _githubApiBase = 'https://api.github.com';
 
 class General {
-  final Chat chat;
   final Config _config;
+  final Swearwords _sw;
   final String _baseGithubApiUrl = _githubApiBase;
 
-  General({required this.chat}) : _config = getIt<Config>();
+  General()
+      : _config = getIt<Config>(),
+        _sw = getIt<Swearwords>();
 
   String healthCheck(String chatId) {
-    return chat.getText(chatId, 'general.bot_is_alive');
+    return _sw.getText(chatId, 'general.bot_is_alive');
   }
 
   Future<String> getLastCommitMessage() async {

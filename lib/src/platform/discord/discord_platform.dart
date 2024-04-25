@@ -3,17 +3,19 @@ import 'dart:async';
 import 'package:nyxx/nyxx.dart' hide Logger, User;
 import 'package:nyxx_commands/nyxx_commands.dart';
 import 'package:uuid/uuid.dart';
+import 'package:weather/src/core/swearwords.dart';
 
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/core/config.dart';
 import 'package:weather/src/core/access.dart';
+
 import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/bot_command.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/globals/access_level.dart';
-import 'package:weather/src/modules/chat/chat.dart';
 import 'package:weather/src/modules/user/user.dart';
+import 'package:weather/src/modules/modules_mediator.dart';
 import 'package:weather/src/utils/logger.dart';
 import 'discord_module.dart';
 
@@ -23,21 +25,23 @@ const emptyCharacter = 'ㅤ';
 class DiscordPlatform<T extends ChatContext> implements Platform<T> {
   @override
   late final ChatPlatform chatPlatform;
-  final Chat chat;
+  final ModulesMediator modulesMediator;
   final User user;
   final Config _config;
   final Access _access;
   final Logger _logger;
+  final Swearwords _sw;
   late final DiscordModule _discordModule;
 
   final List<ChatCommand> _commands = [];
 
   late NyxxGateway bot;
 
-  DiscordPlatform({required this.chatPlatform, required this.chat, required this.user})
+  DiscordPlatform({required this.chatPlatform, required this.modulesMediator, required this.user})
       : _config = getIt<Config>(),
         _access = getIt<Access>(),
-        _logger = getIt<Logger>();
+        _logger = getIt<Logger>(),
+        _sw = getIt<Swearwords>();
 
   @override
   Future<void> initialize() async {
@@ -51,7 +55,7 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
     bot = await Nyxx.connectGateway(_config.token, GatewayIntents.all,
         options: GatewayClientOptions(plugins: [_setupDiscordCommands(), logging, cliIntegration, ignoreExceptions]));
 
-    _discordModule = DiscordModule(bot: bot, platform: this, user: user, chat: chat)..initialize();
+    _discordModule = DiscordModule(bot: bot, platform: this, user: user, modulesMediator: modulesMediator)..initialize();
 
     _logger.i('Discord platform has been started!');
   }
@@ -65,10 +69,10 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
     if (message != null) {
       return channel.sendMessage(MessageBuilder(content: message));
     } else if (translation != null) {
-      return channel.sendMessage(MessageBuilder(content: chat.getText(chatId, translation)));
+      return channel.sendMessage(MessageBuilder(content: _sw.getText(chatId, translation)));
     }
 
-    return channel.sendMessage(MessageBuilder(content: chat.getText(chatId, 'something_went_wrong')));
+    return channel.sendMessage(MessageBuilder(content: _sw.getText(chatId, 'something_went_wrong')));
   }
 
   @override

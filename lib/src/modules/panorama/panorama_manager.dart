@@ -2,24 +2,25 @@ import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/message_event.dart';
-import 'package:weather/src/modules/chat/chat.dart';
 import 'package:weather/src/utils/logger.dart';
 import 'panorama.dart';
+import '../modules_mediator.dart';
 import '../utils.dart';
 
 class PanoramaManager {
   final Platform platform;
-  final Chat chat;
+  final ModulesMediator modulesMediator;
   final Logger _logger;
   final PanoramaNews _panoramaNews;
 
-  PanoramaManager({required this.platform, required this.chat})
+  PanoramaManager({required this.platform, required this.modulesMediator})
       : _logger = getIt<Logger>(),
         _panoramaNews = PanoramaNews();
 
   void initialize() {
     _panoramaNews.initialize();
     _subscribeToPanoramaNews();
+    modulesMediator.registerModule(_panoramaNews);
   }
 
   void sendNewsToChat(MessageEvent event) async {
@@ -39,7 +40,7 @@ class PanoramaManager {
     _panoramaNews.panoramaStream.listen((event) async {
       _logger.i('Handling Panorama stream data: $event');
 
-      var allChats = await chat.getAllChatIdsForPlatform(ChatPlatform.telegram);
+      var allChats = await modulesMediator.chat.getAllChatIdsForPlatform(ChatPlatform.telegram);
 
       allChats.forEach((chatId) {
         var fakeEvent = MessageEvent(

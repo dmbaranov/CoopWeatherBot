@@ -1,26 +1,28 @@
+import 'package:weather/src/core/swearwords.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/core/event_bus.dart';
 import 'package:weather/src/events/accordion_poll_events.dart';
 import 'package:weather/src/globals/accordion_vote_option.dart';
 import 'package:weather/src/globals/bot_user.dart';
-import 'package:weather/src/modules/chat/chat.dart';
 
 class AccordionPoll {
-  final Chat chat;
   final int pollTime;
   final EventBus _eventBus;
+  final Swearwords _sw;
   late BotUser _fromUser;
   late BotUser _toUser;
   late String _chatId;
   bool _isVoteActive = false;
   Map<AccordionVoteOption, int> _voteResult = {};
 
-  AccordionPoll({required this.chat, this.pollTime = 180}) : _eventBus = getIt<EventBus>();
+  AccordionPoll({this.pollTime = 180})
+      : _eventBus = getIt<EventBus>(),
+        _sw = getIt<Swearwords>();
 
   get pollOptions => [
-        chat.getText(_chatId, 'accordion.options.yes'),
-        chat.getText(_chatId, 'accordion.options.no'),
-        chat.getText(_chatId, 'accordion.options.maybe')
+        _sw.getText(_chatId, 'accordion.options.yes'),
+        _sw.getText(_chatId, 'accordion.options.no'),
+        _sw.getText(_chatId, 'accordion.options.maybe')
       ];
 
   String? startPoll({

@@ -5,8 +5,8 @@ import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/globals/bot_command.dart';
 import 'package:weather/src/globals/access_level.dart';
 
+import 'package:weather/src/modules/modules_mediator.dart';
 import 'package:weather/src/modules/user/user.dart';
-import 'package:weather/src/modules/chat/chat.dart';
 import 'package:weather/src/modules/chat/chat_manager.dart';
 import 'package:weather/src/modules/user/user_manager.dart';
 import 'package:weather/src/modules/weather/weather_manager.dart';
@@ -25,7 +25,6 @@ class Bot {
 
   late Platform _platform;
 
-  late Chat _chat;
   late User _user;
 
   late UserManager _userManager;
@@ -44,26 +43,24 @@ class Bot {
   Bot() : _config = getIt<Config>();
 
   Future<void> startBot() async {
-    _chat = Chat();
-    await _chat.initialize();
-
+    var modulesMediator = ModulesMediator();
     _user = User()..initialize();
 
-    _platform = Platform(chatPlatform: _config.chatPlatform, chat: _chat, user: _user);
+    _platform = Platform(chatPlatform: _config.chatPlatform, user: _user, modulesMediator: modulesMediator);
     await _platform.initialize();
 
-    _dadJokesManager = DadJokesManager(platform: _platform);
-    _youtubeManager = YoutubeManager(platform: _platform);
-    _conversatorManager = ConversatorManager(platform: _platform)..initialize();
-    _generalManager = GeneralManager(platform: _platform, chat: _chat);
-    _chatManager = ChatManager(platform: _platform, chat: _chat);
-    _panoramaManager = PanoramaManager(platform: _platform, chat: _chat)..initialize();
-    _userManager = UserManager(platform: _platform, chat: _chat, user: _user)..initialize();
-    _reputationManager = ReputationManager(platform: _platform, chat: _chat)..initialize();
-    _weatherManager = WeatherManager(platform: _platform, chat: _chat)..initialize();
-    _accordionPollManager = AccordionPollManager(platform: _platform, user: _user, chat: _chat);
-    _commandStatisticsManager = CommandStatisticsManager(platform: _platform, chat: _chat)..initialize();
-    _checkReminderManager = CheckReminderManager(platform: _platform, chat: _chat, user: _user)..initialize();
+    _dadJokesManager = DadJokesManager(platform: _platform, modulesMediator: modulesMediator)..initialize();
+    _youtubeManager = YoutubeManager(platform: _platform, modulesMediator: modulesMediator)..initialize();
+    _conversatorManager = ConversatorManager(platform: _platform, modulesMediator: modulesMediator)..initialize();
+    _generalManager = GeneralManager(platform: _platform, modulesMediator: modulesMediator)..initialize();
+    _chatManager = ChatManager(platform: _platform, modulesMediator: modulesMediator)..initialize();
+    _panoramaManager = PanoramaManager(platform: _platform, modulesMediator: modulesMediator)..initialize();
+    _userManager = UserManager(platform: _platform, user: _user, modulesMediator: modulesMediator)..initialize();
+    _reputationManager = ReputationManager(platform: _platform, modulesMediator: modulesMediator)..initialize();
+    _weatherManager = WeatherManager(platform: _platform, modulesMediator: modulesMediator)..initialize();
+    _accordionPollManager = AccordionPollManager(platform: _platform, modulesMediator: modulesMediator, user: _user)..initialize();
+    _commandStatisticsManager = CommandStatisticsManager(platform: _platform, modulesMediator: modulesMediator)..initialize();
+    _checkReminderManager = CheckReminderManager(platform: _platform, user: _user, modulesMediator: modulesMediator)..initialize();
 
     _setupCommands();
 

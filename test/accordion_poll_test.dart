@@ -14,12 +14,11 @@ void main() {
 
   setUp(() async {
     chat = Chat();
-    await chat.initialize();
 
     user = User();
     user.initialize();
 
-    accordionPoll = AccordionPoll(chat: chat, pollTime: 1);
+    accordionPoll = AccordionPoll(pollTime: 1);
   });
 
   group('Accordion Poll', () {

@@ -17,7 +17,6 @@ void main() {
 
   setUp(() async {
     chat = Chat();
-    await chat.initialize();
 
     user = User();
     user.initialize();

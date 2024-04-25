@@ -17,7 +17,6 @@ void main() {
     user.initialize();
 
     chat = Chat();
-    await chat.initialize();
   });
 
   // TODO: add tests for the stream

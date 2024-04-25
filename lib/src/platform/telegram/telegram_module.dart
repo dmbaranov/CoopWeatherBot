@@ -7,20 +7,21 @@ import 'package:teledart/telegram.dart';
 import 'package:weather/src/globals/accordion_vote_option.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/core/config.dart';
+import 'package:weather/src/core/swearwords.dart';
 import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/modules/user/user.dart';
-import 'package:weather/src/modules/chat/chat.dart';
 
 class TelegramModule {
   final TeleDart bot;
   final Telegram telegram;
   final Platform platform;
-  final Chat chat;
   final User user;
   final Config _config;
+  final Swearwords _sw;
 
-  TelegramModule({required this.bot, required this.telegram, required this.platform, required this.user, required this.chat})
-      : _config = getIt<Config>();
+  TelegramModule({required this.bot, required this.telegram, required this.platform, required this.user})
+      : _config = getIt<Config>(),
+        _sw = getIt<Swearwords>();
 
   void initialize() {}
 
@@ -40,8 +41,8 @@ class TelegramModule {
   Future<StreamController<Map<AccordionVoteOption, int>>> startAccordionPoll(String chatId, List<String> pollOptions, int pollTime) async {
     var stream = StreamController<Map<AccordionVoteOption, int>>();
 
-    await telegram.sendPoll(chatId, chat.getText(chatId, 'accordion.other.title'), pollOptions,
-        explanation: chat.getText(chatId, 'accordion.other.explanation'),
+    await telegram.sendPoll(chatId, _sw.getText(chatId, 'accordion.other.title'), pollOptions,
+        explanation: _sw.getText(chatId, 'accordion.other.explanation'),
         type: 'quiz',
         correctOptionId: Random().nextInt(pollOptions.length),
         openPeriod: pollTime);

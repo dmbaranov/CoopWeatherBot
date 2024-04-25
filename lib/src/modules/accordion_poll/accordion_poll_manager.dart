@@ -2,17 +2,21 @@ import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/modules/user/user.dart';
-import 'package:weather/src/modules/chat/chat.dart';
 import 'accordion_poll.dart';
+import '../modules_mediator.dart';
 import '../utils.dart';
 
 class AccordionPollManager {
   final Platform platform;
+  final ModulesMediator modulesMediator;
   final User user;
-  final Chat chat;
   final AccordionPoll _accordionPoll;
 
-  AccordionPollManager({required this.platform, required this.user, required this.chat}) : _accordionPoll = AccordionPoll(chat: chat);
+  AccordionPollManager({required this.platform, required this.user, required this.modulesMediator}) : _accordionPoll = AccordionPoll();
+
+  void initialize() {
+    modulesMediator.registerModule(_accordionPoll);
+  }
 
   void startAccordionPoll(MessageEvent event) async {
     if (!userIdsCheck(platform, event)) return;
@@ -39,7 +43,7 @@ class AccordionPollManager {
     pollStream.stream.listen((pollResults) => _accordionPoll.updatePollResults(pollResults));
 
     var pollResult = await _accordionPoll.endVoteAndGetResults();
-    
+
     pollStream.close();
 
     await platform.sendMessage(chatId, translation: pollResult);

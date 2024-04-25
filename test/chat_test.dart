@@ -12,7 +12,6 @@ void main() {
 
   setUp(() async {
     chat = Chat();
-    await chat.initialize();
   });
 
   group('Chat', () {
@@ -44,13 +43,6 @@ void main() {
       var expected = ['123'];
 
       expect(allChats, equals(expected));
-    });
-
-    test('should return correct translation based on swearwords config', () {
-      var text = chat.getText('123', 'chat.initialization.success');
-      var expected = 'Чат инициализирован успешно';
-
-      expect(text, equals(expected));
     });
   });
 }

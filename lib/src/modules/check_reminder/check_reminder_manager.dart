@@ -1,26 +1,30 @@
+import 'package:weather/src/core/swearwords.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/modules/user/user.dart';
-import 'package:weather/src/modules/chat/chat.dart';
 import 'package:weather/src/utils/logger.dart';
 import 'check_reminder.dart';
+import '../modules_mediator.dart';
 import '../utils.dart';
 
 class CheckReminderManager {
   final Platform platform;
-  final Chat chat;
+  final ModulesMediator modulesMediator;
   final User user;
   final Logger _logger;
+  final Swearwords _sw;
   final CheckReminder _checkReminder;
 
-  CheckReminderManager({required this.platform, required this.chat, required this.user})
+  CheckReminderManager({required this.platform, required this.user, required this.modulesMediator})
       : _logger = getIt<Logger>(),
+        _sw = getIt<Swearwords>(),
         _checkReminder = CheckReminder();
 
   void initialize() {
     _checkReminder.initialize();
     _subscribeToCheckUpdates();
+    modulesMediator.registerModule(_checkReminder);
   }
 
   void checkMessage(MessageEvent event) async {
@@ -30,7 +34,7 @@ class CheckReminderManager {
     var userId = event.userId;
     var period = event.parameters[0];
     var message = event.parameters.sublist(1).join(' ');
-    var successfulMessage = chat.getText(chatId, 'general.success');
+    var successfulMessage = _sw.getText(chatId, 'general.success');
 
     _checkReminder
         .createCheckReminder(chatId: chatId, userId: userId, period: period, message: message)
@@ -44,7 +48,7 @@ class CheckReminderManager {
 
       if (userData != null) {
         var checkReminderMessage =
-            chat.getText(checkReminder.chatId, 'check_reminder.reminder', {'user': userData.name, 'message': checkReminder.message});
+            _sw.getText(checkReminder.chatId, 'check_reminder.reminder', {'user': userData.name, 'message': checkReminder.message});
 
         sendOperationMessage(checkReminder.chatId, platform: platform, operationResult: true, successfulMessage: checkReminderMessage);
       } else {

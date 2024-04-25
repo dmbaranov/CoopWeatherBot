@@ -1,21 +1,26 @@
 import 'package:weather/src/injector/injection.dart';
+import 'package:weather/src/core/swearwords.dart';
 import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/modules/user/user.dart';
-import 'package:weather/src/modules/chat/chat.dart';
 import 'package:weather/src/utils/logger.dart';
+import '../modules_mediator.dart';
 import '../utils.dart';
 
 class UserManager {
   final Platform platform;
-  final Chat chat;
+  final ModulesMediator modulesMediator;
   final User user;
+  final Swearwords _sw;
   final Logger _logger;
 
-  UserManager({required this.platform, required this.chat, required this.user}) : _logger = getIt<Logger>();
+  UserManager({required this.platform, required this.modulesMediator, required this.user})
+      : _logger = getIt<Logger>(),
+        _sw = getIt<Swearwords>();
 
   void initialize() {
     _subscribeToUserUpdates();
+    modulesMediator.registerModule(user);
   }
 
   void addUser(MessageEvent event) async {
@@ -26,7 +31,7 @@ class UserManager {
     var username = event.parameters[0];
     var isPremium = event.parameters[1] == 'true';
     var result = await user.addUser(userId: userId, chatId: chatId, name: username, isPremium: isPremium);
-    var successfulMessage = chat.getText(chatId, 'user.user_added');
+    var successfulMessage = _sw.getText(chatId, 'user.user_added');
 
     sendOperationMessage(chatId, platform: platform, operationResult: result, successfulMessage: successfulMessage);
   }
@@ -37,7 +42,7 @@ class UserManager {
     var chatId = event.chatId;
     var userId = event.otherUserIds[0];
     var result = await user.removeUser(chatId, userId);
-    var successfulMessage = chat.getText(chatId, 'user.user_removed');
+    var successfulMessage = _sw.getText(chatId, 'user.user_removed');
 
     sendOperationMessage(chatId, platform: platform, operationResult: result, successfulMessage: successfulMessage);
   }
@@ -49,7 +54,7 @@ class UserManager {
   }
 
   Future<void> _updateUsersPremiumStatus() async {
-    var allPlatformChatIds = await chat.getAllChatIdsForPlatform(platform.chatPlatform);
+    var allPlatformChatIds = await modulesMediator.chat.getAllChatIdsForPlatform(platform.chatPlatform);
 
     await Future.forEach(allPlatformChatIds, (chatId) async {
       var chatUsers = await user.getUsersForChat(chatId);

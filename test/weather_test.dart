@@ -14,7 +14,6 @@ void main() {
 
   setUp(() async {
     chat = Chat();
-    await chat.initialize();
 
     weather = Weather();
     weather.initialize();

@@ -38,12 +38,10 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
         _sw = getIt<Swearwords>();
 
   @override
-  Future<void> initialize() async {
+  void initialize() {
     _telegram = Telegram(_config.token);
 
-    var botName = (await _telegram.getMe()).username;
-
-    _bot = TeleDart(_config.token, Event(botName!), fetcher: LongPolling(_telegram, limit: 100, timeout: 50));
+    _bot = TeleDart(_config.token, Event(_config.botName), fetcher: LongPolling(_telegram, limit: 100, timeout: 50));
 
     _setupPlatformSpecificCommands();
 

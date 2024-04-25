@@ -41,8 +41,7 @@ class Bot {
   Future<void> startBot() async {
     var modulesMediator = ModulesMediator();
 
-    _platform = Platform(chatPlatform: _config.chatPlatform, modulesMediator: modulesMediator);
-    await _platform.initialize();
+    _platform = Platform(chatPlatform: _config.chatPlatform, modulesMediator: modulesMediator)..initialize();
 
     _dadJokesManager = DadJokesManager(platform: _platform, modulesMediator: modulesMediator)..initialize();
     _youtubeManager = YoutubeManager(platform: _platform, modulesMediator: modulesMediator)..initialize();

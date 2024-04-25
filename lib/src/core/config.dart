@@ -10,6 +10,7 @@ class Config {
   late final String _dbPassword;
   late final String _dbDatabase;
   late final String _token;
+  late final String _botName;
   late final String _adminId;
   late final String _githubRepo;
   late final String _youtubeKey;
@@ -29,6 +30,8 @@ class Config {
   String get dbDatabase => _dbDatabase;
 
   String get token => _token;
+
+  String get botName => _botName;
 
   String get adminId => _adminId;
 
@@ -53,6 +56,7 @@ class Config {
     _dbUser = env['dbuser']!;
     _dbPassword = env['dbpassword']!;
     _dbDatabase = env['dbdatabase']!;
+    _botName = env['botname']!;
     _token = env['bottoken']!;
     _adminId = env['adminid']!;
     _githubRepo = env['githubrepo']!;

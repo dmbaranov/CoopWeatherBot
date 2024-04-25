@@ -24,7 +24,7 @@ abstract class Platform<T> {
     }
   }
 
-  Future<void> initialize();
+  void initialize();
 
   Future<void> postStart();
 

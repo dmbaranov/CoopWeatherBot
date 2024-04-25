@@ -42,7 +42,7 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
         _sw = getIt<Swearwords>();
 
   @override
-  Future<void> initialize() async {
+  void initialize() async {
     _logger.i('No initialize script for Discord');
   }
 

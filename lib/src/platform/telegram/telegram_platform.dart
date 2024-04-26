@@ -163,7 +163,7 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
     return _telegramModule.startAccordionPoll(chatId, pollOptions, pollTime);
   }
 
-  // TODO: make required property for Platform?
+  // TODO: make required property for Platform and reutrn BotUser?
   List<String> _getUserInfo(TeleDartMessage message) {
     var fullUsername = '';
     var repliedUser = message.replyToMessage?.from;

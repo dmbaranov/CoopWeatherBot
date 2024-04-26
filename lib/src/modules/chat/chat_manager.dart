@@ -1,13 +1,14 @@
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/core/swearwords.dart';
 import 'package:weather/src/platform/platform.dart';
+import 'package:weather/src/globals/module_manager.dart';
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'chat.dart';
 import '../modules_mediator.dart';
 import '../utils.dart';
 
-class ChatManager {
+class ChatManager implements ModuleManager {
   final Platform platform;
   final ModulesMediator modulesMediator;
   final Chat _chat;
@@ -17,9 +18,12 @@ class ChatManager {
       : _chat = Chat(),
         _sw = getIt<Swearwords>();
 
+  @override
+  Chat get module => _chat;
+
+  @override
   void initialize() {
     _initializeSwearwords();
-    modulesMediator.registerModule(_chat);
   }
 
   void createChat(MessageEvent event) async {

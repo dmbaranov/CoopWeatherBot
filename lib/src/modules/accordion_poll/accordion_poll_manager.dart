@@ -1,20 +1,23 @@
 import 'package:weather/src/platform/platform.dart';
+import 'package:weather/src/globals/module_manager.dart';
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'accordion_poll.dart';
 import '../modules_mediator.dart';
 import '../utils.dart';
 
-class AccordionPollManager {
+class AccordionPollManager implements ModuleManager {
   final Platform platform;
   final ModulesMediator modulesMediator;
   final AccordionPoll _accordionPoll;
 
   AccordionPollManager({required this.platform, required this.modulesMediator}) : _accordionPoll = AccordionPoll();
 
-  void initialize() {
-    modulesMediator.registerModule(_accordionPoll);
-  }
+  @override
+  AccordionPoll get module => _accordionPoll;
+
+  @override
+  void initialize() {}
 
   void startAccordionPoll(MessageEvent event) async {
     if (!userIdsCheck(platform, event)) return;

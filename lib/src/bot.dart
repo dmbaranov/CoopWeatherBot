@@ -6,6 +6,7 @@ import 'package:weather/src/globals/bot_command.dart';
 import 'package:weather/src/globals/access_level.dart';
 
 import 'package:weather/src/modules/modules_mediator.dart';
+import 'package:weather/src/modules/manager_factory.dart';
 import 'package:weather/src/modules/chat/chat_manager.dart';
 import 'package:weather/src/modules/user/user_manager.dart';
 import 'package:weather/src/modules/weather/weather_manager.dart';
@@ -43,18 +44,20 @@ class Bot {
 
     _platform = Platform(chatPlatform: _config.chatPlatform, modulesMediator: modulesMediator)..initialize();
 
-    _dadJokesManager = DadJokesManager(platform: _platform, modulesMediator: modulesMediator)..initialize();
-    _youtubeManager = YoutubeManager(platform: _platform, modulesMediator: modulesMediator)..initialize();
-    _conversatorManager = ConversatorManager(platform: _platform, modulesMediator: modulesMediator)..initialize();
-    _generalManager = GeneralManager(platform: _platform, modulesMediator: modulesMediator)..initialize();
-    _chatManager = ChatManager(platform: _platform, modulesMediator: modulesMediator)..initialize();
-    _panoramaManager = PanoramaManager(platform: _platform, modulesMediator: modulesMediator)..initialize();
-    _userManager = UserManager(platform: _platform, modulesMediator: modulesMediator)..initialize();
-    _reputationManager = ReputationManager(platform: _platform, modulesMediator: modulesMediator)..initialize();
-    _weatherManager = WeatherManager(platform: _platform, modulesMediator: modulesMediator)..initialize();
-    _accordionPollManager = AccordionPollManager(platform: _platform, modulesMediator: modulesMediator)..initialize();
-    _commandStatisticsManager = CommandStatisticsManager(platform: _platform, modulesMediator: modulesMediator)..initialize();
-    _checkReminderManager = CheckReminderManager(platform: _platform, modulesMediator: modulesMediator)..initialize();
+    var managerFactory = ManagerFactory(platform: _platform, modulesMediator: modulesMediator);
+
+    _dadJokesManager = managerFactory.createManager<DadJokesManager>();
+    _youtubeManager = managerFactory.createManager<YoutubeManager>();
+    _conversatorManager = managerFactory.createManager<ConversatorManager>();
+    _generalManager = managerFactory.createManager<GeneralManager>();
+    _chatManager = managerFactory.createManager<ChatManager>();
+    _panoramaManager = managerFactory.createManager<PanoramaManager>();
+    _userManager = managerFactory.createManager<UserManager>();
+    _reputationManager = managerFactory.createManager<ReputationManager>();
+    _weatherManager = managerFactory.createManager<WeatherManager>();
+    _accordionPollManager = managerFactory.createManager<AccordionPollManager>();
+    _commandStatisticsManager = managerFactory.createManager<CommandStatisticsManager>();
+    _checkReminderManager = managerFactory.createManager<CheckReminderManager>();
 
     _setupCommands();
 

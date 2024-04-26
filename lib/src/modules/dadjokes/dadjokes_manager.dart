@@ -1,23 +1,26 @@
 import 'package:weather/src/platform/platform.dart';
+import 'package:weather/src/globals/module_manager.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'dadjokes.dart';
 import '../modules_mediator.dart';
 import '../utils.dart';
 
-class DadJokesManager {
+class DadJokesManager implements ModuleManager {
   final Platform platform;
   final ModulesMediator modulesMediator;
-  final DadJokes _dadjokes;
+  final DadJokes _dadJokes;
 
-  DadJokesManager({required this.platform, required this.modulesMediator}) : _dadjokes = DadJokes();
+  DadJokesManager({required this.platform, required this.modulesMediator}) : _dadJokes = DadJokes();
 
-  void initialize() {
-    modulesMediator.registerModule(_dadjokes);
-  }
+  @override
+  DadJokes get module => _dadJokes;
+
+  @override
+  void initialize() {}
 
   void sendJoke(MessageEvent event) async {
     var chatId = event.chatId;
-    var joke = await _dadjokes.getJoke();
+    var joke = await _dadJokes.getJoke();
 
     sendOperationMessage(chatId, platform: platform, operationResult: joke.joke.isNotEmpty, successfulMessage: joke.joke);
   }

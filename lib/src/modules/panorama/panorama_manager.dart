@@ -1,5 +1,6 @@
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/platform/platform.dart';
+import 'package:weather/src/globals/module_manager.dart';
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/utils/logger.dart';
@@ -7,7 +8,7 @@ import 'panorama.dart';
 import '../modules_mediator.dart';
 import '../utils.dart';
 
-class PanoramaManager {
+class PanoramaManager implements ModuleManager {
   final Platform platform;
   final ModulesMediator modulesMediator;
   final Logger _logger;
@@ -17,10 +18,13 @@ class PanoramaManager {
       : _logger = getIt<Logger>(),
         _panoramaNews = PanoramaNews();
 
+  @override
+  PanoramaNews get module => _panoramaNews;
+
+  @override
   void initialize() {
     _panoramaNews.initialize();
     _subscribeToPanoramaNews();
-    modulesMediator.registerModule(_panoramaNews);
   }
 
   void sendNewsToChat(MessageEvent event) async {

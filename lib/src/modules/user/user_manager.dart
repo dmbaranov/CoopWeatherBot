@@ -1,3 +1,4 @@
+import 'package:weather/src/globals/module_manager.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/core/swearwords.dart';
 import 'package:weather/src/platform/platform.dart';
@@ -7,22 +8,25 @@ import 'user.dart';
 import '../modules_mediator.dart';
 import '../utils.dart';
 
-class UserManager {
+class UserManager implements ModuleManager {
   final Platform platform;
   final ModulesMediator modulesMediator;
-  final User user;
+  final User _user;
   final Swearwords _sw;
   final Logger _logger;
 
   UserManager({required this.platform, required this.modulesMediator})
-      : user = User(),
+      : _user = User(),
         _logger = getIt<Logger>(),
         _sw = getIt<Swearwords>();
 
+  @override
+  User get module => _user;
+
+  @override
   void initialize() {
-    user.initialize();
+    _user.initialize();
     _subscribeToUserUpdates();
-    modulesMediator.registerModule(user);
   }
 
   void addUser(MessageEvent event) async {
@@ -32,7 +36,7 @@ class UserManager {
     var userId = event.otherUserIds[0];
     var username = event.parameters[0];
     var isPremium = event.parameters[1] == 'true';
-    var result = await user.addUser(userId: userId, chatId: chatId, name: username, isPremium: isPremium);
+    var result = await _user.addUser(userId: userId, chatId: chatId, name: username, isPremium: isPremium);
     var successfulMessage = _sw.getText(chatId, 'user.user_added');
 
     sendOperationMessage(chatId, platform: platform, operationResult: result, successfulMessage: successfulMessage);
@@ -43,14 +47,14 @@ class UserManager {
 
     var chatId = event.chatId;
     var userId = event.otherUserIds[0];
-    var result = await user.removeUser(chatId, userId);
+    var result = await _user.removeUser(chatId, userId);
     var successfulMessage = _sw.getText(chatId, 'user.user_removed');
 
     sendOperationMessage(chatId, platform: platform, operationResult: result, successfulMessage: successfulMessage);
   }
 
   void _subscribeToUserUpdates() {
-    user.userManagerStream.listen((_) {
+    _user.userManagerStream.listen((_) {
       _updateUsersPremiumStatus();
     });
   }
@@ -59,7 +63,7 @@ class UserManager {
     var allPlatformChatIds = await modulesMediator.chat.getAllChatIdsForPlatform(platform.chatPlatform);
 
     await Future.forEach(allPlatformChatIds, (chatId) async {
-      var chatUsers = await user.getUsersForChat(chatId);
+      var chatUsers = await _user.getUsersForChat(chatId);
 
       await Future.forEach(chatUsers, (chatUser) async {
         await Future.delayed(Duration(seconds: 1));
@@ -69,7 +73,7 @@ class UserManager {
         if (chatUser.isPremium != platformUserPremiumStatus) {
           _logger.i('Updating premium status for ${chatUser.id}');
 
-          await user.updatePremiumStatus(chatUser.id, platformUserPremiumStatus);
+          await _user.updatePremiumStatus(chatUser.id, platformUserPremiumStatus);
         }
       });
     });

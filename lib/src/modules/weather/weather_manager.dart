@@ -1,13 +1,14 @@
 import 'package:weather/src/core/swearwords.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/platform/platform.dart';
+import 'package:weather/src/globals/module_manager.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/utils/logger.dart';
 import 'weather.dart';
 import '../modules_mediator.dart';
 import '../utils.dart';
 
-class WeatherManager {
+class WeatherManager implements ModuleManager {
   final Platform platform;
   final ModulesMediator modulesMediator;
   final Swearwords _sw;
@@ -19,10 +20,13 @@ class WeatherManager {
         _sw = getIt<Swearwords>(),
         _weather = Weather();
 
+  @override
+  Weather get module => _weather;
+
+  @override
   void initialize() {
     _weather.initialize();
     _subscribeToWeatherNotifications();
-    modulesMediator.registerModule(_weather);
   }
 
   void addCity(MessageEvent event) async {

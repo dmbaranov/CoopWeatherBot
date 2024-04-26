@@ -1,19 +1,22 @@
 import 'package:weather/src/platform/platform.dart';
+import 'package:weather/src/globals/module_manager.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'general.dart';
 import '../modules_mediator.dart';
 import '../utils.dart';
 
-class GeneralManager {
+class GeneralManager implements ModuleManager {
   final Platform platform;
   final ModulesMediator modulesMediator;
   final General _general;
 
   GeneralManager({required this.platform, required this.modulesMediator}) : _general = General();
 
-  void initialize() {
-    modulesMediator.registerModule(_general);
-  }
+  @override
+  General get module => _general;
+
+  @override
+  void initialize() {}
 
   void postHealthCheck(MessageEvent event) {
     var chatId = event.chatId;

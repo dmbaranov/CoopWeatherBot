@@ -1,13 +1,14 @@
 import 'package:weather/src/core/swearwords.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/platform/platform.dart';
+import 'package:weather/src/globals/module_manager.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/utils/logger.dart';
 import 'check_reminder.dart';
 import '../modules_mediator.dart';
 import '../utils.dart';
 
-class CheckReminderManager {
+class CheckReminderManager implements ModuleManager {
   final Platform platform;
   final ModulesMediator modulesMediator;
   final Logger _logger;
@@ -19,10 +20,13 @@ class CheckReminderManager {
         _sw = getIt<Swearwords>(),
         _checkReminder = CheckReminder();
 
+  @override
+  CheckReminder get module => _checkReminder;
+
+  @override
   void initialize() {
     _checkReminder.initialize();
     _subscribeToCheckUpdates();
-    modulesMediator.registerModule(_checkReminder);
   }
 
   void checkMessage(MessageEvent event) async {

@@ -1,13 +1,14 @@
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/core/swearwords.dart';
 import 'package:weather/src/platform/platform.dart';
+import 'package:weather/src/globals/module_manager.dart';
 import 'package:weather/src/globals/chat_reputation_data.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'reputation.dart';
 import '../modules_mediator.dart';
 import '../utils.dart';
 
-class ReputationManager {
+class ReputationManager implements ModuleManager {
   final Platform platform;
   final ModulesMediator modulesMediator;
   final Reputation _reputation;
@@ -17,9 +18,12 @@ class ReputationManager {
       : _reputation = Reputation(),
         _sw = getIt<Swearwords>();
 
+  @override
+  Reputation get module => _reputation;
+
+  @override
   void initialize() {
     _reputation.initialize();
-    modulesMediator.registerModule(_reputation);
   }
 
   void increaseReputation(MessageEvent event) async {

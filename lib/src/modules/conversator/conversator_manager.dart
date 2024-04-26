@@ -1,20 +1,24 @@
 import 'package:weather/src/platform/platform.dart';
+import 'package:weather/src/globals/module_manager.dart';
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'conversator.dart';
 import '../modules_mediator.dart';
 import '../utils.dart';
 
-class ConversatorManager {
+class ConversatorManager implements ModuleManager {
   final Platform platform;
   final ModulesMediator modulesMediator;
   final Conversator _conversator;
 
   ConversatorManager({required this.platform, required this.modulesMediator}) : _conversator = Conversator();
 
+  @override
+  Conversator get module => _conversator;
+
+  @override
   void initialize() {
     _conversator.initialize();
-    modulesMediator.registerModule(_conversator);
   }
 
   void getRegularConversatorReply(MessageEvent event) {

@@ -1,13 +1,14 @@
 import 'package:weather/src/core/swearwords.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/platform/platform.dart';
+import 'package:weather/src/globals/module_manager.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/utils/logger.dart';
 import 'command_statistics.dart';
 import '../modules_mediator.dart';
 import '../utils.dart';
 
-class CommandStatisticsManager {
+class CommandStatisticsManager implements ModuleManager {
   final Platform platform;
   final ModulesMediator modulesMediator;
   final Logger _logger;
@@ -19,10 +20,13 @@ class CommandStatisticsManager {
         _sw = getIt<Swearwords>(),
         _commandStatistics = CommandStatistics(chatPlatform: platform.chatPlatform, chat: modulesMediator.chat);
 
+  @override
+  CommandStatistics get module => _commandStatistics;
+
+  @override
   void initialize() {
     _commandStatistics.initialize();
     _subscribeToChatReports();
-    modulesMediator.registerModule(_commandStatistics);
   }
 
   void getChatCommandInvocations(MessageEvent event) async {

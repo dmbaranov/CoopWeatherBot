@@ -2,13 +2,15 @@ import 'dart:async';
 import 'dart:io' as io;
 
 import 'package:collection/collection.dart';
-import 'package:teledart/model.dart' show TeleDartMessage, Message;
+import 'package:debounce_throttle/debounce_throttle.dart';
+import 'package:teledart/model.dart' show TeleDartMessage, TeleDartInlineQuery, Message;
 import 'package:teledart/teledart.dart';
 import 'package:teledart/telegram.dart';
 import 'package:weather/src/core/swearwords.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/core/access.dart';
 import 'package:weather/src/core/config.dart';
+import 'package:weather/src/modules/modules_mediator.dart';
 import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/message_event.dart';
@@ -20,18 +22,18 @@ import 'telegram_module.dart';
 class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   @override
   late final ChatPlatform chatPlatform;
+  final ModulesMediator modulesMediator;
   final Config _config;
   final Access _access;
   final Logger _logger;
   final Swearwords _sw;
-
-  // final Debouncer<TeleDartInlineQuery?> _debouncer = Debouncer(Duration(seconds: 1), initialValue: null);
+  final Debouncer<TeleDartInlineQuery?> _debouncer = Debouncer(Duration(seconds: 1), initialValue: null);
 
   late final TeleDart _bot;
   late final Telegram _telegram;
   late final TelegramModule _telegramModule;
 
-  TelegramPlatform({required this.chatPlatform})
+  TelegramPlatform({required this.chatPlatform, required this.modulesMediator})
       : _config = getIt<Config>(),
         _access = getIt<Access>(),
         _logger = getIt<Logger>(),
@@ -47,7 +49,7 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
 
     _bot.start();
 
-    _telegramModule = TelegramModule(bot: _bot, telegram: _telegram, platform: this)..initialize();
+    _telegramModule = TelegramModule(bot: _bot, telegram: _telegram, platform: this, modulesMediator: modulesMediator)..initialize();
 
     _logger.i('Telegram platform has been started!');
   }
@@ -150,12 +152,12 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
     var bullyTagUserRegexp = bullyTagUserRegexpRaw.replaceAll('\n', '');
 
     _bot.onMessage(keyword: RegExp(bullyTagUserRegexp, caseSensitive: false)).listen((event) => _telegramModule.bullyTagUser(event));
-    // _bot.onInlineQuery().listen((query) {
-    //   _debouncer.value = query;
-    // });
-    // _debouncer.values.listen((query) {
-    //   _searchYoutubeTrackInline(query as TeleDartInlineQuery);
-    // });
+    _bot.onInlineQuery().listen((query) {
+      _debouncer.value = query;
+    });
+    _debouncer.values.listen((query) {
+      _telegramModule.searchYoutubeTrackInline(query as TeleDartInlineQuery);
+    });
   }
 
   @override
@@ -163,7 +165,7 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
     return _telegramModule.startAccordionPoll(chatId, pollOptions, pollTime);
   }
 
-  // TODO: make required property for Platform and reutrn BotUser?
+  // TODO: make required property for Platform and return BotUser?
   List<String> _getUserInfo(TeleDartMessage message) {
     var fullUsername = '';
     var repliedUser = message.replyToMessage?.from;
@@ -194,28 +196,4 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
 
     return transformPlatformMessageToGeneralMessageEvent;
   }
-
-// TODO: temporarily disabled, figure out the way how to provide YouTube to the platform
-// Future<void> _searchYoutubeTrackInline(TeleDartInlineQuery query) async {
-//   var searchResults = await youtube.getYoutubeSearchResults(query.query);
-//   List items = searchResults['items'];
-//   var inlineQueryResult = [];
-//
-//   items.forEach((searchResult) {
-//     var videoId = searchResult['id']['videoId'];
-//     var videoData = searchResult['snippet'];
-//     var videoUrl = 'https://www.youtube.com/watch?v=$videoId';
-//
-//     inlineQueryResult.add(InlineQueryResultVideo(
-//         id: videoId,
-//         title: videoData['title'],
-//         thumbUrl: videoData['thumbnails']['high']['url'],
-//         mimeType: 'video/mp4',
-//         videoDuration: 600,
-//         videoUrl: videoUrl,
-//         inputMessageContent: InputTextMessageContent(messageText: videoUrl, disableWebPagePreview: false)));
-//   });
-//
-//   await _bot.answerInlineQuery(query.id, [...inlineQueryResult], cacheTime: 10);
-// }
 }

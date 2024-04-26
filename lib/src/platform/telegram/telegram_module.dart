@@ -4,20 +4,22 @@ import 'dart:math';
 import 'package:teledart/model.dart' hide User, Chat;
 import 'package:teledart/teledart.dart';
 import 'package:teledart/telegram.dart';
-import 'package:weather/src/globals/accordion_vote_option.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/core/config.dart';
 import 'package:weather/src/core/swearwords.dart';
 import 'package:weather/src/platform/platform.dart';
+import 'package:weather/src/globals/accordion_vote_option.dart';
+import 'package:weather/src/modules/modules_mediator.dart';
 
 class TelegramModule {
   final TeleDart bot;
   final Telegram telegram;
   final Platform platform;
+  final ModulesMediator modulesMediator;
   final Config _config;
   final Swearwords _sw;
 
-  TelegramModule({required this.bot, required this.telegram, required this.platform})
+  TelegramModule({required this.bot, required this.telegram, required this.platform, required this.modulesMediator})
       : _config = getIt<Config>(),
         _sw = getIt<Swearwords>();
 
@@ -52,5 +54,28 @@ class TelegramModule {
         })));
 
     return stream;
+  }
+
+  Future<void> searchYoutubeTrackInline(TeleDartInlineQuery query) async {
+    var searchResults = await modulesMediator.youtube.getRawYoutubeSearchResults(query.query);
+    List items = searchResults['items'];
+    var inlineQueryResult = [];
+
+    items.forEach((searchResult) {
+      var videoId = searchResult['id']['videoId'];
+      var videoData = searchResult['snippet'];
+      var videoUrl = 'https://www.youtube.com/watch?v=$videoId';
+
+      inlineQueryResult.add(InlineQueryResultVideo(
+          id: videoId,
+          title: videoData['title'],
+          thumbnailUrl: videoData['thumbnails']['high']['url'],
+          mimeType: 'video/mp4',
+          videoDuration: 600,
+          videoUrl: videoUrl,
+          inputMessageContent: InputTextMessageContent(messageText: videoUrl, disableWebPagePreview: false)));
+    });
+
+    await bot.answerInlineQuery(query.id, [...inlineQueryResult], cacheTime: 10);
   }
 }

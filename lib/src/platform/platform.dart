@@ -16,7 +16,7 @@ abstract class Platform<T> {
   factory Platform({required ChatPlatform chatPlatform, required ModulesMediator modulesMediator}) {
     switch (chatPlatform) {
       case ChatPlatform.telegram:
-        return TelegramPlatform(chatPlatform: ChatPlatform.telegram);
+        return TelegramPlatform(chatPlatform: ChatPlatform.telegram, modulesMediator: modulesMediator);
       case ChatPlatform.discord:
         return DiscordPlatform(chatPlatform: ChatPlatform.discord, modulesMediator: modulesMediator);
       default:

@@ -6,11 +6,13 @@ import '../modules_mediator.dart';
 import '../utils.dart';
 
 class DadJokesManager implements ModuleManager {
+  @override
   final Platform platform;
+  @override
   final ModulesMediator modulesMediator;
   final DadJokes _dadJokes;
 
-  DadJokesManager({required this.platform, required this.modulesMediator}) : _dadJokes = DadJokes();
+  DadJokesManager(this.platform, this.modulesMediator) : _dadJokes = DadJokes();
 
   @override
   DadJokes get module => _dadJokes;

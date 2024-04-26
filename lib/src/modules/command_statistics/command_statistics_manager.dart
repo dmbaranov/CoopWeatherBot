@@ -9,13 +9,15 @@ import '../modules_mediator.dart';
 import '../utils.dart';
 
 class CommandStatisticsManager implements ModuleManager {
+  @override
   final Platform platform;
+  @override
   final ModulesMediator modulesMediator;
   final Logger _logger;
   final Swearwords _sw;
   final CommandStatistics _commandStatistics;
 
-  CommandStatisticsManager({required this.platform, required this.modulesMediator})
+  CommandStatisticsManager(this.platform, this.modulesMediator)
       : _logger = getIt<Logger>(),
         _sw = getIt<Swearwords>(),
         _commandStatistics = CommandStatistics(chatPlatform: platform.chatPlatform, chat: modulesMediator.chat);

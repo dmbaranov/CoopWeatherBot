@@ -9,13 +9,15 @@ import '../modules_mediator.dart';
 import '../utils.dart';
 
 class CheckReminderManager implements ModuleManager {
+  @override
   final Platform platform;
+  @override
   final ModulesMediator modulesMediator;
   final Logger _logger;
   final Swearwords _sw;
   final CheckReminder _checkReminder;
 
-  CheckReminderManager({required this.platform, required this.modulesMediator})
+  CheckReminderManager(this.platform, this.modulesMediator)
       : _logger = getIt<Logger>(),
         _sw = getIt<Swearwords>(),
         _checkReminder = CheckReminder();

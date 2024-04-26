@@ -9,12 +9,14 @@ import '../modules_mediator.dart';
 import '../utils.dart';
 
 class ChatManager implements ModuleManager {
+  @override
   final Platform platform;
+  @override
   final ModulesMediator modulesMediator;
   final Chat _chat;
   final Swearwords _sw;
 
-  ChatManager({required this.platform, required this.modulesMediator})
+  ChatManager(this.platform, this.modulesMediator)
       : _chat = Chat(),
         _sw = getIt<Swearwords>();
 

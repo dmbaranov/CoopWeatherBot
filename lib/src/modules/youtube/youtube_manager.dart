@@ -6,11 +6,13 @@ import '../modules_mediator.dart';
 import '../utils.dart';
 
 class YoutubeManager implements ModuleManager {
+  @override
   final Platform platform;
+  @override
   final ModulesMediator modulesMediator;
   final Youtube _youtube;
 
-  YoutubeManager({required this.platform, required this.modulesMediator}) : _youtube = Youtube();
+  YoutubeManager(this.platform, this.modulesMediator) : _youtube = Youtube();
 
   @override
   Youtube get module => _youtube;

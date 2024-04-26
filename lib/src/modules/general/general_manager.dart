@@ -6,11 +6,13 @@ import '../modules_mediator.dart';
 import '../utils.dart';
 
 class GeneralManager implements ModuleManager {
+  @override
   final Platform platform;
+  @override
   final ModulesMediator modulesMediator;
   final General _general;
 
-  GeneralManager({required this.platform, required this.modulesMediator}) : _general = General();
+  GeneralManager(this.platform, this.modulesMediator) : _general = General();
 
   @override
   General get module => _general;

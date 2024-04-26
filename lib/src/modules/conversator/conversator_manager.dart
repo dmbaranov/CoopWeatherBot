@@ -7,11 +7,13 @@ import '../modules_mediator.dart';
 import '../utils.dart';
 
 class ConversatorManager implements ModuleManager {
+  @override
   final Platform platform;
+  @override
   final ModulesMediator modulesMediator;
   final Conversator _conversator;
 
-  ConversatorManager({required this.platform, required this.modulesMediator}) : _conversator = Conversator();
+  ConversatorManager(this.platform, this.modulesMediator) : _conversator = Conversator();
 
   @override
   Conversator get module => _conversator;

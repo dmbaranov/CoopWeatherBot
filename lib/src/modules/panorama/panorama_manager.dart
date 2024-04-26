@@ -9,12 +9,14 @@ import '../modules_mediator.dart';
 import '../utils.dart';
 
 class PanoramaManager implements ModuleManager {
+  @override
   final Platform platform;
+  @override
   final ModulesMediator modulesMediator;
   final Logger _logger;
   final PanoramaNews _panoramaNews;
 
-  PanoramaManager({required this.platform, required this.modulesMediator})
+  PanoramaManager(this.platform, this.modulesMediator)
       : _logger = getIt<Logger>(),
         _panoramaNews = PanoramaNews();
 

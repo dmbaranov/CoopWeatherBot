@@ -9,13 +9,15 @@ import '../modules_mediator.dart';
 import '../utils.dart';
 
 class UserManager implements ModuleManager {
+  @override
   final Platform platform;
+  @override
   final ModulesMediator modulesMediator;
   final User _user;
   final Swearwords _sw;
   final Logger _logger;
 
-  UserManager({required this.platform, required this.modulesMediator})
+  UserManager(this.platform, this.modulesMediator)
       : _user = User(),
         _logger = getIt<Logger>(),
         _sw = getIt<Swearwords>();

@@ -9,12 +9,14 @@ import '../modules_mediator.dart';
 import '../utils.dart';
 
 class ReputationManager implements ModuleManager {
+  @override
   final Platform platform;
+  @override
   final ModulesMediator modulesMediator;
   final Reputation _reputation;
   final Swearwords _sw;
 
-  ReputationManager({required this.platform, required this.modulesMediator})
+  ReputationManager(this.platform, this.modulesMediator)
       : _reputation = Reputation(),
         _sw = getIt<Swearwords>();
 

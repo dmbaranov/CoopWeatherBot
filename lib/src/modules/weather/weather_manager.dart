@@ -9,13 +9,15 @@ import '../modules_mediator.dart';
 import '../utils.dart';
 
 class WeatherManager implements ModuleManager {
+  @override
   final Platform platform;
+  @override
   final ModulesMediator modulesMediator;
   final Swearwords _sw;
   final Logger _logger;
   final Weather _weather;
 
-  WeatherManager({required this.platform, required this.modulesMediator})
+  WeatherManager(this.platform, this.modulesMediator)
       : _logger = getIt<Logger>(),
         _sw = getIt<Swearwords>(),
         _weather = Weather();

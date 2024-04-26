@@ -7,11 +7,13 @@ import '../modules_mediator.dart';
 import '../utils.dart';
 
 class AccordionPollManager implements ModuleManager {
+  @override
   final Platform platform;
+  @override
   final ModulesMediator modulesMediator;
   final AccordionPoll _accordionPoll;
 
-  AccordionPollManager({required this.platform, required this.modulesMediator}) : _accordionPoll = AccordionPoll();
+  AccordionPollManager(this.platform, this.modulesMediator) : _accordionPoll = AccordionPoll();
 
   @override
   AccordionPoll get module => _accordionPoll;

@@ -45,6 +45,6 @@ class ManagerFactory {
       return instance as T;
     }
 
-    throw Exception('ModuleManager of type $T is not supported');
+    throw Exception('Unsupported ModuleManager $T');
   }
 }

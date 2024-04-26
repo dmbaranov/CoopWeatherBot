@@ -58,7 +58,6 @@ class ModulesMediator {
         youtube = moduleInstance;
         break;
       default:
-        // TODO: check how it behaves
         throw Exception('Unsupported module $moduleInstance');
     }
   }

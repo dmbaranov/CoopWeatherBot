@@ -11,7 +11,7 @@ class ManagerFactory {
   ManagerFactory({required this.platform, required this.modulesMediator});
 
   T createManager<T extends ModuleManager>() {
-    T instance = (reflectClass(T)).newInstance(Symbol(''), [platform, modulesMediator]).reflectee;
+    T instance = reflectClass(T).newInstance(Symbol(''), [platform, modulesMediator]).reflectee;
 
     instance.initialize();
     modulesMediator.registerModule(instance.module);

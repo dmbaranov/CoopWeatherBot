@@ -47,8 +47,6 @@ class AccordionPollManager implements ModuleManager {
 
     var pollResult = await _accordionPoll.endVoteAndGetResults();
 
-    pollStream.close();
-
     await platform.sendMessage(chatId, translation: pollResult);
   }
 }

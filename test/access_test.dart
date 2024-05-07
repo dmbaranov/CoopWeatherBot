@@ -2,12 +2,9 @@ import 'package:test/test.dart';
 import 'package:weather/src/core/access.dart';
 import 'package:weather/src/globals/access_level.dart';
 import 'package:weather/src/globals/chat_platform.dart';
-import 'package:weather/src/core/database.dart';
-import 'package:weather/src/core/chat.dart';
-import 'package:weather/src/core/user.dart';
-import 'package:weather/src/core/event_bus.dart';
+import 'package:weather/src/modules/chat/chat.dart';
+import 'package:weather/src/modules/user/user.dart';
 import 'utils/setup.dart';
-import 'utils/db_connection.dart';
 import 'utils/helpers.dart';
 
 const adminId = '369';
@@ -17,21 +14,14 @@ void main() {
   late Access access;
   late Chat chat;
   late User user;
-  late EventBus eventBus;
 
   setUp(() async {
-    var db = Database(DbConnection.connection);
-    await db.initialize();
+    chat = Chat();
 
-    chat = Chat(db: db);
-    await chat.initialize();
-
-    user = User(db: db);
+    user = User();
     user.initialize();
 
-    eventBus = EventBus();
-
-    access = Access(db: db, eventBus: eventBus, adminId: adminId);
+    access = Access();
   });
 
   group('Access', () {

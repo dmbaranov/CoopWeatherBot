@@ -1,11 +1,10 @@
 import 'package:postgres/postgres.dart';
 import 'package:test/test.dart';
-import 'package:weather/src/core/chat.dart';
-import 'package:weather/src/core/database.dart';
 import 'package:weather/src/core/event_bus.dart';
-import 'package:weather/src/core/events/accordion_poll_events.dart';
-import 'package:weather/src/core/reputation.dart';
-import 'package:weather/src/core/user.dart';
+import 'package:weather/src/events/accordion_poll_events.dart';
+import 'package:weather/src/modules/reputation/reputation.dart';
+import 'package:weather/src/modules/user/user.dart';
+import 'package:weather/src/modules/chat/chat.dart';
 import 'utils/setup.dart';
 import 'utils/db_connection.dart';
 import 'utils/helpers.dart';
@@ -18,17 +17,13 @@ void main() {
   late User user;
 
   setUp(() async {
-    var db = Database(DbConnection.connection);
-    await db.initialize();
+    chat = Chat();
 
-    chat = Chat(db: db);
-    await chat.initialize();
-
-    user = User(db: db);
+    user = User();
     user.initialize();
 
     eventBus = EventBus();
-    reputation = Reputation(db: db, eventBus: eventBus);
+    reputation = Reputation();
     reputation.initialize();
   });
 

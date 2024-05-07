@@ -1,45 +1,28 @@
-import 'package:postgres/postgres.dart';
+import 'package:weather/src/injector/injection.dart';
+import 'package:weather/src/core/config.dart';
 
-import 'package:weather/src/core/database.dart';
-import 'package:weather/src/core/chat.dart';
-import 'package:weather/src/core/user.dart';
-import 'package:weather/src/core/event_bus.dart';
-import 'package:weather/src/core/access.dart';
-
-import 'package:weather/src/globals/chat_platform.dart';
+import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/globals/bot_command.dart';
 import 'package:weather/src/globals/access_level.dart';
-import 'package:weather/src/platform/platform.dart';
 
-import 'package:weather/src/modules/chat_manager.dart';
-import 'package:weather/src/modules/user_manager.dart';
-import 'package:weather/src/modules/weather_manager.dart';
-import 'package:weather/src/modules/panorama_manager.dart';
-import 'package:weather/src/modules/dadjokes_manager.dart';
-import 'package:weather/src/modules/reputation_manager.dart';
-import 'package:weather/src/modules/youtube_manager.dart';
-import 'package:weather/src/modules/conversator_manager.dart';
-import 'package:weather/src/modules/general_manager.dart';
-import 'package:weather/src/modules/accordion_poll_manager.dart';
-import 'package:weather/src/modules/command_statistics_manager.dart';
-import 'package:weather/src/modules/check_reminder_manager.dart';
+import 'package:weather/src/modules/modules_mediator.dart';
+import 'package:weather/src/modules/manager_factory.dart';
+import 'package:weather/src/modules/chat/chat_manager.dart';
+import 'package:weather/src/modules/user/user_manager.dart';
+import 'package:weather/src/modules/weather/weather_manager.dart';
+import 'package:weather/src/modules/panorama/panorama_manager.dart';
+import 'package:weather/src/modules/dadjokes/dadjokes_manager.dart';
+import 'package:weather/src/modules/reputation/reputation_manager.dart';
+import 'package:weather/src/modules/youtube/youtube_manager.dart';
+import 'package:weather/src/modules/conversator/conversator_manager.dart';
+import 'package:weather/src/modules/general/general_manager.dart';
+import 'package:weather/src/modules/accordion_poll/accordion_poll_manager.dart';
+import 'package:weather/src/modules/command_statistics/command_statistics_manager.dart';
+import 'package:weather/src/modules/check_reminder/check_reminder_manager.dart';
 
 class Bot {
-  final ChatPlatform platformName;
-  final String botToken;
-  final String adminId;
-  final String repoUrl;
-  final String openweatherKey;
-  final String youtubeKey;
-  final String conversatorKey;
-  final Pool dbConnection;
-
+  final Config _config;
   late Platform _platform;
-  late Database _db;
-  late EventBus _eventBus;
-  late Chat _chat;
-  late User _user;
-  late Access _access;
 
   late UserManager _userManager;
   late WeatherManager _weatherManager;
@@ -54,45 +37,27 @@ class Bot {
   late CommandStatisticsManager _commandStatisticsManager;
   late CheckReminderManager _checkReminderManager;
 
-  Bot(
-      {required this.platformName,
-      required this.botToken,
-      required this.adminId,
-      required this.repoUrl,
-      required this.openweatherKey,
-      required this.youtubeKey,
-      required this.conversatorKey,
-      required this.dbConnection});
+  Bot() : _config = getIt<Config>();
 
   Future<void> startBot() async {
-    _db = Database(dbConnection);
-    await _db.initialize();
+    var modulesMediator = ModulesMediator();
 
-    _eventBus = EventBus();
+    _platform = Platform(chatPlatform: _config.chatPlatform, modulesMediator: modulesMediator)..initialize();
 
-    _chat = Chat(db: _db);
-    await _chat.initialize();
+    var managerFactory = ManagerFactory(platform: _platform, modulesMediator: modulesMediator);
 
-    _user = User(db: _db)..initialize();
-    _access = Access(db: _db, eventBus: _eventBus, adminId: adminId);
-
-    _platform = Platform(
-        chatPlatform: platformName, token: botToken, adminId: adminId, eventBus: _eventBus, access: _access, chat: _chat, user: _user);
-    await _platform.initialize();
-
-    _dadJokesManager = DadJokesManager(platform: _platform);
-    _youtubeManager = YoutubeManager(platform: _platform, apiKey: youtubeKey);
-    _conversatorManager = ConversatorManager(platform: _platform, db: _db, conversatorApiKey: conversatorKey, adminId: adminId)
-      ..initialize();
-    _generalManager = GeneralManager(platform: _platform, chat: _chat, repositoryUrl: repoUrl);
-    _chatManager = ChatManager(platform: _platform, chat: _chat);
-    _panoramaManager = PanoramaManager(platform: _platform, chat: _chat, db: _db)..initialize();
-    _userManager = UserManager(platform: _platform, chat: _chat, user: _user)..initialize();
-    _reputationManager = ReputationManager(platform: _platform, db: _db, eventBus: _eventBus, chat: _chat)..initialize();
-    _weatherManager = WeatherManager(platform: _platform, chat: _chat, db: _db, openweatherKey: openweatherKey)..initialize();
-    _accordionPollManager = AccordionPollManager(platform: _platform, eventBus: _eventBus, user: _user, chat: _chat);
-    _commandStatisticsManager = CommandStatisticsManager(platform: _platform, db: _db, eventBus: _eventBus, chat: _chat)..initialize();
-    _checkReminderManager = CheckReminderManager(platform: _platform, db: _db, chat: _chat, user: _user)..initialize();
+    _dadJokesManager = managerFactory.createManager<DadJokesManager>();
+    _youtubeManager = managerFactory.createManager<YoutubeManager>();
+    _conversatorManager = managerFactory.createManager<ConversatorManager>();
+    _generalManager = managerFactory.createManager<GeneralManager>();
+    _chatManager = managerFactory.createManager<ChatManager>();
+    _panoramaManager = managerFactory.createManager<PanoramaManager>();
+    _userManager = managerFactory.createManager<UserManager>();
+    _reputationManager = managerFactory.createManager<ReputationManager>();
+    _weatherManager = managerFactory.createManager<WeatherManager>();
+    _accordionPollManager = managerFactory.createManager<AccordionPollManager>();
+    _commandStatisticsManager = managerFactory.createManager<CommandStatisticsManager>();
+    _checkReminderManager = managerFactory.createManager<CheckReminderManager>();
 
     _setupCommands();
 

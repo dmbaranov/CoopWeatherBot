@@ -1,8 +1,7 @@
 import 'package:test/test.dart';
 import 'package:postgres/postgres.dart';
-import 'package:weather/src/core/user.dart';
-import 'package:weather/src/core/chat.dart';
-import 'package:weather/src/core/database.dart';
+import 'package:weather/src/modules/user/user.dart';
+import 'package:weather/src/modules/chat/chat.dart';
 import 'package:weather/src/globals/chat_platform.dart';
 import 'utils/setup.dart';
 import 'utils/db_connection.dart';
@@ -14,14 +13,10 @@ void main() {
   late Chat chat;
 
   setUp(() async {
-    var db = Database(DbConnection.connection);
-    await db.initialize();
-
-    user = User(db: db);
+    user = User();
     user.initialize();
 
-    chat = Chat(db: db);
-    await chat.initialize();
+    chat = Chat();
   });
 
   // TODO: add tests for the stream

@@ -1,9 +1,8 @@
 import 'package:postgres/postgres.dart';
 import 'package:test/test.dart';
 import 'package:weather/src/globals/chat_platform.dart';
-import 'package:weather/src/core/database.dart';
-import 'package:weather/src/core/chat.dart';
-import 'package:weather/src/core/weather.dart';
+import 'package:weather/src/modules/weather/weather.dart';
+import 'package:weather/src/modules/chat/chat.dart';
 import 'utils/setup.dart';
 import 'utils/db_connection.dart';
 import 'utils/helpers.dart';
@@ -14,13 +13,9 @@ void main() {
   late Weather weather;
 
   setUp(() async {
-    var db = Database(DbConnection.connection);
-    await db.initialize();
+    chat = Chat();
 
-    chat = Chat(db: db);
-    await chat.initialize();
-
-    weather = Weather(db: db, openweatherKey: 'no-key-provided');
+    weather = Weather();
     weather.initialize();
   });
 

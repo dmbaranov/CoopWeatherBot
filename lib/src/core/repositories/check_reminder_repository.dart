@@ -1,16 +1,18 @@
-import 'package:weather/src/core/check_reminder.dart' show CheckReminderData;
+import 'package:injectable/injectable.dart';
+import 'package:weather/src/globals/check_reminder_data.dart';
 import 'repository.dart';
 
+@singleton
 class CheckReminderRepository extends Repository {
-  CheckReminderRepository({required super.dbConnection}) : super(repositoryName: 'check_reminder');
+  CheckReminderRepository({required super.db}) : super(repositoryName: 'check_reminder');
 
   Future<int> createCheckReminder(String chatId, String userId, String message, DateTime timestamp) {
-    return executeTransaction(
+    return db.executeTransaction(
         queriesMap['create_check_reminder'], {'chatId': chatId, 'userId': userId, 'message': message, 'timestamp': timestamp});
   }
 
   Future<List<CheckReminderData>> getIncompleteCheckReminders(int remindersLimit, int timestampInterval) async {
-    var rawCheckReminders = await executeQuery(
+    var rawCheckReminders = await db.executeQuery(
         queriesMap['get_incomplete_check_reminders'], {'remindersLimit': remindersLimit, 'timestampInterval': timestampInterval});
 
     if (rawCheckReminders == null || rawCheckReminders.isEmpty) {
@@ -29,6 +31,6 @@ class CheckReminderRepository extends Repository {
   }
 
   Future<int> completeCheckReminder(int checkReminderId) {
-    return executeTransaction(queriesMap['complete_check_reminder'], {'checkReminderId': checkReminderId});
+    return db.executeTransaction(queriesMap['complete_check_reminder'], {'checkReminderId': checkReminderId});
   }
 }

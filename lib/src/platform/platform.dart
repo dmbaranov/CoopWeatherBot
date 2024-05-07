@@ -1,48 +1,30 @@
 import 'dart:async';
 
-import 'package:weather/src/core/chat.dart';
-import 'package:weather/src/core/user.dart';
-import 'package:weather/src/core/access.dart';
-import 'package:weather/src/core/event_bus.dart';
-
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/globals/bot_command.dart';
-import 'package:weather/src/globals/accordion_poll.dart';
+import 'package:weather/src/globals/accordion_vote_option.dart';
 
-import 'package:weather/src/platform/telegram_platform.dart';
-import 'package:weather/src/platform/discord_platform.dart';
+import 'package:weather/src/platform/telegram/telegram_platform.dart';
+import 'package:weather/src/platform/discord/discord_platform.dart';
+
+import 'package:weather/src/modules/modules_mediator.dart';
 
 abstract class Platform<T> {
-  late ChatPlatform chatPlatform;
+  late final ChatPlatform chatPlatform;
 
-  factory Platform(
-      {required Chat chat,
-      required User user,
-      required String token,
-      required Access access,
-      required EventBus eventBus,
-      required String adminId,
-      required ChatPlatform chatPlatform}) {
+  factory Platform({required ChatPlatform chatPlatform, required ModulesMediator modulesMediator}) {
     switch (chatPlatform) {
       case ChatPlatform.telegram:
-        return TelegramPlatform(
-            chatPlatform: ChatPlatform.telegram,
-            token: token,
-            adminId: adminId,
-            eventBus: eventBus,
-            access: access,
-            chat: chat,
-            user: user);
+        return TelegramPlatform(chatPlatform: ChatPlatform.telegram, modulesMediator: modulesMediator);
       case ChatPlatform.discord:
-        return DiscordPlatform(
-            chatPlatform: ChatPlatform.discord, token: token, adminId: adminId, eventBus: eventBus, access: access, chat: chat, user: user);
+        return DiscordPlatform(chatPlatform: ChatPlatform.discord, modulesMediator: modulesMediator);
       default:
         throw Exception('Platform $chatPlatform is not supported');
     }
   }
 
-  Future<void> initialize();
+  void initialize();
 
   Future<void> postStart();
 

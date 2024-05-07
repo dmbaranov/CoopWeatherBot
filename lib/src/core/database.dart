@@ -1,47 +1,54 @@
+import 'package:injectable/injectable.dart';
 import 'package:postgres/postgres.dart';
+import 'package:weather/src/utils/logger.dart';
+import 'config.dart';
 
-import 'repositories/bot_user_repository.dart';
-import 'repositories/chat_repository.dart';
-import 'repositories/reputation_repository.dart';
-import 'repositories/weather_repository.dart';
-import 'repositories/news_repository.dart';
-import 'repositories/conversator_chat_repository.dart';
-import 'repositories/conversator_user_repository.dart';
-import 'repositories/command_statistics_repository.dart';
-import 'repositories/check_reminder_repository.dart';
-
+@singleton
 class Database {
-  final Pool dbConnection;
-  final BotUserRepository user;
-  final ChatRepository chat;
-  final ReputationRepository reputation;
-  final WeatherRepository weather;
-  final NewsRepository news;
-  final ConversatorChatRepository conversatorChat;
-  final ConversatorUserRepository conversatorUser;
-  final CommandStatisticsRepository commandStatistics;
-  final CheckReminderRepository checkReminderRepository;
+  final Config _config;
+  final Logger _logger;
+  final Pool _connection;
 
-  Database(this.dbConnection)
-      : user = BotUserRepository(dbConnection: dbConnection),
-        chat = ChatRepository(dbConnection: dbConnection),
-        reputation = ReputationRepository(dbConnection: dbConnection),
-        weather = WeatherRepository(dbConnection: dbConnection),
-        news = NewsRepository(dbConnection: dbConnection),
-        conversatorChat = ConversatorChatRepository(dbConnection: dbConnection),
-        conversatorUser = ConversatorUserRepository(dbConnection: dbConnection),
-        commandStatistics = CommandStatisticsRepository(dbConnection: dbConnection),
-        checkReminderRepository = CheckReminderRepository(dbConnection: dbConnection);
+  Database(this._config, this._logger)
+      : _connection = Pool.withEndpoints([
+          Endpoint(
+              host: _config.dbHost,
+              port: _config.dbPort,
+              database: _config.dbDatabase,
+              username: _config.dbUser,
+              password: _config.dbPassword)
+        ], settings: PoolSettings(maxConnectionCount: 4, sslMode: SslMode.disable));
 
-  Future<void> initialize() async {
-    await user.initRepository();
-    await chat.initRepository();
-    await reputation.initRepository();
-    await weather.initRepository();
-    await news.initRepository();
-    await conversatorChat.initRepository();
-    await conversatorUser.initRepository();
-    await commandStatistics.initRepository();
-    await checkReminderRepository.initRepository();
+  // avoid using connection directly if possible
+  Pool get connection => _connection;
+
+  Future<Result?> executeQuery(String? query, [Map<String, dynamic>? parameters]) async {
+    if (query == null) {
+      _logger.e('Wrong query: $query');
+
+      return null;
+    }
+
+    return _connection.execute(Sql.named(query), parameters: parameters);
+  }
+
+  Future<int> executeTransaction(String? query, [Map<String, dynamic>? parameters]) async {
+    if (query == null) {
+      _logger.e('Wrong query: $query');
+
+      return 0;
+    }
+
+    int result = await _connection.runTx((ctx) async {
+      var queryResult = await ctx.execute(Sql.named(query), parameters: parameters);
+
+      return queryResult.affectedRows;
+    }).catchError((error) {
+      _logger.e('DB transaction error: $error');
+
+      return 0;
+    });
+
+    return result;
   }
 }

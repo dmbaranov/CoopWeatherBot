@@ -1,21 +1,29 @@
+import 'package:injectable/injectable.dart';
+import 'package:weather/src/injector/injection.dart';
+import 'package:weather/src/events/access_events.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/globals/access_level.dart';
-import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/utils/logger.dart';
-import 'events/access_events.dart';
-import 'database.dart';
+import 'repositories/bot_user_repository.dart';
+import 'config.dart';
 import 'event_bus.dart';
 
 typedef OnSuccessCallback = void Function(MessageEvent event);
 typedef OnFailureCallback = Future Function(MessageEvent event);
 
+@Order(2)
+@singleton
 class Access {
-  final Database db;
-  final EventBus eventBus;
-  final String adminId;
+  final Config _config;
+  final BotUserRepository _userDb;
+  final EventBus _eventBus;
   final Logger _logger;
 
-  Access({required this.db, required this.eventBus, required this.adminId}) : _logger = getIt<Logger>();
+  Access()
+      : _config = getIt<Config>(),
+        _userDb = getIt<BotUserRepository>(),
+        _eventBus = getIt<EventBus>(),
+        _logger = getIt<Logger>();
 
   void execute(
       {required MessageEvent event,
@@ -23,7 +31,7 @@ class Access {
       required AccessLevel accessLevel,
       required OnSuccessCallback onSuccess,
       required OnFailureCallback onFailure}) async {
-    var user = await db.user.getSingleUserForChat(event.chatId, event.userId);
+    var user = await _userDb.getSingleUserForChat(event.chatId, event.userId);
 
     if (user == null || user.banned || user.deleted) {
       return onFailure(event);
@@ -31,11 +39,11 @@ class Access {
 
     var canExecuteAsUser = accessLevel == AccessLevel.user;
     var canExecuteAsModerator = accessLevel == AccessLevel.moderator && user.moderator;
-    var canExecuteAsAdmin = user.id == adminId;
+    var canExecuteAsAdmin = user.id == _config.adminId;
 
     if (canExecuteAsUser || canExecuteAsModerator || canExecuteAsAdmin) {
       _logger.i('Executing /$command with event: $event');
-      eventBus.fire(AccessEvent(chatId: event.chatId, user: user, command: command));
+      _eventBus.fire(AccessEvent(chatId: event.chatId, user: user, command: command));
 
       return onSuccess(event);
     }

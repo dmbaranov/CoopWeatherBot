@@ -1,8 +1,7 @@
 import 'package:postgres/postgres.dart';
 import 'package:test/test.dart';
 import 'package:weather/src/globals/chat_platform.dart';
-import 'package:weather/src/core/database.dart';
-import 'package:weather/src/core/chat.dart';
+import 'package:weather/src/modules/chat/chat.dart';
 import 'utils/setup.dart';
 import 'utils/db_connection.dart';
 import 'utils/helpers.dart';
@@ -12,11 +11,7 @@ void main() {
   late Chat chat;
 
   setUp(() async {
-    var db = Database(DbConnection.connection);
-    await db.initialize();
-
-    chat = Chat(db: db);
-    await chat.initialize();
+    chat = Chat();
   });
 
   group('Chat', () {
@@ -48,13 +43,6 @@ void main() {
       var expected = ['123'];
 
       expect(allChats, equals(expected));
-    });
-
-    test('should return correct translation based on swearwords config', () {
-      var text = chat.getText('123', 'chat.initialization.success');
-      var expected = 'Чат инициализирован успешно';
-
-      expect(text, equals(expected));
     });
   });
 }

@@ -6,14 +6,14 @@ import 'package:weather/src/globals/chat_data.dart';
 
 class Chat {
   final ChatRepository _chatDb;
-  final Swearwords _swearwords;
+  final Swearwords _sw;
 
   Chat()
       : _chatDb = getIt<ChatRepository>(),
-        _swearwords = getIt<Swearwords>();
+        _sw = getIt<Swearwords>();
 
   Future<bool> createChat({required String id, required String name, required ChatPlatform platform}) async {
-    var creationResult = await _chatDb.createChat(id, name, platform.value, _swearwords.defaultConfig);
+    var creationResult = await _chatDb.createChat(id, name, platform.value, _sw.defaultConfig);
 
     return creationResult == 1;
   }
@@ -27,7 +27,7 @@ class Chat {
   }
 
   Future<bool> setSwearwordsConfig(String chatId, String config) async {
-    var configAllowed = await _swearwords.canSetSwearwordsConfig(config);
+    var configAllowed = await _sw.canSetSwearwordsConfig(config);
 
     if (!configAllowed) {
       return false;
@@ -39,7 +39,7 @@ class Chat {
       return false;
     }
 
-    _swearwords.setChatConfig(chatId, config);
+    _sw.setChatConfig(chatId, config);
     return true;
   }
 }

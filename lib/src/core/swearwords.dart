@@ -33,7 +33,7 @@ class Swearwords {
   }
 
   String getText(String chatId, String path, [Map<String, String>? replacements]) {
-    var swearwords = _chatIdsToSwearwords[chatId];
+    var swearwords = _chatIdsToSwearwords[chatId] ?? _swearwordsTypeToSwearwords[defaultSwearwords];
 
     if (swearwords == null) {
       return path;

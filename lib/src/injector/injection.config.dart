@@ -11,7 +11,7 @@
 import 'package:get_it/get_it.dart' as _i1;
 import 'package:injectable/injectable.dart' as _i2;
 
-import '../core/access.dart' as _i16;
+import '../core/access.dart' as _i18;
 import '../core/config.dart' as _i4;
 import '../core/database.dart' as _i6;
 import '../core/event_bus.dart' as _i3;
@@ -21,6 +21,7 @@ import '../core/repositories/check_reminder_repository.dart' as _i9;
 import '../core/repositories/command_statistics_repository.dart' as _i13;
 import '../core/repositories/conversator_chat_repository.dart' as _i15;
 import '../core/repositories/conversator_user_repository.dart' as _i10;
+import '../core/repositories/hero_stats_repository.dart' as _i16;
 import '../core/repositories/news_repository.dart' as _i8;
 import '../core/repositories/reputation_repository.dart' as _i11;
 import '../core/repositories/weather_repository.dart' as _i14;
@@ -74,8 +75,10 @@ extension GetItInjectableX on _i1.GetIt {
         () => _i14.WeatherRepository(db: gh<_i6.Database>()));
     gh.singleton<_i15.ConversatorChatRepository>(
         () => _i15.ConversatorChatRepository(db: gh<_i6.Database>()));
-    gh.singleton<_i16.Access>(() => _i16.Access());
+    gh.singleton<_i16.HeroStatsRepository>(
+        () => _i16.HeroStatsRepository(db: gh<_i6.Database>()));
     gh.singleton<_i17.Swearwords>(() => _i17.Swearwords()..initialize());
+    gh.singleton<_i18.Access>(() => _i18.Access());
     return this;
   }
 }

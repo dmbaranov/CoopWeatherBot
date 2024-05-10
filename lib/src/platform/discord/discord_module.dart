@@ -71,15 +71,19 @@ class DiscordModule {
           return platform.sendMessage(chatId, translation: 'hero.users_at_five.no_users');
         }
 
+        var now = DateTime.now();
+        var timestamp = DateTime(now.year, now.month, now.day, 5).toString();
         var chatUsers = await modulesMediator.user.getUsersForChat(chatId);
         var chatUserStats = await _heroStatsDb.getChatHeroStats(chatId);
         var heroesMessage = _sw.getText(chatId, 'hero.users_at_five.list');
         var heroesStatsMessage = _sw.getText(chatId, 'hero.users_at_five.stats');
 
-        listOfOnlineUsers.forEach((userId) {
+        await Future.forEach(listOfOnlineUsers, (userId) async {
           var onlineUser = chatUsers.firstWhereOrNull((user) => user.id == userId);
 
           if (onlineUser != null) {
+            await _heroStatsDb.createHeroRecord(chatId, onlineUser.id, timestamp);
+
             heroesMessage += onlineUser.name;
             heroesMessage += '\n';
 

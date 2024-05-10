@@ -17,4 +17,8 @@ class HeroStatsRepository extends Repository {
         .map<(String, int)>((stats) => (stats['bot_user_id'], stats['stats']))
         .toList();
   }
+
+  Future<int> createHeroRecord(String chatId, String userId, String timestamp) async {
+    return db.executeTransaction(queriesMap['create_hero_record'], {'chatId': chatId, 'userId': userId, 'timestamp': timestamp});
+  }
 }

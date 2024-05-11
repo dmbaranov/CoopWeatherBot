@@ -55,7 +55,7 @@ class DiscordModule {
   }
 
   void _startHeroCheckJob() {
-    Cron().schedule(Schedule.parse('0 4 * * 6,0'), () async {
+    Cron().schedule(Schedule.parse('0 5 * * 6,0'), () async {
       var authorizedChats = await modulesMediator.chat.getAllChatIdsForPlatform(ChatPlatform.discord);
 
       await Future.forEach(authorizedChats, (chatId) async {
@@ -86,13 +86,15 @@ class DiscordModule {
 
             heroesMessage += onlineUser.name;
             heroesMessage += '\n';
+          }
+        });
 
-            var onlineUserStats = chatUserStats.firstWhereOrNull((userStats) => userStats.$1 == userId);
+        chatUserStats.forEach((userStats) {
+          var userData = chatUsers.firstWhereOrNull((user) => user.id == userStats.$1);
 
-            if (onlineUserStats != null) {
-              heroesStatsMessage +=
-                  _sw.getText(chatId, 'hero.users_at_five.hero_stats', {'hero': onlineUser.name, 'count': onlineUserStats.$2.toString()});
-            }
+          if (userData != null) {
+            heroesStatsMessage +=
+                _sw.getText(chatId, 'hero.users_at_five.hero_stats', {'hero': userData.name, 'count': userStats.$2.toString()});
           }
         });
 

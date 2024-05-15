@@ -12,7 +12,7 @@ import 'package:weather/src/utils/logger.dart';
 const String _converstorApiURL = 'https://api.openai.com/v1/chat/completions';
 const int maxTokens = 4096;
 const String regularModel = 'gpt-3.5-turbo';
-const String advancedModel = 'gpt-4-turbo-preview';
+const String advancedModel = 'gpt-4o';
 const int regularDailyLimit = 100;
 const int advancedDailyLimit = 10;
 

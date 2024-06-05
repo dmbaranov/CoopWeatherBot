@@ -36,3 +36,7 @@ dev_dependencies:
 
 dependency_overrides:
   analyzer: ^6.3.0
+  nyxx:
+    git:
+      url: https://github.com/abitofevrything/nyxx.git
+      ref: patch/hang-status

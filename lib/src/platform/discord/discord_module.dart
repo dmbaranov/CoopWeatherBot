@@ -46,7 +46,7 @@ class DiscordModule {
         return;
       }
 
-      if (event.status == UserStatus.online) {
+      if (event.status == UserStatus.online || event.status == UserStatus.dnd) {
         (_usersOnlineStatus[guildId] ??= {})[userId] = true;
       } else {
         (_usersOnlineStatus[guildId] ??= {})[userId] = false;

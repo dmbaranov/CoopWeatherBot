@@ -32,12 +32,10 @@ class UserManager implements ModuleManager {
   }
 
   void addUser(MessageEvent event) async {
-    if (!messageEventParametersCheck(platform, event) || !userIdsCheck(platform, event)) return;
+    if (!otherUserCheck(platform, event)) return;
 
     var chatId = event.chatId;
-    var userId = event.otherUserIds[0];
-    var username = event.parameters[0];
-    var isPremium = event.parameters[1] == 'true';
+    var (id: userId, name: username, isPremium: isPremium) = event.otherUser!;
     var result = await _user.addUser(userId: userId, chatId: chatId, name: username, isPremium: isPremium);
     var successfulMessage = _sw.getText(chatId, 'user.user_added');
 
@@ -45,11 +43,10 @@ class UserManager implements ModuleManager {
   }
 
   void removeUser(MessageEvent event) async {
-    if (!messageEventParametersCheck(platform, event)) return;
+    if (!otherUserCheck(platform, event)) return;
 
     var chatId = event.chatId;
-    var userId = event.otherUserIds[0];
-    var result = await _user.removeUser(chatId, userId);
+    var result = await _user.removeUser(chatId, event.otherUser!.id);
     var successfulMessage = _sw.getText(chatId, 'user.user_removed');
 
     sendOperationMessage(chatId, platform: platform, operationResult: result, successfulMessage: successfulMessage);

@@ -128,14 +128,14 @@ class Bot {
         command: 'increp',
         description: '[U] Increase reputation for the user',
         accessLevel: AccessLevel.user,
-        withOtherUserIds: true,
+        withOtherUser: true,
         onSuccess: _reputationManager.increaseReputation));
 
     _platform.setupCommand(BotCommand(
         command: 'decrep',
         description: '[U] Decrease reputation for the user',
         accessLevel: AccessLevel.user,
-        withOtherUserIds: true,
+        withOtherUser: true,
         onSuccess: _reputationManager.decreaseReputation));
 
     _platform.setupCommand(BotCommand(
@@ -178,21 +178,21 @@ class Bot {
         command: 'adduser',
         description: '[M] Add new user to the bot',
         accessLevel: AccessLevel.moderator,
-        withOtherUserIds: true,
+        withOtherUser: true,
         onSuccess: _userManager.addUser));
 
     _platform.setupCommand(BotCommand(
         command: 'removeuser',
         description: '[M] Remove user from the bot',
         accessLevel: AccessLevel.moderator,
-        withOtherUserIds: true,
+        withOtherUser: true,
         onSuccess: _userManager.removeUser));
 
     _platform.setupCommand(BotCommand(
         command: 'createreputation',
         description: '[A] Create reputation for the user',
         accessLevel: AccessLevel.admin,
-        withOtherUserIds: true,
+        withOtherUser: true,
         onSuccess: _reputationManager.createReputation));
 
     _platform.setupCommand(BotCommand(
@@ -218,7 +218,7 @@ class Bot {
         command: 'accordion',
         description: '[U] Start vote for the freshness of the content',
         accessLevel: AccessLevel.user,
-        withOtherUserIds: true,
+        withOtherUser: true,
         onSuccess: _accordionPollManager.startAccordionPoll));
 
     _platform.setupCommand(BotCommand(
@@ -231,7 +231,7 @@ class Bot {
         command: 'getusercommandstatistics',
         description: '[U] Get command invocation statistics for the user',
         accessLevel: AccessLevel.user,
-        withOtherUserIds: true,
+        withOtherUser: true,
         onSuccess: _commandStatisticsManager.getUserCommandInvocations));
 
     _platform.setupCommand(BotCommand(

@@ -32,7 +32,7 @@ abstract class Platform<T> {
 
   MessageEvent transformPlatformMessageToMessageEventWithParameters(T message, [List? otherParameters]);
 
-  MessageEvent transformPlatformMessageToMessageEventWithOtherUserIds(T message, [List? otherUserIds]);
+  MessageEvent transformPlatformMessageToMessageEventWithOtherUser(T message, [({String id, String name, bool isPremium})? otherUser]);
 
   MessageEvent transformPlatformMessageToConversatorMessageEvent(T message, [List<String>? otherParameters]);
 

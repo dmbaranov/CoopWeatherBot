@@ -10,7 +10,7 @@ MessageEvent getFakeMessageEvent(
     {ChatPlatform? platform,
     String? chatId,
     String? userId,
-    List<String>? otherUserIds,
+    ({String id, String name, bool isPremium})? otherUser,
     List<String>? parameters,
     bool? isBot,
     String? rawMessage}) {
@@ -19,7 +19,7 @@ MessageEvent getFakeMessageEvent(
       chatId: chatId ?? '123',
       userId: userId ?? '123',
       isBot: isBot ?? false,
-      otherUserIds: otherUserIds ?? [],
       parameters: parameters ?? [],
-      rawMessage: rawMessage);
+      rawMessage: rawMessage)
+    ..otherUser = otherUser;
 }

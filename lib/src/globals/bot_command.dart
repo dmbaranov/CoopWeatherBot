@@ -9,7 +9,7 @@ class BotCommand {
   final AccessLevel accessLevel;
   final OnSuccessCallback onSuccess;
   final bool withParameters;
-  final bool withOtherUserIds;
+  final bool withOtherUser;
   final bool conversatorCommand;
 
   BotCommand(
@@ -18,6 +18,6 @@ class BotCommand {
       required this.accessLevel,
       required this.onSuccess,
       this.withParameters = false,
-      this.withOtherUserIds = false,
+      this.withOtherUser = false,
       this.conversatorCommand = false});
 }

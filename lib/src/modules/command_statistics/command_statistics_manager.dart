@@ -42,9 +42,9 @@ class CommandStatisticsManager implements ModuleManager {
   }
 
   void getUserCommandInvocations(MessageEvent event) async {
-    if (!userIdsCheck(platform, event)) return;
+    if (!otherUserCheck(platform, event)) return;
 
-    var userId = event.otherUserIds[0];
+    var userId = event.otherUser!.id;
     var chatId = event.chatId;
     var userCommandInvocationData = await _commandStatistics.getUserCommandInvocations(userId: userId);
     var userName = userCommandInvocationData.elementAtOrNull(0)?.$1 ?? '';

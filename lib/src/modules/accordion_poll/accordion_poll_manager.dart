@@ -22,7 +22,7 @@ class AccordionPollManager implements ModuleManager {
   void initialize() {}
 
   void startAccordionPoll(MessageEvent event) async {
-    if (!userIdsCheck(platform, event)) return;
+    if (!otherUserCheck(platform, event)) return;
 
     if (event.platform != ChatPlatform.telegram) {
       await platform.sendMessage(event.chatId, translation: 'general.no_access');
@@ -32,7 +32,7 @@ class AccordionPollManager implements ModuleManager {
 
     var chatId = event.chatId;
     var fromUser = await modulesMediator.user.getSingleUserForChat(chatId, event.userId);
-    var toUser = await modulesMediator.user.getSingleUserForChat(chatId, event.otherUserIds[0]);
+    var toUser = await modulesMediator.user.getSingleUserForChat(chatId, event.otherUser!.id);
     var pollStartError = _accordionPoll.startPoll(chatId: chatId, fromUser: fromUser, toUser: toUser, isBot: event.isBot);
 
     if (pollStartError != null) {

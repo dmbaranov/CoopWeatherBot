@@ -49,8 +49,8 @@ class PanoramaManager implements ModuleManager {
       var allChats = await modulesMediator.chat.getAllChatIdsForPlatform(ChatPlatform.telegram);
 
       allChats.forEach((chatId) {
-        var fakeEvent = MessageEvent(
-            platform: ChatPlatform.telegram, chatId: chatId, userId: '', isBot: false, otherUserIds: [], parameters: [], rawMessage: '');
+        var fakeEvent =
+            MessageEvent(platform: ChatPlatform.telegram, chatId: chatId, userId: '', isBot: false, parameters: [], rawMessage: '');
 
         sendNewsToChat(fakeEvent);
       });

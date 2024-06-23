@@ -121,13 +121,7 @@ class WeatherManager implements ModuleManager {
       }
 
       var fakeEvent = MessageEvent(
-          platform: platform.chatPlatform,
-          chatId: weatherData.chatId,
-          userId: '',
-          isBot: false,
-          otherUserIds: [],
-          parameters: [],
-          rawMessage: '');
+          platform: platform.chatPlatform, chatId: weatherData.chatId, userId: '', isBot: false, parameters: [], rawMessage: '');
 
       getWatchlistWeather(fakeEvent);
     });

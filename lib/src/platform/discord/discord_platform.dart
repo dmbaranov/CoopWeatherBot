@@ -87,8 +87,8 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
   void setupCommand(BotCommand command) {
     if (command.withParameters) {
       _setupCommandWithParameters(command);
-    } else if (command.withOtherUserIds) {
-      _setupCommandWithOtherUserIds(command);
+    } else if (command.withOtherUser) {
+      _setupCommandWithOtherUser(command);
     } else if (command.conversatorCommand) {
       _setupCommandForConversator(command);
     } else {
@@ -102,7 +102,6 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
         platform: chatPlatform,
         chatId: event.guild?.id.toString() ?? '',
         userId: event.user.id.toString(),
-        otherUserIds: [],
         isBot: event.user.isBot,
         parameters: [],
         rawMessage: event);
@@ -116,9 +115,9 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
   }
 
   @override
-  MessageEvent transformPlatformMessageToMessageEventWithOtherUserIds(ChatContext event, [List? otherUserIds]) {
-    return transformPlatformMessageToGeneralMessageEvent(event)
-      ..otherUserIds.addAll(otherUserIds?.map((param) => param.toString()).toList() ?? []);
+  MessageEvent transformPlatformMessageToMessageEventWithOtherUser(ChatContext event,
+      [({String id, String name, bool isPremium})? otherUser]) {
+    return transformPlatformMessageToGeneralMessageEvent(event)..otherUser = otherUser;
   }
 
   @override
@@ -191,14 +190,15 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
     }));
   }
 
-  void _setupCommandWithOtherUserIds(BotCommand command) {
+  void _setupCommandWithOtherUser(BotCommand command) {
     _commands.add(ChatCommand(command.command, command.description, (ChatContext context, Member who) async {
       var user = await bot.users.get(who.id);
-      var isPremium = user.nitroType.value > 0 ? 'true' : 'false';
+      var isPremium = user.nitroType.value > 0;
       await context.respond(MessageBuilder(content: user.username));
 
       _access.execute(
-          event: transformPlatformMessageToMessageEventWithOtherUserIds(context, [who.id])..parameters.addAll([user.username, isPremium]),
+          event: transformPlatformMessageToMessageEventWithOtherUser(
+              context, (id: who.id.toString(), name: user.username, isPremium: isPremium)),
           command: command.command,
           accessLevel: command.accessLevel,
           onSuccess: command.onSuccess,

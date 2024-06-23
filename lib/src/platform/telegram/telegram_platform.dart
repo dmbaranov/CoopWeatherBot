@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io' as io;
 
-import 'package:collection/collection.dart';
 import 'package:debounce_throttle/debounce_throttle.dart';
 import 'package:teledart/model.dart' show TeleDartMessage, TeleDartInlineQuery, Message;
 import 'package:teledart/teledart.dart';
@@ -66,7 +65,6 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
         chatId: message.chat.id.toString(),
         userId: message.from?.id.toString() ?? '',
         isBot: message.replyToMessage?.from?.isBot ?? false,
-        otherUserIds: [],
         parameters: [],
         rawMessage: message);
   }
@@ -79,12 +77,9 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   }
 
   @override
-  MessageEvent transformPlatformMessageToMessageEventWithOtherUserIds(TeleDartMessage event, [List? otherUserIds]) {
-    var otherUserId = [event.replyToMessage?.from?.id.toString()].whereNotNull();
-
-    return transformPlatformMessageToGeneralMessageEvent(event)
-      ..otherUserIds.addAll(otherUserId)
-      ..parameters.addAll(_getUserInfo(event));
+  MessageEvent transformPlatformMessageToMessageEventWithOtherUser(TeleDartMessage event,
+      [({String id, String name, bool isPremium})? otherUser]) {
+    return transformPlatformMessageToGeneralMessageEvent(event)..otherUser = _getOtherUserInfo(event);
   }
 
   @override
@@ -165,13 +160,12 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
     return _telegramModule.startAccordionPoll(chatId, pollOptions, pollTime);
   }
 
-  // TODO: make required property for Platform and return BotUser?
-  List<String> _getUserInfo(TeleDartMessage message) {
+  ({String id, String name, bool isPremium})? _getOtherUserInfo(TeleDartMessage message) {
     var fullUsername = '';
     var repliedUser = message.replyToMessage?.from;
 
     if (repliedUser == null) {
-      return [];
+      return null;
     }
 
     fullUsername += repliedUser.firstName;
@@ -182,14 +176,14 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
 
     fullUsername += repliedUser.lastName ?? '';
 
-    return [fullUsername, repliedUser.isPremium?.toString() ?? 'false'];
+    return (id: repliedUser.id.toString(), name: fullUsername, isPremium: repliedUser.isPremium ?? false);
   }
 
   Function _getEventMapper(BotCommand command) {
     if (command.withParameters) {
       return transformPlatformMessageToMessageEventWithParameters;
-    } else if (command.withOtherUserIds) {
-      return transformPlatformMessageToMessageEventWithOtherUserIds;
+    } else if (command.withOtherUser) {
+      return transformPlatformMessageToMessageEventWithOtherUser;
     } else if (command.conversatorCommand) {
       return transformPlatformMessageToConversatorMessageEvent;
     }

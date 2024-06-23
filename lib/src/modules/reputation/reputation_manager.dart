@@ -29,11 +29,11 @@ class ReputationManager implements ModuleManager {
   }
 
   void increaseReputation(MessageEvent event) async {
-    if (!userIdsCheck(platform, event)) return;
+    if (!otherUserCheck(platform, event)) return;
 
     var chatId = event.chatId;
     var fromUserId = event.userId;
-    var toUserId = event.otherUserIds[0];
+    var toUserId = event.otherUser!.id;
     var successfulMessage = _sw.getText(chatId, 'reputation.change.increase_success');
 
     _reputation
@@ -43,11 +43,11 @@ class ReputationManager implements ModuleManager {
   }
 
   void decreaseReputation(MessageEvent event) async {
-    if (!userIdsCheck(platform, event)) return;
+    if (!otherUserCheck(platform, event)) return;
 
     var chatId = event.chatId;
     var fromUserId = event.userId;
-    var toUserId = event.otherUserIds[0];
+    var toUserId = event.otherUser!.id;
     var successfulMessage = _sw.getText(chatId, 'reputation.change.decrease_success');
 
     _reputation
@@ -66,10 +66,10 @@ class ReputationManager implements ModuleManager {
   }
 
   void createReputation(MessageEvent event) async {
-    if (!userIdsCheck(platform, event)) return;
+    if (!otherUserCheck(platform, event)) return;
 
     var chatId = event.chatId;
-    var userId = event.otherUserIds[0];
+    var userId = event.otherUser!.id;
     var result = await _reputation.createReputationData(chatId, userId);
     var successfulMessage = _sw.getText(chatId, 'general.success');
 

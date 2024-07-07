@@ -4,6 +4,7 @@ import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/globals/bot_command.dart';
 import 'package:weather/src/globals/accordion_vote_option.dart';
+import 'package:weather/src/globals/poll.dart';
 
 import 'package:weather/src/platform/telegram/telegram_platform.dart';
 import 'package:weather/src/platform/discord/discord_platform.dart';
@@ -49,4 +50,6 @@ abstract class Platform<T> {
   String getMessageId(T message);
 
   Future<StreamController<Map<AccordionVoteOption, int>>> startAccordionPoll(String chatId, List<String> pollOptions, int pollTime);
+
+  Future<String?> concludePoll(String chatID, Poll poll);
 }

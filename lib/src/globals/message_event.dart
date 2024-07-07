@@ -20,7 +20,7 @@ class MessageEvent<T> {
 
   set otherUser(({String id, String name, bool isPremium})? user) {
     if (_otherUser != null) {
-      throw Exception("Attempt to set already defined otherUser");
+      throw Exception('Attempt to set already defined otherUser');
     }
 
     _otherUser = user;

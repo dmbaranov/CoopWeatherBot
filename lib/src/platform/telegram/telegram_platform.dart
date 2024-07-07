@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io' as io;
+import 'dart:math';
 
 import 'package:debounce_throttle/debounce_throttle.dart';
 import 'package:teledart/model.dart' show TeleDartMessage, TeleDartInlineQuery, Message;
@@ -15,6 +16,7 @@ import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/globals/bot_command.dart';
 import 'package:weather/src/globals/accordion_vote_option.dart';
+import 'package:weather/src/globals/poll.dart';
 import 'package:weather/src/utils/logger.dart';
 import 'telegram_module.dart';
 
@@ -158,6 +160,28 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   @override
   Future<StreamController<Map<AccordionVoteOption, int>>> startAccordionPoll(String chatId, List<String> pollOptions, int pollTime) async {
     return _telegramModule.startAccordionPoll(chatId, pollOptions, pollTime);
+  }
+
+  @override
+  Future<String?> concludePoll(String chatId, Poll poll) async {
+    var stream = StreamController<Map<String, int>>();
+
+    await _telegram.sendPoll(chatId, poll.title, poll.options,
+        explanation: poll.description,
+        type: 'quiz',
+        correctOptionId: Random().nextInt(poll.options.length),
+        openPeriod: poll.duration.inSeconds);
+
+    var pollStream = _bot.onPoll();
+
+    await for (var event in pollStream) {
+      event.options.forEach((option) {
+        poll.updatePollOptionCount(option.text, option.voterCount);
+      });
+    }
+
+    stream.close();
+    return poll.result;
   }
 
   ({String id, String name, bool isPremium})? _getOtherUserInfo(TeleDartMessage message) {

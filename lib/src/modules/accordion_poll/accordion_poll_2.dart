@@ -4,6 +4,8 @@ class AccordionPoll2 extends Poll {
   bool _pollActive = false;
   Map<String, int> _pollResults = {};
   Duration _duration = Duration(seconds: 0);
+  String? _fromUserId;
+  String? _toUserId;
 
   AccordionPoll2({required super.title, super.description});
 
@@ -26,10 +28,11 @@ class AccordionPoll2 extends Poll {
   @override
   get options => _pollResults.keys.toList();
 
-  @override
-  bool startPoll({required Duration duration, required List<String> options}) {
+  Future<Poll> startPoll(
+      {required Duration duration, required List<String> options, required String fromUserId, required String toUserId}) async {
     if (_pollActive) {
-      return false;
+      // TODO: add other exceptions
+      throw Exception('Poll active');
     }
 
     options.forEach((option) {
@@ -38,14 +41,18 @@ class AccordionPoll2 extends Poll {
 
     _pollActive = true;
     _duration = duration;
+    _fromUserId = fromUserId;
+    _toUserId = toUserId;
 
-    return true;
+    return this;
   }
 
   @override
   void endPoll() {
     _pollActive = false;
     _pollResults = {};
+    _fromUserId = null;
+    _toUserId = null;
   }
 
   @override

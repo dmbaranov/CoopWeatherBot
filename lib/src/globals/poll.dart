@@ -10,8 +10,6 @@ abstract class Poll {
 
   Duration get duration;
 
-  bool startPoll({required Duration duration, required List<String> options});
-
   void endPoll();
 
   void updatePollOptionCount(String option, [int? newOptionResult]);

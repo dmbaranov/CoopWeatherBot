@@ -1,4 +1,3 @@
-import 'accordion_poll/accordion_poll_2.dart' show AccordionPoll2;
 import 'chat/chat.dart' show Chat;
 import 'check_reminder/check_reminder.dart' show CheckReminder;
 import 'command_statistics/command_statistics.dart' show CommandStatistics;
@@ -12,7 +11,6 @@ import 'weather/weather.dart' show Weather;
 import 'youtube/youtube.dart' show Youtube;
 
 class ModulesMediator {
-  late final AccordionPoll2 accordionPoll;
   late final Chat chat;
   late final CheckReminder checkReminder;
   late final CommandStatistics commandStatistics;

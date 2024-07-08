@@ -37,26 +37,40 @@ class AccordionPollManager2 implements ModuleManager {
   void startAccordionPoll(MessageEvent event) async {
     if (!otherUserCheck(platform, event)) return;
 
+    // TODO: it should be simple, with minimum logic. move all logic to accordion_poll_2
     var chatId = event.chatId;
 
-    var poll = AccordionPoll2(
-        title: _sw.getText(chatId, 'accordion.other.title'), description: _sw.getText(chatId, 'accordion.other.explanation'));
-    var pollStarted = poll.startPoll(duration: _accordionPollDuration, options: _translateOptions(chatId));
+    // TODO: move options to accordion_poll_2, use accordion_vote_option
+    AccordionPoll2(title: _sw.getText(chatId, 'accordion.other.title'), description: _sw.getText(chatId, 'accordion.other.explanation'))
+        .startPoll(
+            duration: _accordionPollDuration, options: _translateOptions(chatId), fromUserId: event.userId, toUserId: event.otherUser!.id)
+        .then((poll) => platform.concludePoll(chatId, poll))
+        .then((pollResult) =>
+            sendOperationMessage(chatId, platform: platform, operationResult: true, successfulMessage: _getSuccessMessage(pollResult)))
+        .catchError((error) => handleException(error, chatId, platform));
 
-    if (!pollStarted) {
-      throw Exception('__translate__ poll not started');
-    }
-
-    var result = await platform.concludePoll(chatId, poll);
-
-    if (result == null) {
-      print('poll finished without results');
-    } else {
-      print('poll result: $result');
-    }
+    // var poll = AccordionPoll2(
+    //     title: _sw.getText(chatId, 'accordion.other.title'), description: _sw.getText(chatId, 'accordion.other.explanation'));
+    // var pollStarted = poll.startPoll(duration: _accordionPollDuration, options: _translateOptions(chatId));
+    //
+    // if (!pollStarted) {
+    //   throw Exception('__translate__ poll not started');
+    // }
+    //
+    // var result = await platform.concludePoll(chatId, poll);
+    //
+    // if (result == null) {
+    //   print('poll finished without results');
+    // } else {
+    //   print('poll result: $result');
+    // }
   }
 
   List<String> _translateOptions(String chatId) {
     return _accordionOptions.map<String>((option) => _sw.getText(chatId, option)).toList();
+  }
+
+  String _getSuccessMessage(String? pollResult) {
+    return 'poll completed successfully with result $pollResult';
   }
 }

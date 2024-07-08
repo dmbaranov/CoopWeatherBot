@@ -43,14 +43,11 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   @override
   void initialize() {
     _telegram = Telegram(_config.token);
-
     _bot = TeleDart(_config.token, Event(_config.botName), fetcher: LongPolling(_telegram, limit: 100, timeout: 50));
+    _telegramModule = TelegramModule(bot: _bot, telegram: _telegram, platform: this, modulesMediator: modulesMediator)..initialize();
 
     _setupPlatformSpecificCommands();
-
     _bot.start();
-
-    _telegramModule = TelegramModule(bot: _bot, telegram: _telegram, platform: this, modulesMediator: modulesMediator)..initialize();
 
     _logger.i('Telegram platform has been started!');
   }
@@ -164,17 +161,13 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
 
   @override
   Future<String?> concludePoll(String chatId, Poll poll) async {
-    var stream = StreamController<Map<String, int>>();
-
     await _telegram.sendPoll(chatId, poll.title, poll.options,
         explanation: poll.description,
         type: 'quiz',
         correctOptionId: Random().nextInt(poll.options.length),
         openPeriod: poll.duration.inSeconds);
 
-    var pollStream = _bot.onPoll();
-
-    pollStream.listen((event) {
+    _bot.onPoll().listen((event) {
       event.options.forEach((option) {
         poll.updatePollOptionCount(option.text, option.voterCount);
       });
@@ -182,8 +175,10 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
 
     await Future.delayed(poll.duration);
 
-    stream.close();
-    return poll.result;
+    var pollResult = poll.result;
+    poll.endPoll();
+
+    return pollResult;
   }
 
   ({String id, String name, bool isPremium})? _getOtherUserInfo(TeleDartMessage message) {

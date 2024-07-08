@@ -56,6 +56,6 @@ class AccordionPoll2 extends Poll {
       throw Exception("Option $option does not exist in this poll");
     }
 
-    pollOption += 1;
+    _pollResults[option] = newOptionResult ?? pollOption + 1;
   }
 }

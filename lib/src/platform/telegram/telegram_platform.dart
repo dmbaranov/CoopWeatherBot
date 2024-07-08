@@ -174,11 +174,13 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
 
     var pollStream = _bot.onPoll();
 
-    await for (var event in pollStream) {
+    pollStream.listen((event) {
       event.options.forEach((option) {
         poll.updatePollOptionCount(option.text, option.voterCount);
       });
-    }
+    });
+
+    await Future.delayed(poll.duration);
 
     stream.close();
     return poll.result;

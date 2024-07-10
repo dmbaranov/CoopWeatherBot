@@ -16,7 +16,7 @@ import 'package:weather/src/modules/reputation/reputation_manager.dart';
 import 'package:weather/src/modules/youtube/youtube_manager.dart';
 import 'package:weather/src/modules/conversator/conversator_manager.dart';
 import 'package:weather/src/modules/general/general_manager.dart';
-import 'package:weather/src/modules/accordion_poll/accordion_poll_manager_2.dart';
+import 'package:weather/src/modules/accordion_poll/accordion_poll_manager.dart';
 import 'package:weather/src/modules/command_statistics/command_statistics_manager.dart';
 import 'package:weather/src/modules/check_reminder/check_reminder_manager.dart';
 
@@ -33,7 +33,7 @@ class Bot {
   late ConversatorManager _conversatorManager;
   late ChatManager _chatManager;
   late GeneralManager _generalManager;
-  late AccordionPollManager2 _accordionPollManager;
+  late AccordionPollManager _accordionPollManager;
   late CommandStatisticsManager _commandStatisticsManager;
   late CheckReminderManager _checkReminderManager;
 
@@ -55,7 +55,7 @@ class Bot {
     _userManager = managerFactory.createManager<UserManager>();
     _reputationManager = managerFactory.createManager<ReputationManager>();
     _weatherManager = managerFactory.createManager<WeatherManager>();
-    _accordionPollManager = managerFactory.createManager<AccordionPollManager2>();
+    _accordionPollManager = managerFactory.createManager<AccordionPollManager>();
     _commandStatisticsManager = managerFactory.createManager<CommandStatisticsManager>();
     _checkReminderManager = managerFactory.createManager<CheckReminderManager>();
 

@@ -167,7 +167,7 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
         correctOptionId: Random().nextInt(poll.options.length),
         openPeriod: poll.duration.inSeconds);
 
-    _bot.onPoll().listen((event) {
+    var pollStream = _bot.onPoll().listen((event) {
       event.options.forEach((option) {
         poll.updatePollOptionCount(option.text, option.voterCount);
       });
@@ -175,10 +175,9 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
 
     await Future.delayed(poll.duration);
 
-    var pollResult = poll.result;
-    poll.endPoll();
+    pollStream.cancel();
 
-    return pollResult;
+    return poll.result;
   }
 
   ({String id, String name, bool isPremium})? _getOtherUserInfo(TeleDartMessage message) {

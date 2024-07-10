@@ -10,7 +10,5 @@ abstract class Poll {
 
   Duration get duration;
 
-  void endPoll();
-
   void updatePollOptionCount(String option, [int? newOptionResult]);
 }

@@ -3,19 +3,19 @@ import 'package:weather/src/globals/poll.dart';
 import 'package:weather/src/globals/accordion_vote_option.dart';
 import 'package:weather/src/injector/injection.dart';
 
-typedef VoteOptionData = (AccordionVoteOption, String);
+typedef VoteOptionData = ({AccordionVoteOption option, String text, int votes});
 
 const _accordionPollDuration = Duration(seconds: 180);
-const _accordionOptions = [
-  (AccordionVoteOption.yes, 'accordion.options.yes'),
-  (AccordionVoteOption.no, 'accordion.options.no'),
-  (AccordionVoteOption.maybe, 'accordion.options.maybe'),
+const List<VoteOptionData> _accordionOptions = [
+  (option: AccordionVoteOption.yes, text: 'accordion.options.yes', votes: 0),
+  (option: AccordionVoteOption.no, text: 'accordion.options.no', votes: 0),
+  (option: AccordionVoteOption.maybe, text: 'accordion.options.maybe', votes: 0),
 ];
 
 class AccordionPoll2 extends Poll {
   final Swearwords _sw;
+  final Map<String, VoteOptionData> _pollVotes = {};
   bool _pollActive = false;
-  Map<String, (AccordionVoteOption, int)> _pollResults = {};
   Duration _duration = Duration(seconds: 0);
   String? _fromUserId;
   String? _toUserId;
@@ -23,17 +23,17 @@ class AccordionPoll2 extends Poll {
   AccordionPoll2({required super.title, super.description}) : _sw = getIt<Swearwords>();
 
   @override
-  String? get result => _winOption.value.$2 > 0 ? _winOption.key : null;
+  String? get result => _winOption.value.votes > 0 ? _winOption.key : null;
 
   @override
   Duration get duration => _duration;
 
   @override
-  get options => _pollResults.keys.toList();
+  List<String> get options => _pollVotes.keys.toList();
 
-  MapEntry<String, (AccordionVoteOption, int)> get _winOption => _pollResults.entries
+  MapEntry<String, VoteOptionData> get _winOption => _pollVotes.entries
       .toList()
-      .reduce((currentOption, nextOption) => currentOption.value.$2 > nextOption.value.$2 ? currentOption : nextOption);
+      .reduce((currentOption, nextOption) => currentOption.value.votes > nextOption.value.votes ? currentOption : nextOption);
 
   Future<Poll> startPoll({required String chatId, required String fromUserId, required String toUserId}) async {
     if (_pollActive) {
@@ -43,7 +43,7 @@ class AccordionPoll2 extends Poll {
 
     var translatedOptions = _getTranslatedOptions(chatId, _accordionOptions);
     translatedOptions.forEach((option) {
-      _pollResults[option.$2] = (option.$1, 0);
+      _pollVotes[option.text] = option;
     });
 
     _pollActive = true;
@@ -55,27 +55,17 @@ class AccordionPoll2 extends Poll {
   }
 
   @override
-  void endPoll() {
-    print('Emitting option: ${_winOption.value.$1}');
-
-    _pollActive = false;
-    _pollResults = {};
-    _fromUserId = null;
-    _toUserId = null;
-  }
-
-  @override
   void updatePollOptionCount(String option, [int? newOptionResult]) {
-    var pollOption = _pollResults[option];
+    var pollOption = _pollVotes[option];
 
     if (pollOption == null) {
       throw Exception("Option $option does not exist in this poll");
     }
 
-    _pollResults[option] = (pollOption.$1, newOptionResult ?? pollOption.$2 + 1);
+    _pollVotes[option] = (option: pollOption.option, text: pollOption.text, votes: newOptionResult ?? pollOption.votes + 1);
   }
 
   List<VoteOptionData> _getTranslatedOptions(String chatId, List<VoteOptionData> voteOptions) {
-    return voteOptions.map((option) => (option.$1, _sw.getText(chatId, option.$2))).toList();
+    return voteOptions.map((option) => (option: option.option, text: _sw.getText(chatId, option.text), votes: option.votes)).toList();
   }
 }

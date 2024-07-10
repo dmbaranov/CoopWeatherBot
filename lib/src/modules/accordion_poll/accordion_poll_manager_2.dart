@@ -30,10 +30,8 @@ class AccordionPollManager2 implements ModuleManager {
   void startAccordionPoll(MessageEvent event) async {
     if (!otherUserCheck(platform, event)) return;
 
-    // TODO: it should be simple, with minimum logic. move all logic to accordion_poll_2
     var chatId = event.chatId;
 
-    // TODO: move options to accordion_poll_2, use accordion_vote_option
     AccordionPoll2(title: _sw.getText(chatId, 'accordion.other.title'), description: _sw.getText(chatId, 'accordion.other.explanation'))
         .startPoll(chatId: chatId, fromUserId: event.userId, toUserId: event.otherUser!.id)
         .then((poll) => platform.concludePoll(chatId, poll))

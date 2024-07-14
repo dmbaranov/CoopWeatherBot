@@ -1,17 +1,15 @@
-import 'package:weather/src/globals/bot_user.dart';
-
 class AccordionPollEvent {
-  final BotUser fromUser;
-  final BotUser toUser;
+  final String fromUserId;
+  final String toUserId;
   final String chatId;
 
-  AccordionPollEvent({required this.fromUser, required this.toUser, required this.chatId});
+  AccordionPollEvent({required this.fromUserId, required this.toUserId, required this.chatId});
 }
 
 class PollCompletedYes extends AccordionPollEvent {
-  PollCompletedYes({required super.fromUser, required super.toUser, required super.chatId});
+  PollCompletedYes({required super.fromUserId, required super.toUserId, required super.chatId});
 }
 
 class PollCompletedNo extends AccordionPollEvent {
-  PollCompletedNo({required super.fromUser, required super.toUser, required super.chatId});
+  PollCompletedNo({required super.fromUserId, required super.toUserId, required super.chatId});
 }

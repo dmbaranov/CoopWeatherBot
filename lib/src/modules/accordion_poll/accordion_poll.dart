@@ -1,103 +1,103 @@
-import 'package:weather/src/core/swearwords.dart';
-import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/core/event_bus.dart';
+import 'package:weather/src/core/swearwords.dart';
 import 'package:weather/src/events/accordion_poll_events.dart';
-import 'package:weather/src/globals/accordion_vote_option.dart';
-import 'package:weather/src/globals/bot_user.dart';
+import 'package:weather/src/injector/injection.dart';
+import 'package:weather/src/globals/module_exception.dart';
+import 'package:weather/src/globals/poll.dart';
+import 'package:weather/src/utils/logger.dart';
 
-class AccordionPoll {
-  final int pollTime;
-  final EventBus _eventBus;
+enum AccordionVoteOption { yes, no, maybe }
+
+typedef VoteOptionData = ({AccordionVoteOption option, String text, int votes});
+
+class AccordionPollException extends ModuleException {
+  AccordionPollException(super.cause);
+}
+
+const Duration _accordionPollDuration = Duration(seconds: 180);
+const List<VoteOptionData> _accordionOptions = [
+  (option: AccordionVoteOption.yes, text: 'accordion.options.yes', votes: 0),
+  (option: AccordionVoteOption.no, text: 'accordion.options.no', votes: 0),
+  (option: AccordionVoteOption.maybe, text: 'accordion.options.maybe', votes: 0),
+];
+
+class AccordionPoll extends Poll {
   final Swearwords _sw;
-  late BotUser _fromUser;
-  late BotUser _toUser;
-  late String _chatId;
-  bool _isVoteActive = false;
-  Map<AccordionVoteOption, int> _voteResult = {};
+  final EventBus _eventBus;
+  final Logger _logger;
+  final Map<String, VoteOptionData> _pollVotes = {};
+  bool _pollActive = false;
+  Duration _duration = Duration(seconds: 0);
+  String? _fromUserId;
+  String? _toUserId;
+  String? _chatId;
 
-  AccordionPoll({this.pollTime = 180})
-      : _eventBus = getIt<EventBus>(),
-        _sw = getIt<Swearwords>();
+  AccordionPoll({required super.title, super.description})
+      : _sw = getIt<Swearwords>(),
+        _eventBus = getIt<EventBus>(),
+        _logger = getIt<Logger>();
 
-  get pollOptions => [
-        _sw.getText(_chatId, 'accordion.options.yes'),
-        _sw.getText(_chatId, 'accordion.options.no'),
-        _sw.getText(_chatId, 'accordion.options.maybe')
-      ];
+  @override
+  String get result => _winOption.value.votes > 0 ? 'accordion.results.${_winOption.value.option.name}' : 'accordion.results.no_results';
 
-  String? startPoll({
-    required String chatId,
-    required bool isBot,
-    BotUser? fromUser,
-    BotUser? toUser,
-  }) {
-    // TODO: change to Enum like reputation
-    if (_isVoteActive) {
-      return 'accordion.other.accordion_vote_in_progress';
-    } else if (toUser == null) {
-      return 'accordion.other.message_not_chosen';
+  @override
+  Duration get duration => _duration;
+
+  @override
+  List<String> get options => _pollVotes.keys.toList();
+
+  MapEntry<String, VoteOptionData> get _winOption => _pollVotes.entries
+      .toList()
+      .reduce((currentOption, nextOption) => currentOption.value.votes > nextOption.value.votes ? currentOption : nextOption);
+
+  Future<Poll> startPoll({required String chatId, required String fromUserId, required String toUserId, required bool isBot}) async {
+    if (_pollActive) {
+      throw AccordionPollException('accordion.other.accordion_vote_in_progress');
     } else if (isBot) {
-      return 'accordion.other.bot_vote_attempt';
-    } else if (fromUser == null) {
-      return 'general.something_went_wrong';
+      throw AccordionPollException('accordion.other.bot_vote_attempt');
     }
 
-    _isVoteActive = true;
-    _fromUser = fromUser;
-    _toUser = toUser;
+    var translatedOptions = _getTranslatedOptions(chatId, _accordionOptions);
+    translatedOptions.forEach((option) {
+      _pollVotes[option.text] = option;
+    });
+
+    _pollActive = true;
+    _duration = _accordionPollDuration;
+    _fromUserId = fromUserId;
+    _toUserId = toUserId;
     _chatId = chatId;
 
-    return null;
+    return this;
   }
 
-  void updatePollResults(Map<AccordionVoteOption, int> results) {
-    if (_isVoteActive) {
-      _voteResult = results;
+  @override
+  void updatePollOptionCount(String option, [int? newOptionResult]) {
+    var pollOption = _pollVotes[option];
+
+    if (pollOption == null) {
+      _logger.e("Option $option does not exist in this poll");
+      return;
     }
+
+    _pollVotes[option] = (option: pollOption.option, text: pollOption.text, votes: newOptionResult ?? pollOption.votes + 1);
   }
 
-  Future<String> endVoteAndGetResults() async {
-    await Future.delayed(Duration(seconds: pollTime));
-
-    var voteResultKeys = _voteResult.keys.toList();
-
-    if (voteResultKeys.isEmpty) {
-      return 'accordion.results.no_results';
-    }
-
-    var winnerOption =
-        _voteResult.entries.toList().reduce((currentVote, nextVote) => currentVote.value > nextVote.value ? currentVote : nextVote).key;
-
-    String winningTranslation;
-
-    switch (winnerOption) {
+  @override
+  void endPoll() {
+    switch (_winOption.value.option) {
       case AccordionVoteOption.yes:
-        _eventBus.fire(PollCompletedYes(fromUser: _fromUser, toUser: _toUser, chatId: _chatId));
-        winningTranslation = 'accordion.results.yes';
+        _eventBus.fire(PollCompletedYes(fromUserId: _fromUserId!, toUserId: _toUserId!, chatId: _chatId!));
         break;
-
       case AccordionVoteOption.no:
-        _eventBus.fire(PollCompletedNo(fromUser: _fromUser, toUser: _toUser, chatId: _chatId));
-        winningTranslation = 'accordion.results.no';
+        _eventBus.fire(PollCompletedNo(fromUserId: _fromUserId!, toUserId: _toUserId!, chatId: _chatId!));
         break;
-
       case AccordionVoteOption.maybe:
-        winningTranslation = 'accordion.results.maybe';
         break;
     }
-
-    _stopPoll();
-
-    return winningTranslation;
   }
 
-  void _stopPoll() {
-    var emptyUser = BotUser(id: '0', name: '', isPremium: false, deleted: false, banned: false, moderator: false);
-
-    _isVoteActive = false;
-    _voteResult = {};
-    _fromUser = emptyUser;
-    _toUser = emptyUser;
-    _chatId = '';
+  List<VoteOptionData> _getTranslatedOptions(String chatId, List<VoteOptionData> voteOptions) {
+    return voteOptions.map((option) => (option: option.option, text: _sw.getText(chatId, option.text), votes: option.votes)).toList();
   }
 }

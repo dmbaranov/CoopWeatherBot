@@ -137,8 +137,8 @@ class Reputation {
   }
 
   void _listenToAccordionPolls() {
-    _eventBus.on<PollCompletedYes>().listen((event) => _updateAccordionPollReputation(event.chatId, event.toUser.id));
-    _eventBus.on<PollCompletedNo>().listen((event) => _updateAccordionPollReputation(event.chatId, event.fromUser.id));
+    _eventBus.on<PollCompletedYes>().listen((event) => _updateAccordionPollReputation(event.chatId, event.toUserId));
+    _eventBus.on<PollCompletedNo>().listen((event) => _updateAccordionPollReputation(event.chatId, event.fromUserId));
   }
 
   void _updateAccordionPollReputation(String chatId, String userId) async {

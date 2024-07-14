@@ -31,7 +31,7 @@ class ChatManager implements ModuleManager {
   void createChat(MessageEvent event) async {
     var chatId = event.chatId;
     var chatName = _getNewChatName(event);
-    var result = await _chat.createChat(id: chatId, name: chatName, platform: event.platform);
+    var result = await _chat.createChat(id: chatId, name: chatName, platform: platform.chatPlatform);
     var successfulMessage = _sw.getText(chatId, 'chat.initialization.success');
 
     sendOperationMessage(chatId, platform: platform, operationResult: result, successfulMessage: successfulMessage);
@@ -58,9 +58,9 @@ class ChatManager implements ModuleManager {
   }
 
   String _getNewChatName(MessageEvent event) {
-    if (event.platform == ChatPlatform.telegram) {
+    if (platform.chatPlatform == ChatPlatform.telegram) {
       return event.rawMessage.chat.title.toString();
-    } else if (event.platform == ChatPlatform.discord) {
+    } else if (platform.chatPlatform == ChatPlatform.discord) {
       return event.rawMessage.guild.name.toString();
     }
 

@@ -1,22 +1,28 @@
+import 'package:weather/src/core/swearwords.dart';
+import 'package:weather/src/globals/module_exception.dart';
+import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/platform/platform.dart';
-import 'package:weather/src/globals/module_manager.dart';
-import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/message_event.dart';
+import 'package:weather/src/globals/module_manager.dart';
+import 'package:weather/src/modules/modules_mediator.dart';
+import 'package:weather/src/modules/utils.dart';
 import 'accordion_poll.dart';
-import '../modules_mediator.dart';
-import '../utils.dart';
+
+class AccordionPollException extends ModuleException {
+  AccordionPollException(super.cause);
+}
 
 class AccordionPollManager implements ModuleManager {
   @override
   final Platform platform;
   @override
   final ModulesMediator modulesMediator;
-  final AccordionPoll _accordionPoll;
+  final Swearwords _sw;
 
-  AccordionPollManager(this.platform, this.modulesMediator) : _accordionPoll = AccordionPoll();
+  AccordionPollManager(this.platform, this.modulesMediator) : _sw = getIt<Swearwords>();
 
   @override
-  AccordionPoll get module => _accordionPoll;
+  get module => null;
 
   @override
   void initialize() {}
@@ -24,29 +30,13 @@ class AccordionPollManager implements ModuleManager {
   void startAccordionPoll(MessageEvent event) async {
     if (!otherUserCheck(platform, event)) return;
 
-    if (event.platform != ChatPlatform.telegram) {
-      await platform.sendMessage(event.chatId, translation: 'general.no_access');
-
-      return;
-    }
-
     var chatId = event.chatId;
-    var fromUser = await modulesMediator.user.getSingleUserForChat(chatId, event.userId);
-    var toUser = await modulesMediator.user.getSingleUserForChat(chatId, event.otherUser!.id);
-    var pollStartError = _accordionPoll.startPoll(chatId: chatId, fromUser: fromUser, toUser: toUser, isBot: event.isBot);
 
-    if (pollStartError != null) {
-      await platform.sendMessage(chatId, translation: pollStartError);
-
-      return;
-    }
-
-    var pollStream = await platform.startAccordionPoll(chatId, _accordionPoll.pollOptions, _accordionPoll.pollTime);
-
-    pollStream.stream.listen((pollResults) => _accordionPoll.updatePollResults(pollResults));
-
-    var pollResult = await _accordionPoll.endVoteAndGetResults();
-
-    await platform.sendMessage(chatId, translation: pollResult);
+    AccordionPoll(title: _sw.getText(chatId, 'accordion.other.title'), description: _sw.getText(chatId, 'accordion.other.explanation'))
+        .startPoll(chatId: chatId, fromUserId: event.userId, toUserId: event.otherUser!.id, isBot: event.isBot)
+        .then((poll) => platform.concludePoll(chatId, poll))
+        .then((pollResult) =>
+            sendOperationMessage(chatId, platform: platform, operationResult: true, successfulMessage: _sw.getText(chatId, pollResult)))
+        .catchError((error) => handleException(error, chatId, platform));
   }
 }

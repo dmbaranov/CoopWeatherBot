@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:nyxx/nyxx.dart' hide Logger, User;
+import 'package:nyxx/nyxx.dart' hide Logger, User, Poll;
 import 'package:nyxx_commands/nyxx_commands.dart';
 import 'package:uuid/uuid.dart';
 import 'package:weather/src/core/swearwords.dart';
@@ -14,6 +14,7 @@ import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/bot_command.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/globals/access_level.dart';
+import 'package:weather/src/globals/poll.dart';
 import 'package:weather/src/modules/modules_mediator.dart';
 import 'package:weather/src/utils/logger.dart';
 import 'discord_module.dart';
@@ -99,7 +100,6 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
   @override
   MessageEvent transformPlatformMessageToGeneralMessageEvent(ChatContext event) {
     return MessageEvent(
-        platform: chatPlatform,
         chatId: event.guild?.id.toString() ?? '',
         userId: event.user.id.toString(),
         isBot: event.user.isBot,
@@ -138,7 +138,7 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
   }
 
   @override
-  startAccordionPoll(String chatId, List<String> pollOptions, int pollTime) {
+  concludePoll(String chatId, Poll poll) {
     throw 'Not implemented';
   }
 

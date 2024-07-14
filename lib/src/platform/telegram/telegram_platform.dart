@@ -156,6 +156,7 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
     await Future.delayed(poll.duration);
 
     pollStream.cancel();
+    poll.endPoll();
 
     return poll.result;
   }

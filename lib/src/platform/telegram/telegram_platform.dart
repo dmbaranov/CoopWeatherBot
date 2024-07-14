@@ -59,7 +59,6 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   @override
   MessageEvent transformPlatformMessageToGeneralMessageEvent(TeleDartMessage message) {
     return MessageEvent(
-        platform: chatPlatform,
         chatId: message.chat.id.toString(),
         userId: message.from?.id.toString() ?? '',
         isBot: message.replyToMessage?.from?.isBot ?? false,
@@ -140,19 +139,6 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
     return message.messageId.toString();
   }
 
-  void _setupPlatformSpecificCommands() async {
-    var bullyTagUserRegexpRaw = await io.File('assets/misc/bully_tag_user.txt').readAsString();
-    var bullyTagUserRegexp = bullyTagUserRegexpRaw.replaceAll('\n', '');
-
-    _bot.onMessage(keyword: RegExp(bullyTagUserRegexp, caseSensitive: false)).listen((event) => _telegramModule.bullyTagUser(event));
-    _bot.onInlineQuery().listen((query) {
-      _debouncer.value = query;
-    });
-    _debouncer.values.listen((query) {
-      _telegramModule.searchYoutubeTrackInline(query as TeleDartInlineQuery);
-    });
-  }
-
   @override
   Future<String> concludePoll(String chatId, Poll poll) async {
     await _telegram.sendPoll(chatId, poll.title, poll.options,
@@ -172,6 +158,19 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
     pollStream.cancel();
 
     return poll.result;
+  }
+
+  void _setupPlatformSpecificCommands() async {
+    var bullyTagUserRegexpRaw = await io.File('assets/misc/bully_tag_user.txt').readAsString();
+    var bullyTagUserRegexp = bullyTagUserRegexpRaw.replaceAll('\n', '');
+
+    _bot.onMessage(keyword: RegExp(bullyTagUserRegexp, caseSensitive: false)).listen((event) => _telegramModule.bullyTagUser(event));
+    _bot.onInlineQuery().listen((query) {
+      _debouncer.value = query;
+    });
+    _debouncer.values.listen((query) {
+      _telegramModule.searchYoutubeTrackInline(query as TeleDartInlineQuery);
+    });
   }
 
   ({String id, String name, bool isPremium})? _getOtherUserInfo(TeleDartMessage message) {

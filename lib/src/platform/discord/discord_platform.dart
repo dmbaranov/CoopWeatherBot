@@ -100,7 +100,6 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
   @override
   MessageEvent transformPlatformMessageToGeneralMessageEvent(ChatContext event) {
     return MessageEvent(
-        platform: chatPlatform,
         chatId: event.guild?.id.toString() ?? '',
         userId: event.user.id.toString(),
         isBot: event.user.isBot,

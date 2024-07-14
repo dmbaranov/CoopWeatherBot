@@ -139,11 +139,6 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
   }
 
   @override
-  startAccordionPoll(String chatId, List<String> pollOptions, int pollTime) {
-    throw 'Not implemented';
-  }
-
-  @override
   concludePoll(String chatId, Poll poll) {
     throw 'Not implemented';
   }

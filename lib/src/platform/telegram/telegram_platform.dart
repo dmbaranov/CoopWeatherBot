@@ -15,7 +15,6 @@ import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/globals/bot_command.dart';
-import 'package:weather/src/globals/accordion_vote_option.dart';
 import 'package:weather/src/globals/poll.dart';
 import 'package:weather/src/utils/logger.dart';
 import 'telegram_module.dart';
@@ -152,11 +151,6 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
     _debouncer.values.listen((query) {
       _telegramModule.searchYoutubeTrackInline(query as TeleDartInlineQuery);
     });
-  }
-
-  @override
-  Future<StreamController<Map<AccordionVoteOption, int>>> startAccordionPoll(String chatId, List<String> pollOptions, int pollTime) async {
-    return _telegramModule.startAccordionPoll(chatId, pollOptions, pollTime);
   }
 
   @override

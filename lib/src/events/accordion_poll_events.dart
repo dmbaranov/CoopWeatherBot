@@ -1,5 +1,3 @@
-import 'package:weather/src/globals/bot_user.dart';
-
 class AccordionPollEvent {
   final String fromUserId;
   final String toUserId;

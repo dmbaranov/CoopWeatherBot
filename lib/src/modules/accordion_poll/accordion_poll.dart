@@ -4,7 +4,9 @@ import 'package:weather/src/events/accordion_poll_events.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/globals/module_exception.dart';
 import 'package:weather/src/globals/poll.dart';
-import 'package:weather/src/globals/accordion_vote_option.dart';
+import 'package:weather/src/utils/logger.dart';
+
+enum AccordionVoteOption { yes, no, maybe }
 
 typedef VoteOptionData = ({AccordionVoteOption option, String text, int votes});
 
@@ -22,6 +24,7 @@ const List<VoteOptionData> _accordionOptions = [
 class AccordionPoll extends Poll {
   final Swearwords _sw;
   final EventBus _eventBus;
+  final Logger _logger;
   final Map<String, VoteOptionData> _pollVotes = {};
   bool _pollActive = false;
   Duration _duration = Duration(seconds: 0);
@@ -31,7 +34,8 @@ class AccordionPoll extends Poll {
 
   AccordionPoll({required super.title, super.description})
       : _sw = getIt<Swearwords>(),
-        _eventBus = getIt<EventBus>();
+        _eventBus = getIt<EventBus>(),
+        _logger = getIt<Logger>();
 
   @override
   String? get result => _winOption.value.votes > 0 ? _winOption.key : null;
@@ -48,7 +52,7 @@ class AccordionPoll extends Poll {
 
   Future<Poll> startPoll({required String chatId, required String fromUserId, required String toUserId, required bool isBot}) async {
     if (_pollActive) {
-      throw AccordionPollException('Poll active');
+      throw AccordionPollException('accordion.other.accordion_vote_in_progress');
     } else if (isBot) {
       throw AccordionPollException('accordion.other.bot_vote_attempt');
     }
@@ -72,7 +76,8 @@ class AccordionPoll extends Poll {
     var pollOption = _pollVotes[option];
 
     if (pollOption == null) {
-      throw Exception("Option $option does not exist in this poll");
+      _logger.e("Option $option does not exist in this poll");
+      return;
     }
 
     _pollVotes[option] = (option: pollOption.option, text: pollOption.text, votes: newOptionResult ?? pollOption.votes + 1);

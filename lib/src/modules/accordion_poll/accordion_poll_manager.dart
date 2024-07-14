@@ -35,12 +35,8 @@ class AccordionPollManager implements ModuleManager {
     AccordionPoll(title: _sw.getText(chatId, 'accordion.other.title'), description: _sw.getText(chatId, 'accordion.other.explanation'))
         .startPoll(chatId: chatId, fromUserId: event.userId, toUserId: event.otherUser!.id, isBot: event.isBot)
         .then((poll) => platform.concludePoll(chatId, poll))
-        .then((pollResult) => sendOperationMessage(chatId,
-            platform: platform, operationResult: true, successfulMessage: _getSuccessMessage(chatId, pollResult)))
+        .then((pollResult) =>
+            sendOperationMessage(chatId, platform: platform, operationResult: true, successfulMessage: _sw.getText(chatId, pollResult)))
         .catchError((error) => handleException(error, chatId, platform));
-  }
-
-  String _getSuccessMessage(String chatId, String? pollResult) {
-    return pollResult ?? _sw.getText(chatId, 'accordion.results.no_results');
   }
 }

@@ -38,7 +38,7 @@ class AccordionPoll extends Poll {
         _logger = getIt<Logger>();
 
   @override
-  String? get result => _winOption.value.votes > 0 ? _winOption.key : null;
+  String get result => _winOption.value.votes > 0 ? 'accordion.results.${_winOption.value.option.name}' : 'accordion.results.no_results';
 
   @override
   Duration get duration => _duration;

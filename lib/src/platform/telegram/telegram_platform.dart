@@ -154,7 +154,7 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   }
 
   @override
-  Future<String?> concludePoll(String chatId, Poll poll) async {
+  Future<String> concludePoll(String chatId, Poll poll) async {
     await _telegram.sendPoll(chatId, poll.title, poll.options,
         explanation: poll.description,
         type: 'quiz',

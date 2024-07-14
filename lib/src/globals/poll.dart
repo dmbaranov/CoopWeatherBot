@@ -4,7 +4,7 @@ abstract class Poll {
 
   Poll({required this.title, this.description});
 
-  String? get result;
+  String get result;
 
   List<String> get options;
 

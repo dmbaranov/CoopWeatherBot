@@ -48,5 +48,5 @@ abstract class Platform<T> {
 
   String getMessageId(T message);
 
-  Future<String?> concludePoll(String chatID, Poll poll);
+  Future<String> concludePoll(String chatID, Poll poll);
 }

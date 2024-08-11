@@ -33,7 +33,7 @@ class Access {
       required OnFailureCallback onFailure}) async {
     var user = await _userDb.getSingleUserForChat(event.chatId, event.userId);
 
-    if (user == null || user.banned || user.deleted) {
+    if (user == null || user.banned) {
       return onFailure(event);
     }
 

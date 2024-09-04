@@ -55,7 +55,9 @@ class DiscordModule {
   }
 
   void _startHeroCheckJob() {
-    Cron().schedule(Schedule.parse('0 5 * * 6,0'), () async {
+    const hour = 3;
+
+    Cron().schedule(Schedule.parse('0 $hour * * 6,0'), () async {
       var authorizedChats = await modulesMediator.chat.getAllChatIdsForPlatform(ChatPlatform.discord);
 
       await Future.forEach(authorizedChats, (chatId) async {
@@ -68,15 +70,17 @@ class DiscordModule {
 
         var listOfOnlineUsers = chatOnlineUsers.entries.where((entry) => entry.value == true).map((entry) => entry.key).toList();
         if (listOfOnlineUsers.isEmpty) {
-          return platform.sendMessage(chatId, translation: 'hero.users_at_five.no_users');
+          var noUsersMessage = _sw.getText(chatId, 'hero.active_users.no_users', {'hour': hour.toString()});
+
+          return platform.sendMessage(chatId, message: noUsersMessage);
         }
 
         var now = DateTime.now();
-        var timestamp = DateTime(now.year, now.month, now.day, 5).toString();
+        var timestamp = DateTime(now.year, now.month, now.day, hour).toString();
         var chatUsers = await modulesMediator.user.getUsersForChat(chatId);
         var chatUserStats = await _heroStatsDb.getChatHeroStats(chatId);
-        var heroesMessage = _sw.getText(chatId, 'hero.users_at_five.list');
-        var heroesStatsMessage = _sw.getText(chatId, 'hero.users_at_five.stats');
+        var heroesMessage = _sw.getText(chatId, 'hero.active_users.list', {'hour': hour.toString()});
+        var heroesStatsMessage = _sw.getText(chatId, 'hero.active_users.stats', {'hour': hour.toString()});
 
         await Future.forEach(listOfOnlineUsers, (userId) async {
           var onlineUser = chatUsers.firstWhereOrNull((user) => user.id == userId);
@@ -93,8 +97,8 @@ class DiscordModule {
           var userData = chatUsers.firstWhereOrNull((user) => user.id == userStats.$1);
 
           if (userData != null) {
-            heroesStatsMessage +=
-                _sw.getText(chatId, 'hero.users_at_five.hero_stats', {'hero': userData.name, 'count': userStats.$2.toString()});
+            heroesStatsMessage += _sw.getText(
+                chatId, 'hero.active_users.hero_stats', {'hero': userData.name, 'hour': hour.toString(), 'count': userStats.$2.toString()});
           }
         });
 

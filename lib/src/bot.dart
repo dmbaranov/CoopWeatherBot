@@ -190,8 +190,8 @@ class Bot {
 
     _platform.setupCommand(BotCommand(
         command: 'createreputation',
-        description: '[A] Create reputation for the user',
-        accessLevel: AccessLevel.admin,
+        description: '[M] Create reputation for the user',
+        accessLevel: AccessLevel.moderator,
         withOtherUser: true,
         onSuccess: _reputationManager.createReputation));
 

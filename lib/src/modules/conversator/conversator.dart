@@ -11,8 +11,8 @@ import 'package:weather/src/utils/logger.dart';
 
 const String _converstorApiURL = 'https://api.openai.com/v1/chat/completions';
 const int maxTokens = 4096;
-const String regularModel = 'o1-preview';
-const String advancedModel = 'o1-mini';
+const String regularModel = 'o1-mini';
+const String advancedModel = 'o1-preview';
 const int regularDailyLimit = 100;
 const int advancedDailyLimit = 10;
 
@@ -77,7 +77,7 @@ class Conversator {
 
   Future<Map<String, dynamic>> _getConversatorResponse(List<ConversatorChatMessage> conversation, String model) async {
     var formattedMessages =
-        conversation.map((message) => {'role': message.fromUser ? 'user' : 'system', 'content': message.message}).toList();
+        conversation.map((message) => {'role': message.fromUser ? 'user' : 'assistant', 'content': message.message}).toList();
 
     var headers = {'Content-Type': 'application/json', 'Authorization': 'Bearer ${_config.conversatorKey}'};
     var body = {'model': model, 'messages': formattedMessages};

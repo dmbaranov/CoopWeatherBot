@@ -46,7 +46,8 @@ extension GetItInjectableX on _i174.GetIt {
     final loggerModule = _$LoggerModule();
     gh.singleton<_i400.EventBus>(() => _i400.EventBus());
     gh.singleton<_i861.Config>(() => _i861.Config()..initialize());
-    gh.singleton<_i676.Messaging>(() => _i676.Messaging()..initialize());
+    gh.singleton<_i676.MessagingClient>(
+        () => _i676.MessagingClient()..initialize());
     gh.factory<_i221.Logger>(
       () => loggerModule.devLogger,
       registerFor: {_dev},

@@ -1,27 +1,22 @@
 import 'dart:async';
 import 'package:cron/cron.dart';
-import 'package:weather/src/core/messaging.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/core/repositories/bot_user_repository.dart';
 import 'package:weather/src/globals/bot_user.dart';
 
 class User {
   final BotUserRepository _userDb;
-  final Messaging _messaging;
 
   late StreamController<int> _userManagerStreamController;
   ScheduledTask? _userManagerCronTask;
 
-  User()
-      : _userDb = getIt<BotUserRepository>(),
-        _messaging = getIt<Messaging>();
+  User() : _userDb = getIt<BotUserRepository>();
 
   Stream<int> get userManagerStream => _userManagerStreamController.stream;
 
   void initialize() {
     _userManagerStreamController = StreamController<int>.broadcast();
     _updateUserManagerStream();
-    _subscribeToMessagingEvents();
   }
 
   Future<BotUser?> getSingleUserForChat(String chatId, String userId) async {
@@ -67,14 +62,6 @@ class User {
 
     _userManagerCronTask = Cron().schedule(Schedule.parse('0 0 * * *'), () {
       _userManagerStreamController.sink.add(0);
-    });
-  }
-
-  void _subscribeToMessagingEvents() async {
-    var queue = await _messaging.subscribeToQueue('member-updated');
-
-    queue.listen((event) {
-      print('handling ${event.payloadAsJson}');
     });
   }
 }

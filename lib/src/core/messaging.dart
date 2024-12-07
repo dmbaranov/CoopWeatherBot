@@ -5,7 +5,7 @@ import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/utils/logger.dart';
 
 @singleton
-class Messaging {
+class MessagingClient {
   late Channel _channel;
 
   @PostConstruct()
@@ -14,7 +14,7 @@ class Messaging {
     _channel = await client.channel();
   }
 
-  Future<Consumer> subscribeToQueue(String queueName) async {
+  Future<Consumer> getQueueConsumer(String queueName) async {
     var queue = await _channel.queue(queueName);
     var consumer = await queue.consume();
 
@@ -23,18 +23,18 @@ class Messaging {
 }
 
 class MessagingQueue<T> {
-  final Messaging _messaging;
+  final MessagingClient _client;
   final Logger _logger;
 
   MessagingQueue()
-      : _messaging = getIt<Messaging>(),
+      : _client = getIt<MessagingClient>(),
         _logger = getIt<Logger>();
 
   Future<Stream<T>> createStream(String queueName, T Function(Map<dynamic, dynamic>) mapper) async {
     var streamController = StreamController<T>.broadcast();
-    var queue = await _messaging.subscribeToQueue(queueName);
+    var queueConsumer = await _client.getQueueConsumer(queueName);
 
-    queue.listen((event) {
+    queueConsumer.listen((event) {
       try {
         var mappedEvent = mapper(event.payloadAsJson);
 

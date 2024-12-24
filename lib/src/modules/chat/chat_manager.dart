@@ -29,6 +29,7 @@ class ChatManager implements ModuleManager {
   void initialize() {
     _initializeSwearwords();
     _subscribeToMessageQueue();
+    _subscribeToSwearwordsUpdatedQueue();
   }
 
   void createChat(MessageEvent event) async {
@@ -86,6 +87,14 @@ class ChatManager implements ModuleManager {
     MessagingQueue<MessageQueueEvent>().createStream(messageQueue, MessageQueueEvent.fromJson).then((stream) {
       stream.listen((event) {
         platform.sendMessage(event.chatId, message: event.message);
+      });
+    });
+  }
+
+  void _subscribeToSwearwordsUpdatedQueue() {
+    MessagingQueue<SwearwordsUpdatedQueueEvent>().createStream(swearwordsUpdatedQueue, SwearwordsUpdatedQueueEvent.fromJson).then((stream) {
+      stream.listen((event) {
+        _sw.setChatConfig(event.chatId, event.swearwordsConfig);
       });
     });
   }

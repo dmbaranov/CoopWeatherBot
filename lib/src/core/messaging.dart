@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:dart_amqp/dart_amqp.dart';
 import 'package:injectable/injectable.dart';
+import 'package:weather/src/core/config.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/utils/logger.dart';
 
@@ -25,14 +26,17 @@ class MessagingClient {
 class MessagingQueue<T> {
   final MessagingClient _client;
   final Logger _logger;
+  final Config _config;
 
   MessagingQueue()
       : _client = getIt<MessagingClient>(),
-        _logger = getIt<Logger>();
+        _logger = getIt<Logger>(),
+        _config = getIt<Config>();
 
   Future<Stream<T>> createStream(String queueName, T Function(Map<dynamic, dynamic>) mapper) async {
     var streamController = StreamController<T>.broadcast();
-    var queueConsumer = await _client.getQueueConsumer(queueName);
+    var queueNameWithPlatform = "${_config.chatPlatform.value}.$queueName";
+    var queueConsumer = await _client.getQueueConsumer(queueNameWithPlatform);
 
     queueConsumer.listen((event) {
       try {

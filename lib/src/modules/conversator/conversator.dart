@@ -77,7 +77,7 @@ class Conversator {
 
   Future<Map<String, dynamic>> _getConversatorResponse(List<ConversatorChatMessage> conversation, String model) async {
     var formattedMessages =
-        conversation.map((message) => {'role': message.fromUser ? 'user' : 'system', 'content': message.message}).toList();
+        conversation.map((message) => {'role': message.fromUser ? 'user' : 'assistant', 'content': message.message}).toList();
 
     var headers = {'Content-Type': 'application/json', 'Authorization': 'Bearer ${_config.conversatorKey}'};
     var body = {'model': model, 'messages': formattedMessages};

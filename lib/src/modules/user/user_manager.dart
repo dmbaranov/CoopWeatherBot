@@ -1,4 +1,3 @@
-import 'package:weather/src/core/messaging.dart';
 import 'package:weather/src/globals/module_manager.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/core/swearwords.dart';
@@ -6,7 +5,6 @@ import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/utils/logger.dart';
 import 'user.dart';
-import 'user_messaging.dart';
 import '../modules_mediator.dart';
 import '../utils.dart';
 
@@ -31,7 +29,6 @@ class UserManager implements ModuleManager {
   void initialize() {
     _user.initialize();
     _subscribeToUserUpdates();
-    _subscribeToUserUpdatesQueue();
   }
 
   void addUser(MessageEvent event) async {
@@ -77,14 +74,6 @@ class UserManager implements ModuleManager {
 
           await _user.updatePremiumStatus(chatUser.id, platformUserPremiumStatus);
         }
-      });
-    });
-  }
-
-  void _subscribeToUserUpdatesQueue() {
-    MessagingQueue<MemberUpdatedQueueEvent>().createStream(memberUpdatedQueue, MemberUpdatedQueueEvent.fromJson).then((stream) {
-      stream.listen((event) {
-        print('User updated: ${event.deleted}');
       });
     });
   }

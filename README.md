@@ -23,9 +23,9 @@ evolved a lot ever since. Now available for Discord as well!
       people. Use it wisely;
 - Accordion votes
     - Someone has sent a message that has already been there? Start a vote to mark it as chestnut;
-- Integrated admin panel with convenient UI to control the bot
-    - Run [frontend](https://github.com/dmbaranov/weather-bot-admin-frontend)
-      and [backend](https://github.com/dmbaranov/weather-bot-admin-backend) on-demand
+- Integrated admin panel
+    - For simple management of the bot. [Frontend](https://github.com/dmbaranov/weather-bot-admin-frontend)
+      and [Backend](https://github.com/dmbaranov/weather-bot-admin-backend) services available separately;
 - And some much more
     - And many more to come, stay tuned;
 

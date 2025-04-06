@@ -12,11 +12,13 @@ import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
 
 import '../core/access.dart' as _i328;
+import '../core/chat_config.dart' as _i570;
 import '../core/config.dart' as _i861;
 import '../core/database.dart' as _i163;
 import '../core/event_bus.dart' as _i400;
 import '../core/messaging.dart' as _i676;
 import '../core/repositories/bot_user_repository.dart' as _i912;
+import '../core/repositories/chat_config_repository.dart' as _i41;
 import '../core/repositories/chat_repository.dart' as _i407;
 import '../core/repositories/check_reminder_repository.dart' as _i504;
 import '../core/repositories/command_statistics_repository.dart' as _i24;
@@ -74,12 +76,15 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i912.BotUserRepository(db: gh<_i163.Database>()));
     gh.singleton<_i24.CommandStatisticsRepository>(
         () => _i24.CommandStatisticsRepository(db: gh<_i163.Database>()));
+    gh.singleton<_i41.ChatConfigRepository>(
+        () => _i41.ChatConfigRepository(db: gh<_i163.Database>()));
     gh.singleton<_i665.WeatherRepository>(
         () => _i665.WeatherRepository(db: gh<_i163.Database>()));
     gh.singleton<_i1039.ConversatorChatRepository>(
         () => _i1039.ConversatorChatRepository(db: gh<_i163.Database>()));
     gh.singleton<_i964.HeroStatsRepository>(
         () => _i964.HeroStatsRepository(db: gh<_i163.Database>()));
+    gh.singleton<_i570.ChatConfig>(() => _i570.ChatConfig()..initialize());
     gh.singleton<_i320.Swearwords>(() => _i320.Swearwords()..initialize());
     gh.singleton<_i328.Access>(() => _i328.Access());
     return this;

@@ -36,4 +36,5 @@ and [PostgreSQL](https://www.postgresql.org/) installed and running. Once ready,
 1. `cp .env.example .env`
 2. Update variables in the .env file
 3. `dart pub get`
-3. `dart bin/main.dart`
+4. `dart run build_runner build`
+5. `dart bin/main.dart`

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:cron/cron.dart';
 import 'package:http/http.dart' as http;
+import 'package:weather/src/core/chat_config.dart';
 import 'package:weather/src/core/config.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/core/repositories/conversator_chat_repository.dart';
@@ -10,9 +11,8 @@ import 'package:weather/src/globals/module_exception.dart';
 import 'package:weather/src/utils/logger.dart';
 
 const String _converstorApiURL = 'https://api.openai.com/v1/chat/completions';
-const int maxTokens = 4096;
-const String regularModel = 'gpt-4o-mini';
-const String advancedModel = 'gpt-4o';
+const String regularModel = 'gpt-4.1-mini';
+const String advancedModel = 'gpt-4.1';
 const int regularDailyLimit = 100;
 const int advancedDailyLimit = 10;
 
@@ -24,11 +24,13 @@ class Conversator {
   final Config _config;
   final Logger _logger;
   final String _apiBaseUrl = _converstorApiURL;
+  final ChatConfig _chatConfig;
   final ConversatorChatRepository _conversatorChatDb;
   final ConversatorUserRepository _conversatorUserDb;
 
   Conversator()
       : _config = getIt<Config>(),
+        _chatConfig = getIt<ChatConfig>(),
         _conversatorChatDb = getIt<ConversatorChatRepository>(),
         _conversatorUserDb = getIt<ConversatorUserRepository>(),
         _logger = getIt<Logger>();
@@ -44,6 +46,8 @@ class Conversator {
       required String currentMessageId,
       required String message,
       required String model}) async {
+    var conversatorConfig = _chatConfig.getConversatorConfig(chatId);
+
     await _registerConversatorInvocation(userId, model);
 
     var conversationId = await getConversationId(chatId, parentMessageId);
@@ -53,11 +57,11 @@ class Conversator {
 
     var wholeConversation = [...previousMessages, ConversatorChatMessage(message: message, fromUser: true)];
 
-    var rawResponse = await _getConversatorResponse(wholeConversation, model);
+    var rawResponse =
+        await _getConversatorResponse(conversation: wholeConversation, model: model, instructions: conversatorConfig?.instructions);
     var response = rawResponse['choices']?[0]?['message']?['content'] ?? 'No response';
-    var tokens = rawResponse['usage']?['total_tokens'] ?? -1;
 
-    return '# $conversationId\n($tokens/$maxTokens)\n\n$response';
+    return '# $conversationId\n\n$response';
   }
 
   Future<void> saveConversationMessage(
@@ -75,9 +79,14 @@ class Conversator {
     return conversationId;
   }
 
-  Future<Map<String, dynamic>> _getConversatorResponse(List<ConversatorChatMessage> conversation, String model) async {
+  Future<Map<String, dynamic>> _getConversatorResponse(
+      {required List<ConversatorChatMessage> conversation, required String model, String? instructions}) async {
     var formattedMessages =
         conversation.map((message) => {'role': message.fromUser ? 'user' : 'assistant', 'content': message.message}).toList();
+
+    if (instructions != null) {
+      formattedMessages.insert(0, {'role': 'developer', 'content': instructions});
+    }
 
     var headers = {'Content-Type': 'application/json', 'Authorization': 'Bearer ${_config.conversatorKey}'};
     var body = {'model': model, 'messages': formattedMessages};

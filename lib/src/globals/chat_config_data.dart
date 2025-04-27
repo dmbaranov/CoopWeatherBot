@@ -18,14 +18,14 @@ class NewsConfig {
   NewsConfig.fromJson(Map<dynamic, dynamic> json) : disabled = json['disabled'];
 }
 
-class ChatConfig {
+class ChatConfigData {
   final String chatId;
   final ConversatorConfig? conversatorConfig;
   final NewsConfig? newsConfig;
 
-  ChatConfig({required this.chatId, this.conversatorConfig, this.newsConfig});
+  ChatConfigData({required this.chatId, this.conversatorConfig, this.newsConfig});
 
-  ChatConfig.fromJson(Map<dynamic, dynamic> json)
+  ChatConfigData.fromJson(Map<dynamic, dynamic> json)
       : chatId = json['chatId'],
         conversatorConfig = _fromJson(json['conversator'], ConversatorConfig.fromJson),
         newsConfig = _fromJson(json['news'], NewsConfig.fromJson);

@@ -11,7 +11,6 @@ class ChatConfig {
 
   ChatConfig() : _chatConfigDb = getIt<ChatConfigRepository>();
 
-  @PostConstruct()
   void initialize() async {
     var configs = await _chatConfigDb.getAllPlatformConfigs();
 

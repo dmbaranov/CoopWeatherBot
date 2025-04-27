@@ -84,7 +84,7 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i1039.ConversatorChatRepository(db: gh<_i163.Database>()));
     gh.singleton<_i964.HeroStatsRepository>(
         () => _i964.HeroStatsRepository(db: gh<_i163.Database>()));
-    gh.singleton<_i570.ChatConfig>(() => _i570.ChatConfig()..initialize());
+    gh.singleton<_i570.ChatConfig>(() => _i570.ChatConfig());
     gh.singleton<_i320.Swearwords>(() => _i320.Swearwords()..initialize());
     gh.singleton<_i328.Access>(() => _i328.Access());
     return this;

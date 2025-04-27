@@ -1,3 +1,4 @@
+import 'package:weather/src/core/chat_config.dart';
 import 'package:weather/src/core/messaging.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/core/swearwords.dart';
@@ -17,10 +18,12 @@ class ChatManager implements ModuleManager {
   final ModulesMediator modulesMediator;
   final Chat _chat;
   final Swearwords _sw;
+  final ChatConfig _chatConfig;
 
   ChatManager(this.platform, this.modulesMediator)
       : _chat = Chat(),
-        _sw = getIt<Swearwords>();
+        _sw = getIt<Swearwords>(),
+        _chatConfig = getIt<ChatConfig>();
 
   @override
   Chat get module => _chat;
@@ -30,6 +33,7 @@ class ChatManager implements ModuleManager {
     _initializeSwearwords();
     _subscribeToMessageQueue();
     _subscribeToSwearwordsUpdatedQueue();
+    _subscribeToChatConfigUpdatedQueue();
   }
 
   void createChat(MessageEvent event) async {
@@ -78,7 +82,7 @@ class ChatManager implements ModuleManager {
       var chat = await _chat.getSingleChat(chatId: chatId);
 
       if (chat != null) {
-        _sw.setChatConfig(chatId, chat.swearwordsConfig);
+        _sw.setChatSwearwords(chatId, chat.swearwordsConfig);
       }
     });
   }
@@ -94,7 +98,15 @@ class ChatManager implements ModuleManager {
   void _subscribeToSwearwordsUpdatedQueue() {
     MessagingQueue<SwearwordsUpdatedQueueEvent>().createStream(swearwordsUpdatedQueue, SwearwordsUpdatedQueueEvent.fromJson).then((stream) {
       stream.listen((event) {
-        _sw.setChatConfig(event.chatId, event.swearwordsConfig);
+        _sw.setChatSwearwords(event.chatId, event.swearwordsConfig);
+      });
+    });
+  }
+
+  void _subscribeToChatConfigUpdatedQueue() {
+    MessagingQueue<ChatConfigUpdateEvent>().createStream(chatConfigUpdateQueue, ChatConfigUpdateEvent.fromJson).then((stream) {
+      stream.listen((event) {
+        _chatConfig.updateChatConfig(event.chatId);
       });
     });
   }

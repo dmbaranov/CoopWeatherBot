@@ -56,7 +56,7 @@ class Swearwords {
     return File('$configsBasePath/swearwords.$config.json').exists();
   }
 
-  void setChatConfig(String chatId, String config) {
+  void setChatSwearwords(String chatId, String config) {
     _chatIdsToSwearwords[chatId] = _swearwordsTypeToSwearwords[config]!;
   }
 

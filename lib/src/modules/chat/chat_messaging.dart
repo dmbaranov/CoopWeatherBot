@@ -1,5 +1,6 @@
 const messageQueue = 'chat-message';
 const swearwordsUpdatedQueue = 'chat-swearwords-updated';
+const chatConfigUpdateQueue = 'chat-config-updated';
 
 class MessageQueueEvent {
   final String chatId;
@@ -17,4 +18,10 @@ class SwearwordsUpdatedQueueEvent {
   SwearwordsUpdatedQueueEvent.fromJson(Map<dynamic, dynamic> json)
       : chatId = json['chatId'],
         swearwordsConfig = json['swearwordsConfig'];
+}
+
+class ChatConfigUpdateEvent {
+  final String chatId;
+
+  ChatConfigUpdateEvent.fromJson(Map<dynamic, dynamic> json) : chatId = json['chatId'];
 }

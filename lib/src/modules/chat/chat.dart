@@ -39,7 +39,7 @@ class Chat {
       return false;
     }
 
-    _sw.setChatConfig(chatId, config);
+    _sw.setChatSwearwords(chatId, config);
     return true;
   }
 }

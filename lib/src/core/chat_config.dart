@@ -20,6 +20,14 @@ class ChatConfig {
     });
   }
 
+  void updateChatConfig(String chatId) async {
+    var config = await _chatConfigDb.getChatConfig(chatId);
+
+    if (config != null) {
+      _chatConfigData[config.chatId] = config;
+    }
+  }
+
   ConversatorConfig? getConversatorConfig(String chatId) {
     return _chatConfigData[chatId]?.conversatorConfig;
   }

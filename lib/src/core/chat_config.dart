@@ -25,6 +25,8 @@ class ChatConfig {
 
     if (config != null) {
       _chatConfigData[config.chatId] = config;
+    } else {
+      _chatConfigData.remove(chatId);
     }
   }
 

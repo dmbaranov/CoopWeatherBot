@@ -35,7 +35,7 @@ class UserManager implements ModuleManager {
     if (!otherUserCheck(platform, event)) return;
 
     var chatId = event.chatId;
-    var (id: userId, name: username, isPremium: isPremium) = event.otherUser!;
+    var (id: userId, name: username, isPremium: isPremium, isBot: _) = event.otherUser!;
     var result = await _user.addUser(userId: userId, chatId: chatId, name: username, isPremium: isPremium);
     var successfulMessage = _sw.getText(chatId, 'user.user_added');
 

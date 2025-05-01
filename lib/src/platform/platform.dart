@@ -19,8 +19,6 @@ abstract class Platform<T> {
         return TelegramPlatform(chatPlatform: ChatPlatform.telegram, modulesMediator: modulesMediator);
       case ChatPlatform.discord:
         return DiscordPlatform(chatPlatform: ChatPlatform.discord, modulesMediator: modulesMediator);
-      default:
-        throw Exception('Platform $chatPlatform is not supported');
     }
   }
 
@@ -32,7 +30,8 @@ abstract class Platform<T> {
 
   MessageEvent transformPlatformMessageToMessageEventWithParameters(T message, [List? otherParameters]);
 
-  MessageEvent transformPlatformMessageToMessageEventWithOtherUser(T message, [({String id, String name, bool isPremium})? otherUser]);
+  MessageEvent transformPlatformMessageToMessageEventWithOtherUser(T message,
+      [({String id, String name, bool isPremium, bool isBot})? otherUser]);
 
   MessageEvent transformPlatformMessageToConversatorMessageEvent(T message, [List<String>? otherParameters]);
 

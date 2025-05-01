@@ -8,11 +8,10 @@ List<ResultRow> sortResults(Result results) {
 MessageEvent getFakeMessageEvent(
     {String? chatId,
     String? userId,
-    ({String id, String name, bool isPremium})? otherUser,
+    ({String id, String name, bool isPremium, bool isBot})? otherUser,
     List<String>? parameters,
     bool? isBot,
     String? rawMessage}) {
-  return MessageEvent(
-      chatId: chatId ?? '123', userId: userId ?? '123', isBot: isBot ?? false, parameters: parameters ?? [], rawMessage: rawMessage)
+  return MessageEvent(chatId: chatId ?? '123', userId: userId ?? '123', parameters: parameters ?? [], rawMessage: rawMessage)
     ..otherUser = otherUser;
 }

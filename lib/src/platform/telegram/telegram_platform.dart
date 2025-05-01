@@ -58,12 +58,7 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
 
   @override
   MessageEvent transformPlatformMessageToGeneralMessageEvent(TeleDartMessage message) {
-    return MessageEvent(
-        chatId: message.chat.id.toString(),
-        userId: message.from?.id.toString() ?? '',
-        isBot: message.replyToMessage?.from?.isBot ?? false,
-        parameters: [],
-        rawMessage: message);
+    return MessageEvent(chatId: message.chat.id.toString(), userId: message.from?.id.toString() ?? '', parameters: [], rawMessage: message);
   }
 
   @override
@@ -75,7 +70,7 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
 
   @override
   MessageEvent transformPlatformMessageToMessageEventWithOtherUser(TeleDartMessage event,
-      [({String id, String name, bool isPremium})? otherUser]) {
+      [({String id, String name, bool isPremium, bool isBot})? otherUser]) {
     return transformPlatformMessageToGeneralMessageEvent(event)..otherUser = _getOtherUserInfo(event);
   }
 
@@ -174,7 +169,7 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
     });
   }
 
-  ({String id, String name, bool isPremium})? _getOtherUserInfo(TeleDartMessage message) {
+  ({String id, String name, bool isPremium, bool isBot})? _getOtherUserInfo(TeleDartMessage message) {
     var fullUsername = '';
     var repliedUser = message.replyToMessage?.from;
 
@@ -190,7 +185,7 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
 
     fullUsername += repliedUser.lastName ?? '';
 
-    return (id: repliedUser.id.toString(), name: fullUsername, isPremium: repliedUser.isPremium ?? false);
+    return (id: repliedUser.id.toString(), name: fullUsername, isPremium: repliedUser.isPremium ?? false, isBot: repliedUser.isBot);
   }
 
   Function _getEventMapper(BotCommand command) {

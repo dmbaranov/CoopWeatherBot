@@ -120,7 +120,7 @@ class WeatherManager implements ModuleManager {
         return;
       }
 
-      var fakeEvent = MessageEvent(chatId: weatherData.chatId, userId: '', isBot: false, parameters: [], rawMessage: '');
+      var fakeEvent = MessageEvent(chatId: weatherData.chatId, userId: '', parameters: [], rawMessage: '');
 
       getWatchlistWeather(fakeEvent);
     });

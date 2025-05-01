@@ -15,7 +15,7 @@ bool messageEventParametersCheck(Platform platform, MessageEvent event, [int num
 }
 
 bool otherUserCheck(Platform platform, MessageEvent event) {
-  if (event.otherUser == null) {
+  if (event.otherUser == null || event.otherUser?.isBot == true) {
     platform.sendMessage(event.chatId, translation: 'general.something_went_wrong');
 
     return false;

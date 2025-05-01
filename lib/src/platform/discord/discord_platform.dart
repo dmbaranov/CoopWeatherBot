@@ -99,12 +99,7 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
 
   @override
   MessageEvent transformPlatformMessageToGeneralMessageEvent(ChatContext event) {
-    return MessageEvent(
-        chatId: event.guild?.id.toString() ?? '',
-        userId: event.user.id.toString(),
-        isBot: event.user.isBot,
-        parameters: [],
-        rawMessage: event);
+    return MessageEvent(chatId: event.guild?.id.toString() ?? '', userId: event.user.id.toString(), parameters: [], rawMessage: event);
   }
 
   @override
@@ -116,7 +111,7 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
 
   @override
   MessageEvent transformPlatformMessageToMessageEventWithOtherUser(ChatContext event,
-      [({String id, String name, bool isPremium})? otherUser]) {
+      [({String id, String name, bool isPremium, bool isBot})? otherUser]) {
     return transformPlatformMessageToGeneralMessageEvent(event)..otherUser = otherUser;
   }
 
@@ -198,7 +193,7 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
 
       _access.execute(
           event: transformPlatformMessageToMessageEventWithOtherUser(
-              context, (id: who.id.toString(), name: user.username, isPremium: isPremium)),
+              context, (id: who.id.toString(), name: user.username, isPremium: isPremium, isBot: user.isBot)),
           command: command.command,
           accessLevel: command.accessLevel,
           onSuccess: command.onSuccess,

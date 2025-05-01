@@ -61,7 +61,6 @@ class CommandStatistics {
 
   void _startMonthlyTopJob() async {
     Cron().schedule(Schedule.parse('0 10 1 * *'), () async {
-      // TODO: move to manager
       var platformChatIds = await chat.getAllChatIdsForPlatform(chatPlatform);
 
       Future.forEach(platformChatIds, (chatId) async {

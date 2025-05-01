@@ -50,11 +50,9 @@ class AccordionPoll extends Poll {
       .toList()
       .reduce((currentOption, nextOption) => currentOption.value.votes > nextOption.value.votes ? currentOption : nextOption);
 
-  Future<Poll> startPoll({required String chatId, required String fromUserId, required String toUserId, required bool isBot}) async {
+  Future<Poll> startPoll({required String chatId, required String fromUserId, required String toUserId}) async {
     if (_pollActive) {
       throw AccordionPollException('accordion.other.accordion_vote_in_progress');
-    } else if (isBot) {
-      throw AccordionPollException('accordion.other.bot_vote_attempt');
     }
 
     var translatedOptions = _getTranslatedOptions(chatId, _accordionOptions);

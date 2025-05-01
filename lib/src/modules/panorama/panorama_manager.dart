@@ -1,7 +1,7 @@
+import 'package:weather/src/core/chat_config.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/globals/module_manager.dart';
-import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/utils/logger.dart';
 import 'panorama.dart';
@@ -15,9 +15,11 @@ class PanoramaManager implements ModuleManager {
   final ModulesMediator modulesMediator;
   final Logger _logger;
   final PanoramaNews _panoramaNews;
+  final ChatConfig _chatConfig;
 
   PanoramaManager(this.platform, this.modulesMediator)
       : _logger = getIt<Logger>(),
+        _chatConfig = getIt<ChatConfig>(),
         _panoramaNews = PanoramaNews();
 
   @override
@@ -37,19 +39,19 @@ class PanoramaManager implements ModuleManager {
     sendOperationMessage(chatId, platform: platform, operationResult: news != null, successfulMessage: successfulMessage);
   }
 
-  // TODO: add news_enabled flag and send news to all the enabled chats
   void _subscribeToPanoramaNews() {
-    if (platform.chatPlatform != ChatPlatform.telegram) {
-      return;
-    }
-
     _panoramaNews.panoramaStream.listen((event) async {
       _logger.i('Handling Panorama stream data: $event');
 
-      var allChats = await modulesMediator.chat.getAllChatIdsForPlatform(ChatPlatform.telegram);
+      var allChats = await modulesMediator.chat.getAllChatIdsForPlatform(platform.chatPlatform);
 
       allChats.forEach((chatId) {
+        var newsConfig = _chatConfig.getNewsConfig(chatId);
         var fakeEvent = MessageEvent(chatId: chatId, userId: '', parameters: [], rawMessage: '');
+
+        if (newsConfig?.disabled == true) {
+          return;
+        }
 
         sendNewsToChat(fakeEvent);
       });

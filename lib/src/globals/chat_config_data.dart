@@ -3,17 +3,17 @@ T? _fromJson<T>(dynamic json, T Function(Map<String, dynamic>) fromJson) {
 }
 
 class ConversatorConfig {
-  final String instructions;
+  final String? instructions;
 
-  ConversatorConfig({required this.instructions});
+  ConversatorConfig({this.instructions});
 
   ConversatorConfig.fromJson(Map<dynamic, dynamic> json) : instructions = json['instructions'];
 }
 
 class NewsConfig {
-  final bool disabled;
+  final bool? disabled;
 
-  NewsConfig({required this.disabled});
+  NewsConfig({this.disabled});
 
   NewsConfig.fromJson(Map<dynamic, dynamic> json) : disabled = json['disabled'];
 }

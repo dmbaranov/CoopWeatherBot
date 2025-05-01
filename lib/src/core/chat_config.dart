@@ -32,4 +32,8 @@ class ChatConfig {
   ConversatorConfig? getConversatorConfig(String chatId) {
     return _chatConfigData[chatId]?.conversatorConfig;
   }
+
+  NewsConfig? getNewsConfig(String chatId) {
+    return _chatConfigData[chatId]?.newsConfig;
+  }
 }

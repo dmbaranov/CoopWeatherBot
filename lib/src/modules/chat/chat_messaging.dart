@@ -1,6 +1,6 @@
-const messageQueue = 'chat-message';
-const swearwordsUpdatedQueue = 'chat-swearwords-updated';
-const chatConfigUpdateQueue = 'chat-config-updated';
+const messageQueue = 'chat.message';
+const swearwordsUpdatedQueue = 'chat.swearwords-updated';
+const chatConfigUpdateQueue = 'chat-config.updated';
 
 class MessageQueueEvent {
   final String chatId;

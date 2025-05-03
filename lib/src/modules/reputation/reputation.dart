@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:cron/cron.dart';
+import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/core/event_bus.dart';
 import 'package:weather/src/core/repositories/reputation_repository.dart';
@@ -7,7 +8,7 @@ import 'package:weather/src/events/accordion_poll_events.dart';
 import 'package:weather/src/globals/chat_reputation_data.dart';
 import 'package:weather/src/globals/single_reputation_data.dart';
 import 'package:weather/src/globals/module_exception.dart';
-import 'package:weather/src/utils/logger.dart';
+import 'package:weather/src/modules/modules_mediator.dart';
 
 enum ReputationChangeOption { increase, decrease }
 
@@ -15,17 +16,18 @@ class ReputationException extends ModuleException {
   ReputationException(super.cause);
 }
 
-const numberOfVoteOptions = 3;
+const normalNumberOfVoteOptions = 3;
+const premiumNumberOfVoteOptions = 6;
 
 class Reputation {
+  final ModulesMediator modulesMediator;
+  final ChatPlatform chatPlatform;
   final EventBus _eventBus;
   final ReputationRepository _reputationDb;
-  final Logger _logger;
 
-  Reputation()
+  Reputation({required this.modulesMediator, required this.chatPlatform})
       : _reputationDb = getIt<ReputationRepository>(),
-        _eventBus = getIt<EventBus>(),
-        _logger = getIt<Logger>();
+        _eventBus = getIt<EventBus>();
 
   void initialize() {
     _startResetVotesJob();
@@ -79,8 +81,9 @@ class Reputation {
   }
 
   Future<bool> createReputationData(String chatId, String userId) async {
-    // TODO: add 6 options for premium users
-    var result = await _reputationDb.createReputationData(chatId, userId, numberOfVoteOptions);
+    var chatUser = await modulesMediator.user.getSingleUserForChat(chatId, userId);
+    var voteOptions = chatUser?.isPremium == true ? premiumNumberOfVoteOptions : normalNumberOfVoteOptions;
+    var result = await _reputationDb.createReputationData(chatId, userId, voteOptions);
 
     return result == 1;
   }
@@ -126,13 +129,16 @@ class Reputation {
 
   void _startResetVotesJob() {
     Cron().schedule(Schedule.parse('0 0 * * *'), () async {
-      var result = await _reputationDb.resetChangeOptions(numberOfVoteOptions);
+      var allChats = await modulesMediator.chat.getAllChatIdsForPlatform(chatPlatform);
 
-      if (result == 0) {
-        _logger.w('Something went wrong with resetting reputation change options');
-      } else {
-        _logger.i('Reset reputation change options for $result rows');
-      }
+      Future.forEach(allChats, (chatId) async {
+        var chatUsers = await modulesMediator.user.getUsersForChat(chatId);
+
+        Future.forEach(chatUsers, (user) async {
+          var numberOfVoteOptions = user.isPremium ? premiumNumberOfVoteOptions : normalNumberOfVoteOptions;
+          await _updateChangeOptions(chatId, user.id, numberOfVoteOptions, numberOfVoteOptions);
+        });
+      });
     });
   }
 

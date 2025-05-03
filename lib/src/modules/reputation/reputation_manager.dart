@@ -17,7 +17,7 @@ class ReputationManager implements ModuleManager {
   final Swearwords _sw;
 
   ReputationManager(this.platform, this.modulesMediator)
-      : _reputation = Reputation(),
+      : _reputation = Reputation(modulesMediator: modulesMediator, chatPlatform: platform.chatPlatform),
         _sw = getIt<Swearwords>();
 
   @override

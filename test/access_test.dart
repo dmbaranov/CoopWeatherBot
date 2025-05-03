@@ -49,6 +49,6 @@ void main() {
 
       expect(successCallbackCalled, equals(true));
       expect(failureCallbackCalled, equals(false));
-    }, skip: 'TODO: get rid of Future.delayed');
+    }, skip: 'get rid of Future.delayed');
   });
 }

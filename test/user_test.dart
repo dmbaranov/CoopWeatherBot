@@ -18,8 +18,7 @@ void main() {
 
     chat = Chat();
   });
-
-  // TODO: add tests for the stream
+  
   group('User', () {
     test('adds a new user', () async {
       await chat.createChat(id: '123', name: 'test-telegram-chat', platform: ChatPlatform.telegram);

@@ -5,7 +5,7 @@ import 'package:weather/src/core/repositories/command_statistics_repository.dart
 import 'package:weather/src/core/event_bus.dart';
 import 'package:weather/src/events/access_events.dart';
 import 'package:weather/src/globals/chat_platform.dart';
-import 'package:weather/src/modules/chat/chat.dart';
+import 'package:weather/src/modules/modules_mediator.dart';
 import 'package:weather/src/utils/wait_concurrently.dart';
 
 class ChatReport {
@@ -19,14 +19,14 @@ class ChatReport {
 }
 
 class CommandStatistics {
-  final Chat chat;
+  final ModulesMediator modulesMediator;
   final ChatPlatform chatPlatform;
   final EventBus _eventBus;
   final CommandStatisticsRepository _commandStatisticsDb;
 
   late StreamController<ChatReport> _chatReportController;
 
-  CommandStatistics({required this.chat, required this.chatPlatform})
+  CommandStatistics({required this.modulesMediator, required this.chatPlatform})
       : _commandStatisticsDb = getIt<CommandStatisticsRepository>(),
         _eventBus = getIt<EventBus>();
 
@@ -61,7 +61,7 @@ class CommandStatistics {
 
   void _startMonthlyTopJob() async {
     Cron().schedule(Schedule.parse('0 10 1 * *'), () async {
-      var platformChatIds = await chat.getAllChatIdsForPlatform(chatPlatform);
+      var platformChatIds = await modulesMediator.chat.getAllChatIdsForPlatform(chatPlatform);
 
       Future.forEach(platformChatIds, (chatId) async {
         var (totalCommandsInvoked, topInvokedCommands, topInvocationUsers) =

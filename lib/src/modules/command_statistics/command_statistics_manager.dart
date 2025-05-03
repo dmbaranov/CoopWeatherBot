@@ -20,7 +20,7 @@ class CommandStatisticsManager implements ModuleManager {
   CommandStatisticsManager(this.platform, this.modulesMediator)
       : _logger = getIt<Logger>(),
         _sw = getIt<Swearwords>(),
-        _commandStatistics = CommandStatistics(chatPlatform: platform.chatPlatform, chat: modulesMediator.chat);
+        _commandStatistics = CommandStatistics(chatPlatform: platform.chatPlatform, modulesMediator: modulesMediator);
 
   @override
   CommandStatistics get module => _commandStatistics;

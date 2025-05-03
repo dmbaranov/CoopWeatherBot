@@ -21,7 +21,7 @@ class ChatManager implements ModuleManager {
   final ChatConfig _chatConfig;
 
   ChatManager(this.platform, this.modulesMediator)
-      : _chat = Chat(),
+      : _chat = Chat(chatPlatform: platform.chatPlatform),
         _sw = getIt<Swearwords>(),
         _chatConfig = getIt<ChatConfig>();
 
@@ -30,8 +30,8 @@ class ChatManager implements ModuleManager {
 
   @override
   void initialize() {
+    _chat.initialize();
     _chatConfig.initialize();
-    _initializeSwearwords();
     _subscribeToMessageQueue();
     _subscribeToSwearwordsUpdatedQueue();
     _subscribeToChatConfigUpdatedQueue();
@@ -74,18 +74,6 @@ class ChatManager implements ModuleManager {
     }
 
     return 'unknown';
-  }
-
-  void _initializeSwearwords() async {
-    var platformChats = await _chat.getAllChatIdsForPlatform(platform.chatPlatform);
-
-    await Future.forEach(platformChats, (chatId) async {
-      var chat = await _chat.getSingleChat(chatId: chatId);
-
-      if (chat != null) {
-        _sw.setChatSwearwords(chatId, chat.swearwordsConfig);
-      }
-    });
   }
 
   void _subscribeToMessageQueue() {

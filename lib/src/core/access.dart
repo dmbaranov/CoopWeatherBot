@@ -1,5 +1,4 @@
 import 'package:injectable/injectable.dart';
-import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/events/access_events.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/globals/access_level.dart';
@@ -11,7 +10,6 @@ import 'event_bus.dart';
 typedef OnSuccessCallback = void Function(MessageEvent event);
 typedef OnFailureCallback = Future Function(MessageEvent event);
 
-@Order(2)
 @singleton
 class Access {
   final Config _config;
@@ -19,11 +17,7 @@ class Access {
   final EventBus _eventBus;
   final Logger _logger;
 
-  Access()
-      : _config = getIt<Config>(),
-        _userDb = getIt<BotUserRepository>(),
-        _eventBus = getIt<EventBus>(),
-        _logger = getIt<Logger>();
+  Access(this._config, this._userDb, this._eventBus, this._logger);
 
   void execute(
       {required MessageEvent event,

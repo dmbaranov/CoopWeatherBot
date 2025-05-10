@@ -10,7 +10,7 @@ class MessagingClient {
   final Config _config;
   late Channel _channel;
 
-  MessagingClient() : _config = getIt<Config>();
+  MessagingClient(this._config);
 
   @PostConstruct()
   void initialize() async {

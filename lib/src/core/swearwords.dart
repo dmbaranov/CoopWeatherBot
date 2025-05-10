@@ -1,21 +1,19 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:injectable/injectable.dart';
-import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/utils/logger.dart';
 
 const swearwordsConfigs = ['sample', 'angry', 'basic', 'fun'];
 const configsBasePath = 'assets/swearwords';
 const defaultSwearwords = 'basic';
 
-@Order(2)
 @singleton
 class Swearwords {
   final Logger _logger;
   final Map<String, Map<String, dynamic>> _swearwordsTypeToSwearwords = {};
   final Map<String, Map<String, dynamic>> _chatIdsToSwearwords = {};
 
-  Swearwords() : _logger = getIt<Logger>();
+  Swearwords(this._logger);
 
   String get defaultConfig => defaultSwearwords;
 

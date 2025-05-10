@@ -48,12 +48,12 @@ extension GetItInjectableX on _i174.GetIt {
     final loggerModule = _$LoggerModule();
     gh.singleton<_i400.EventBus>(() => _i400.EventBus());
     gh.singleton<_i861.Config>(() => _i861.Config()..initialize());
-    gh.singleton<_i676.MessagingClient>(
-        () => _i676.MessagingClient()..initialize());
     gh.factory<_i221.Logger>(
       () => loggerModule.devLogger,
       registerFor: {_dev},
     );
+    gh.singleton<_i320.Swearwords>(
+        () => _i320.Swearwords(gh<_i221.Logger>())..initialize());
     gh.factory<_i221.Logger>(
       () => loggerModule.prodLogger,
       registerFor: {_prod},
@@ -62,6 +62,8 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i861.Config>(),
           gh<_i221.Logger>(),
         ));
+    gh.singleton<_i676.MessagingClient>(
+        () => _i676.MessagingClient(gh<_i861.Config>())..initialize());
     gh.singleton<_i407.ChatRepository>(
         () => _i407.ChatRepository(db: gh<_i163.Database>()));
     gh.singleton<_i786.NewsRepository>(
@@ -84,9 +86,14 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i1039.ConversatorChatRepository(db: gh<_i163.Database>()));
     gh.singleton<_i964.HeroStatsRepository>(
         () => _i964.HeroStatsRepository(db: gh<_i163.Database>()));
-    gh.singleton<_i570.ChatConfig>(() => _i570.ChatConfig());
-    gh.singleton<_i320.Swearwords>(() => _i320.Swearwords()..initialize());
-    gh.singleton<_i328.Access>(() => _i328.Access());
+    gh.singleton<_i328.Access>(() => _i328.Access(
+          gh<_i861.Config>(),
+          gh<_i912.BotUserRepository>(),
+          gh<_i400.EventBus>(),
+          gh<_i221.Logger>(),
+        ));
+    gh.singleton<_i570.ChatConfig>(
+        () => _i570.ChatConfig(gh<_i41.ChatConfigRepository>()));
     return this;
   }
 }

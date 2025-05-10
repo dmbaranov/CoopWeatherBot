@@ -1,15 +1,13 @@
 import 'package:injectable/injectable.dart';
 import 'package:weather/src/core/repositories/chat_config_repository.dart';
 import 'package:weather/src/globals/chat_config_data.dart';
-import 'package:weather/src/injector/injection.dart';
 
 @singleton
-@Order(2)
 class ChatConfig {
   final ChatConfigRepository _chatConfigDb;
   final Map<String, ChatConfigData> _chatConfigData = {};
 
-  ChatConfig() : _chatConfigDb = getIt<ChatConfigRepository>();
+  ChatConfig(this._chatConfigDb);
 
   void initialize() async {
     var configs = await _chatConfigDb.getAllPlatformConfigs();

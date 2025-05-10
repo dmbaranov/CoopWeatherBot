@@ -9,6 +9,7 @@ class ChatConfig {
 
   ChatConfig(this._chatConfigDb);
 
+  @PostConstruct()
   void initialize() async {
     var configs = await _chatConfigDb.getAllPlatformConfigs();
 

@@ -93,7 +93,7 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i221.Logger>(),
         ));
     gh.singleton<_i570.ChatConfig>(
-        () => _i570.ChatConfig(gh<_i41.ChatConfigRepository>()));
+        () => _i570.ChatConfig(gh<_i41.ChatConfigRepository>())..initialize());
     return this;
   }
 }

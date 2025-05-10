@@ -31,7 +31,6 @@ class ChatManager implements ModuleManager {
   @override
   void initialize() {
     _chat.initialize();
-    _chatConfig.initialize();
     _subscribeToMessageQueue();
     _subscribeToSwearwordsUpdatedQueue();
     _subscribeToChatConfigUpdatedQueue();

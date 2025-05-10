@@ -52,8 +52,6 @@ extension GetItInjectableX on _i174.GetIt {
       () => loggerModule.devLogger,
       registerFor: {_dev},
     );
-    gh.singleton<_i320.Swearwords>(
-        () => _i320.Swearwords(gh<_i221.Logger>())..initialize());
     gh.factory<_i221.Logger>(
       () => loggerModule.prodLogger,
       registerFor: {_prod},
@@ -94,6 +92,10 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.singleton<_i570.ChatConfig>(
         () => _i570.ChatConfig(gh<_i41.ChatConfigRepository>())..initialize());
+    gh.singleton<_i320.Swearwords>(() => _i320.Swearwords(
+          gh<_i221.Logger>(),
+          gh<_i570.ChatConfig>(),
+        )..initialize());
     return this;
   }
 }

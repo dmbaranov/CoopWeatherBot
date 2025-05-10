@@ -18,15 +18,25 @@ class NewsConfig {
   NewsConfig.fromJson(Map<dynamic, dynamic> json) : disabled = json['disabled'];
 }
 
+class SwearwordsConfig {
+  final String? swearwords;
+
+  SwearwordsConfig({this.swearwords});
+
+  SwearwordsConfig.fromJson(Map<dynamic, dynamic> json) : swearwords = json['swearwords'];
+}
+
 class ChatConfigData {
   final String chatId;
   final ConversatorConfig? conversatorConfig;
   final NewsConfig? newsConfig;
+  final SwearwordsConfig? swearwordsConfig;
 
-  ChatConfigData({required this.chatId, this.conversatorConfig, this.newsConfig});
+  ChatConfigData({required this.chatId, this.conversatorConfig, this.newsConfig, this.swearwordsConfig});
 
   ChatConfigData.fromJson(Map<dynamic, dynamic> json)
       : chatId = json['chatId'],
         conversatorConfig = _fromJson(json['conversator'], ConversatorConfig.fromJson),
-        newsConfig = _fromJson(json['news'], NewsConfig.fromJson);
+        newsConfig = _fromJson(json['news'], NewsConfig.fromJson),
+        swearwordsConfig = _fromJson(json['swearwords'], SwearwordsConfig.fromJson);
 }

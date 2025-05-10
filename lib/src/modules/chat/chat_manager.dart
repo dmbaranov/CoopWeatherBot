@@ -30,9 +30,7 @@ class ChatManager implements ModuleManager {
 
   @override
   void initialize() {
-    _chat.initialize();
     _subscribeToMessageQueue();
-    _subscribeToSwearwordsUpdatedQueue();
     _subscribeToChatConfigUpdatedQueue();
   }
 
@@ -54,17 +52,6 @@ class ChatManager implements ModuleManager {
     sendOperationMessage(chatId, platform: platform, operationResult: message.isNotEmpty, successfulMessage: message);
   }
 
-  void setSwearwordsConfig(MessageEvent event) async {
-    if (!messageEventParametersCheck(platform, event)) return;
-
-    var chatId = event.chatId;
-    var config = event.parameters[0];
-    var result = await _chat.setSwearwordsConfig(chatId, config);
-    var successfulMessage = _sw.getText(chatId, 'general.success');
-
-    sendOperationMessage(chatId, platform: platform, operationResult: result, successfulMessage: successfulMessage);
-  }
-
   String _getNewChatName(MessageEvent event) {
     if (platform.chatPlatform == ChatPlatform.telegram) {
       return event.rawMessage.chat.title.toString();
@@ -79,14 +66,6 @@ class ChatManager implements ModuleManager {
     MessagingQueue<MessageQueueEvent>().createStream(messageQueue, MessageQueueEvent.fromJson).then((stream) {
       stream.listen((event) {
         platform.sendMessage(event.chatId, message: event.message);
-      });
-    });
-  }
-
-  void _subscribeToSwearwordsUpdatedQueue() {
-    MessagingQueue<SwearwordsUpdatedQueueEvent>().createStream(swearwordsUpdatedQueue, SwearwordsUpdatedQueueEvent.fromJson).then((stream) {
-      stream.listen((event) {
-        _sw.setChatSwearwords(event.chatId, event.swearwordsConfig);
       });
     });
   }

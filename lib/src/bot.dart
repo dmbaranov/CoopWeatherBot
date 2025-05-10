@@ -202,13 +202,6 @@ class Bot {
         onSuccess: _weatherManager.createWeather));
 
     _platform.setupCommand(BotCommand(
-        command: 'setswearwordsconfig',
-        description: '[A] Set swearwords config for the chat',
-        accessLevel: AccessLevel.admin,
-        withParameters: true,
-        onSuccess: _chatManager.setSwearwordsConfig));
-
-    _platform.setupCommand(BotCommand(
         command: 'watchlistweather',
         description: '[U] Get weather for each city in the watchlist',
         accessLevel: AccessLevel.user,

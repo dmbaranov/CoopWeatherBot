@@ -7,9 +7,8 @@ import 'repository.dart';
 class ChatRepository extends Repository {
   ChatRepository({required super.db}) : super(repositoryName: 'chat');
 
-  Future<int> createChat(String id, String name, String platform, String swearwordsConfig) {
-    return db.executeTransaction(
-        queriesMap['create_chat'], {'chatId': id, 'name': name, 'platform': platform, 'swearwordsConfig': swearwordsConfig});
+  Future<int> createChat(String id, String name, String platform) {
+    return db.executeTransaction(queriesMap['create_chat'], {'chatId': id, 'name': name, 'platform': platform});
   }
 
   Future<List<String>> getAllChatIds(String platform) async {
@@ -42,15 +41,7 @@ class ChatRepository extends Repository {
     return _mapChat(chat[0].toColumnMap());
   }
 
-  Future<int> setChatSwearwordsConfig(String chatId, String config) {
-    return db.executeTransaction(queriesMap['set_swearwords_config'], {'chatId': chatId, 'config': config});
-  }
-
   ChatData _mapChat(Map<String, dynamic> foundChat) {
-    return ChatData(
-        id: foundChat['id'],
-        name: foundChat['name'],
-        platform: ChatPlatform.fromString(foundChat['platform']),
-        swearwordsConfig: foundChat['swearwords_config']);
+    return ChatData(id: foundChat['id'], name: foundChat['name'], platform: ChatPlatform.fromString(foundChat['platform']));
   }
 }

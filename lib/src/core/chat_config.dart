@@ -35,4 +35,8 @@ class ChatConfig {
   NewsConfig? getNewsConfig(String chatId) {
     return _chatConfigData[chatId]?.newsConfig;
   }
+
+  SwearwordsConfig? getSwearwordsConfig(String chatId) {
+    return _chatConfigData[chatId]?.swearwordsConfig;
+  }
 }

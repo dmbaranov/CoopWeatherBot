@@ -1,2 +1,2 @@
-SELECT id, name, platform, swearwords_config
+SELECT id, name, platform
 FROM chat;

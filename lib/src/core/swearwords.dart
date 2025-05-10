@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:injectable/injectable.dart';
+import 'package:weather/src/core/chat_config.dart';
 import 'package:weather/src/utils/logger.dart';
 
 const swearwordsConfigs = ['sample', 'angry', 'basic', 'fun'];
@@ -10,10 +11,10 @@ const defaultSwearwords = 'basic';
 @singleton
 class Swearwords {
   final Logger _logger;
+  final ChatConfig _chatConfig;
   final Map<String, Map<String, dynamic>> _swearwordsTypeToSwearwords = {};
-  final Map<String, Map<String, dynamic>> _chatIdsToSwearwords = {};
 
-  Swearwords(this._logger);
+  Swearwords(this._logger, this._chatConfig);
 
   String get defaultConfig => defaultSwearwords;
 
@@ -31,11 +32,8 @@ class Swearwords {
   }
 
   String getText(String chatId, String path, [Map<String, String>? replacements]) {
-    var swearwords = _chatIdsToSwearwords[chatId] ?? _swearwordsTypeToSwearwords[defaultSwearwords];
-
-    if (swearwords == null) {
-      return path;
-    }
+    var chatSwearwords = _chatConfig.getSwearwordsConfig(chatId)?.swearwords ?? defaultConfig;
+    var swearwords = _swearwordsTypeToSwearwords[chatSwearwords]!;
 
     var text = _getNestedProperty(swearwords, path.split('.')) ?? path;
 
@@ -48,14 +46,6 @@ class Swearwords {
     });
 
     return text;
-  }
-
-  Future<bool> canSetSwearwordsConfig(String config) async {
-    return File('$configsBasePath/swearwords.$config.json').exists();
-  }
-
-  void setChatSwearwords(String chatId, String config) {
-    _chatIdsToSwearwords[chatId] = _swearwordsTypeToSwearwords[config]!;
   }
 
   String? _getNestedProperty(Map<String, dynamic> object, List<String> path) {

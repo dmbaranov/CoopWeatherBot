@@ -7,11 +7,14 @@ import 'package:weather/src/utils/logger.dart';
 
 @singleton
 class MessagingClient {
+  final Config _config;
   late Channel _channel;
+
+  MessagingClient() : _config = getIt<Config>();
 
   @PostConstruct()
   void initialize() async {
-    var client = Client();
+    var client = Client(settings: ConnectionSettings(host: _config.messagingHost, port: _config.messagingPort));
     _channel = await client.channel();
   }
 

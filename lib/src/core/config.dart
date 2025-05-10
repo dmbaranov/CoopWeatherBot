@@ -9,6 +9,8 @@ class Config {
   late final String _dbUser;
   late final String _dbPassword;
   late final String _dbDatabase;
+  late final String _messagingHost;
+  late final int _messagingPort;
   late final String _token;
   late final String _botName;
   late final String _adminId;
@@ -28,6 +30,10 @@ class Config {
   String get dbPassword => _dbPassword;
 
   String get dbDatabase => _dbDatabase;
+
+  String get messagingHost => _messagingHost;
+
+  int get messagingPort => _messagingPort;
 
   String get token => _token;
 
@@ -56,6 +62,8 @@ class Config {
     _dbUser = env['dbuser']!;
     _dbPassword = env['dbpassword']!;
     _dbDatabase = env['dbdatabase']!;
+    _messagingHost = env['messaginghost']!;
+    _messagingPort = int.parse(env['messagingport']!);
     _botName = env['botname']!;
     _token = env['bottoken']!;
     _adminId = env['adminid']!;

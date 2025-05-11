@@ -1,5 +1,5 @@
+import 'package:weather/src/globals/module_manager.dart';
 import 'package:weather/src/platform/platform.dart';
-import 'manager_factory.dart';
 import 'modules_mediator.dart';
 
 import 'dadjokes/dadjokes_manager.dart';
@@ -15,19 +15,29 @@ import 'accordion_poll/accordion_poll_manager.dart';
 import 'command_statistics/command_statistics_manager.dart';
 import 'check_reminder/check_reminder_manager.dart';
 
-void initializeModules({required Platform platform, required ModulesMediator modulesMediator}) {
-  var managerFactory = ManagerFactory(platform: platform, modulesMediator: modulesMediator);
+typedef ManagerBuilder = ModuleManager Function(Platform platform, ModulesMediator modulesMediator);
 
-  managerFactory.createManager<DadJokesManager>();
-  managerFactory.createManager<YoutubeManager>();
-  managerFactory.createManager<ConversatorManager>();
-  managerFactory.createManager<GeneralManager>();
-  managerFactory.createManager<ChatManager>();
-  managerFactory.createManager<PanoramaManager>();
-  managerFactory.createManager<UserManager>();
-  managerFactory.createManager<ReputationManager>();
-  managerFactory.createManager<WeatherManager>();
-  managerFactory.createManager<AccordionPollManager>();
-  managerFactory.createManager<CommandStatisticsManager>();
-  managerFactory.createManager<CheckReminderManager>();
+final List<ManagerBuilder> modules = [
+  (p, m) => DadJokesManager(p, m),
+  (p, m) => YoutubeManager(p, m),
+  (p, m) => ConversatorManager(p, m),
+  (p, m) => GeneralManager(p, m),
+  (p, m) => ChatManager(p, m),
+  (p, m) => PanoramaManager(p, m),
+  (p, m) => UserManager(p, m),
+  (p, m) => ReputationManager(p, m),
+  (p, m) => WeatherManager(p, m),
+  (p, m) => AccordionPollManager(p, m),
+  (p, m) => CommandStatisticsManager(p, m),
+  (p, m) => CheckReminderManager(p, m),
+];
+
+void initializeModules({required Platform platform, required ModulesMediator modulesMediator}) {
+  modules.forEach((builder) {
+    var manager = builder(platform, modulesMediator)
+      ..initialize()
+      ..setupCommands();
+
+    modulesMediator.registerModule(manager.module);
+  });
 }

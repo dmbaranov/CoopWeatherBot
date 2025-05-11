@@ -38,6 +38,9 @@ void initializeModules({required Platform platform, required ModulesMediator mod
       ..initialize()
       ..setupCommands();
 
-    modulesMediator.registerModule(manager.module);
+    var module = manager.module;
+    if (module != null) {
+      modulesMediator.registerModule(module);
+    }
   });
 }

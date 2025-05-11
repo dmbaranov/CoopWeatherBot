@@ -8,7 +8,9 @@ import 'package:weather/src/events/accordion_poll_events.dart';
 import 'package:weather/src/globals/chat_reputation_data.dart';
 import 'package:weather/src/globals/single_reputation_data.dart';
 import 'package:weather/src/globals/module_exception.dart';
+import 'package:weather/src/modules/chat/chat.dart';
 import 'package:weather/src/modules/modules_mediator.dart';
+import 'package:weather/src/modules/user/user.dart';
 
 enum ReputationChangeOption { increase, decrease }
 
@@ -81,7 +83,7 @@ class Reputation {
   }
 
   Future<bool> createReputationData(String chatId, String userId) async {
-    var chatUser = await modulesMediator.user.getSingleUserForChat(chatId, userId);
+    var chatUser = await modulesMediator.get<User>().getSingleUserForChat(chatId, userId);
     var voteOptions = chatUser?.isPremium == true ? premiumNumberOfVoteOptions : normalNumberOfVoteOptions;
     var result = await _reputationDb.createReputationData(chatId, userId, voteOptions);
 
@@ -129,10 +131,10 @@ class Reputation {
 
   void _startResetVotesJob() {
     Cron().schedule(Schedule.parse('0 0 * * *'), () async {
-      var allChats = await modulesMediator.chat.getAllChatIdsForPlatform(chatPlatform);
+      var allChats = await modulesMediator.get<Chat>().getAllChatIdsForPlatform(chatPlatform);
 
       Future.forEach(allChats, (chatId) async {
-        var chatUsers = await modulesMediator.user.getUsersForChat(chatId);
+        var chatUsers = await modulesMediator.get<User>().getUsersForChat(chatId);
 
         Future.forEach(chatUsers, (user) async {
           var numberOfVoteOptions = user.isPremium ? premiumNumberOfVoteOptions : normalNumberOfVoteOptions;

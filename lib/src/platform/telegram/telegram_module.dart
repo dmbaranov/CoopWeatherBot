@@ -5,6 +5,7 @@ import 'package:teledart/teledart.dart';
 import 'package:teledart/telegram.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/core/config.dart';
+import 'package:weather/src/modules/youtube/youtube.dart';
 import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/modules/modules_mediator.dart';
 
@@ -34,7 +35,7 @@ class TelegramModule {
   }
 
   Future<void> searchYoutubeTrackInline(TeleDartInlineQuery query) async {
-    var searchResults = await modulesMediator.youtube.getRawYoutubeSearchResults(query.query);
+    var searchResults = await modulesMediator.get<Youtube>().getRawYoutubeSearchResults(query.query);
     List items = searchResults['items'];
     var inlineQueryResult = [];
 

@@ -5,6 +5,7 @@ import 'package:weather/src/core/repositories/command_statistics_repository.dart
 import 'package:weather/src/core/event_bus.dart';
 import 'package:weather/src/events/access_events.dart';
 import 'package:weather/src/globals/chat_platform.dart';
+import 'package:weather/src/modules/chat/chat.dart';
 import 'package:weather/src/modules/modules_mediator.dart';
 import 'package:weather/src/utils/wait_concurrently.dart';
 
@@ -61,7 +62,7 @@ class CommandStatistics {
 
   void _startMonthlyTopJob() async {
     Cron().schedule(Schedule.parse('0 10 1 * *'), () async {
-      var platformChatIds = await modulesMediator.chat.getAllChatIdsForPlatform(chatPlatform);
+      var platformChatIds = await modulesMediator.get<Chat>().getAllChatIdsForPlatform(chatPlatform);
 
       Future.forEach(platformChatIds, (chatId) async {
         var (totalCommandsInvoked, topInvokedCommands, topInvocationUsers) =

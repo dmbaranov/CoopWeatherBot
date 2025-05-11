@@ -3,6 +3,7 @@ import 'package:weather/src/globals/bot_command.dart';
 import 'package:weather/src/globals/module_manager.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/core/swearwords.dart';
+import 'package:weather/src/modules/chat/chat.dart';
 import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'package:weather/src/utils/logger.dart';
@@ -78,7 +79,7 @@ class UserManager implements ModuleManager {
   }
 
   Future<void> _updateUsersPremiumStatus() async {
-    var allPlatformChatIds = await modulesMediator.chat.getAllChatIdsForPlatform(platform.chatPlatform);
+    var allPlatformChatIds = await modulesMediator.get<Chat>().getAllChatIdsForPlatform(platform.chatPlatform);
 
     await Future.forEach(allPlatformChatIds, (chatId) async {
       var chatUsers = await _user.getUsersForChat(chatId);

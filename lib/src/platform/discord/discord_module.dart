@@ -5,6 +5,8 @@ import 'package:nyxx_commands/nyxx_commands.dart';
 import 'package:weather/src/core/repositories/hero_stats_repository.dart';
 import 'package:weather/src/core/swearwords.dart';
 import 'package:weather/src/injector/injection.dart';
+import 'package:weather/src/modules/chat/chat.dart';
+import 'package:weather/src/modules/user/user.dart';
 import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/modules/modules_mediator.dart';
@@ -58,7 +60,7 @@ class DiscordModule {
     const hour = 3;
 
     Cron().schedule(Schedule.parse('0 $hour * * 6,0'), () async {
-      var authorizedChats = await modulesMediator.chat.getAllChatIdsForPlatform(ChatPlatform.discord);
+      var authorizedChats = await modulesMediator.get<Chat>().getAllChatIdsForPlatform(ChatPlatform.discord);
 
       await Future.forEach(authorizedChats, (chatId) async {
         var chatOnlineUsers = _usersOnlineStatus[chatId];
@@ -77,7 +79,7 @@ class DiscordModule {
 
         var now = DateTime.now();
         var timestamp = DateTime(now.year, now.month, now.day, hour).toString();
-        var chatUsers = await modulesMediator.user.getUsersForChat(chatId);
+        var chatUsers = await modulesMediator.get<User>().getUsersForChat(chatId);
         var chatUserStats = await _heroStatsDb.getChatHeroStats(chatId);
         var heroesMessage = _sw.getText(chatId, 'hero.active_users.list', {'hour': hour.toString()});
         var heroesStatsMessage = _sw.getText(chatId, 'hero.active_users.stats', {'hour': hour.toString()});

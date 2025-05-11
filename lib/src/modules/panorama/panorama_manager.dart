@@ -2,6 +2,7 @@ import 'package:weather/src/core/chat_config.dart';
 import 'package:weather/src/globals/access_level.dart';
 import 'package:weather/src/globals/bot_command.dart';
 import 'package:weather/src/injector/injection.dart';
+import 'package:weather/src/modules/chat/chat.dart';
 import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/globals/module_manager.dart';
 import 'package:weather/src/globals/message_event.dart';
@@ -51,7 +52,7 @@ class PanoramaManager implements ModuleManager {
     _panoramaNews.panoramaStream.listen((event) async {
       _logger.i('Handling Panorama stream data: $event');
 
-      var allChats = await modulesMediator.chat.getAllChatIdsForPlatform(platform.chatPlatform);
+      var allChats = await modulesMediator.get<Chat>().getAllChatIdsForPlatform(platform.chatPlatform);
 
       allChats.forEach((chatId) {
         var newsConfig = _chatConfig.getNewsConfig(chatId);

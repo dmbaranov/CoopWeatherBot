@@ -2,6 +2,7 @@ import 'package:weather/src/core/swearwords.dart';
 import 'package:weather/src/globals/access_level.dart';
 import 'package:weather/src/globals/bot_command.dart';
 import 'package:weather/src/injector/injection.dart';
+import 'package:weather/src/modules/user/user.dart';
 import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/globals/module_manager.dart';
 import 'package:weather/src/globals/message_event.dart';
@@ -60,7 +61,7 @@ class CheckReminderManager implements ModuleManager {
 
   void _subscribeToCheckUpdates() {
     _checkReminder.checkReminderStream.listen((checkReminder) async {
-      var userData = await modulesMediator.user.getSingleUserForChat(checkReminder.chatId, checkReminder.userId);
+      var userData = await modulesMediator.get<User>().getSingleUserForChat(checkReminder.chatId, checkReminder.userId);
 
       if (userData != null) {
         var checkReminderMessage =

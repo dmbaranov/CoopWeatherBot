@@ -2,6 +2,7 @@ import 'package:weather/src/core/swearwords.dart';
 import 'package:weather/src/globals/access_level.dart';
 import 'package:weather/src/globals/bot_command.dart';
 import 'package:weather/src/injector/injection.dart';
+import 'package:weather/src/modules/chat/chat.dart';
 import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/globals/module_manager.dart';
 import 'package:weather/src/globals/message_event.dart';
@@ -163,7 +164,7 @@ class WeatherManager implements ModuleManager {
     _weather.weatherStream.listen((weatherData) async {
       _logger.i('Handling weather notification data: $weatherData');
 
-      var chatData = await modulesMediator.chat.getSingleChat(chatId: weatherData.chatId);
+      var chatData = await modulesMediator.get<Chat>().getSingleChat(chatId: weatherData.chatId);
 
       if (chatData?.platform != platform.chatPlatform) {
         return;

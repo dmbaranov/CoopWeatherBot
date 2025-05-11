@@ -1,3 +1,5 @@
+import 'package:weather/src/globals/access_level.dart';
+import 'package:weather/src/globals/bot_command.dart';
 import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/globals/module_manager.dart';
 import 'package:weather/src/globals/message_event.dart';
@@ -20,7 +22,13 @@ class DadJokesManager implements ModuleManager {
   @override
   void initialize() {}
 
-  void sendJoke(MessageEvent event) async {
+  @override
+  void setupCommands() {
+    platform.setupCommand(
+        BotCommand(command: 'sendjoke', description: '[U] Send joke to the chat', accessLevel: AccessLevel.user, onSuccess: _sendJoke));
+  }
+
+  void _sendJoke(MessageEvent event) async {
     var chatId = event.chatId;
     var joke = await _dadJokes.getJoke();
 

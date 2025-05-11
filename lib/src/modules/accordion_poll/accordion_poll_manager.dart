@@ -1,4 +1,6 @@
 import 'package:weather/src/core/swearwords.dart';
+import 'package:weather/src/globals/access_level.dart';
+import 'package:weather/src/globals/bot_command.dart';
 import 'package:weather/src/globals/module_exception.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/platform/platform.dart';
@@ -27,7 +29,17 @@ class AccordionPollManager implements ModuleManager {
   @override
   void initialize() {}
 
-  void startAccordionPoll(MessageEvent event) async {
+  @override
+  void setupCommands() {
+    platform.setupCommand(BotCommand(
+        command: 'accordion',
+        description: '[U] Start vote for the freshness of the content',
+        accessLevel: AccessLevel.user,
+        withOtherUser: true,
+        onSuccess: _startAccordionPoll));
+  }
+
+  void _startAccordionPoll(MessageEvent event) async {
     if (!otherUserCheck(platform, event)) return;
 
     var chatId = event.chatId;

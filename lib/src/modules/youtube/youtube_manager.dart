@@ -1,3 +1,5 @@
+import 'package:weather/src/globals/access_level.dart';
+import 'package:weather/src/globals/bot_command.dart';
 import 'package:weather/src/globals/module_manager.dart';
 import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/globals/message_event.dart';
@@ -20,7 +22,17 @@ class YoutubeManager implements ModuleManager {
   @override
   void initialize() {}
 
-  void searchSong(MessageEvent event) async {
+  @override
+  void setupCommands() {
+    platform.setupCommand(BotCommand(
+        command: 'searchsong',
+        description: '[U] Search song on YouTube',
+        accessLevel: AccessLevel.user,
+        withParameters: true,
+        onSuccess: _searchSong));
+  }
+
+  void _searchSong(MessageEvent event) async {
     if (!messageEventParametersCheck(platform, event)) return;
 
     var chatId = event.chatId;

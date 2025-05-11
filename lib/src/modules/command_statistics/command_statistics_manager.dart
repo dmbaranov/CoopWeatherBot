@@ -1,4 +1,6 @@
 import 'package:weather/src/core/swearwords.dart';
+import 'package:weather/src/globals/access_level.dart';
+import 'package:weather/src/globals/bot_command.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/globals/module_manager.dart';
@@ -31,7 +33,23 @@ class CommandStatisticsManager implements ModuleManager {
     _subscribeToChatReports();
   }
 
-  void getChatCommandInvocations(MessageEvent event) async {
+  @override
+  void setupCommands() {
+    platform.setupCommand(BotCommand(
+        command: 'getchatcommandstatistics',
+        description: '[U] Get command invocation statistics for the chat',
+        accessLevel: AccessLevel.user,
+        onSuccess: _getChatCommandInvocations));
+
+    platform.setupCommand(BotCommand(
+        command: 'getusercommandstatistics',
+        description: '[U] Get command invocation statistics for the user',
+        accessLevel: AccessLevel.user,
+        withOtherUser: true,
+        onSuccess: _getUserCommandInvocations));
+  }
+
+  void _getChatCommandInvocations(MessageEvent event) async {
     var chatId = event.chatId;
     var commandInvocationData = await _commandStatistics.getChatCommandInvocations(chatId: chatId);
     var invocationsMessage = _buildCommandInvocationsMessage(commandInvocationData);
@@ -41,7 +59,7 @@ class CommandStatisticsManager implements ModuleManager {
         platform: platform, operationResult: commandInvocationData.isNotEmpty, successfulMessage: successfulMessage);
   }
 
-  void getUserCommandInvocations(MessageEvent event) async {
+  void _getUserCommandInvocations(MessageEvent event) async {
     if (!otherUserCheck(platform, event)) return;
 
     var userId = event.otherUser!.id;

@@ -1,3 +1,5 @@
+import 'package:weather/src/globals/access_level.dart';
+import 'package:weather/src/globals/bot_command.dart';
 import 'package:weather/src/globals/module_manager.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/core/swearwords.dart';
@@ -31,7 +33,24 @@ class UserManager implements ModuleManager {
     _subscribeToUserUpdates();
   }
 
-  void addUser(MessageEvent event) async {
+  @override
+  void setupCommands() {
+    platform.setupCommand(BotCommand(
+        command: 'adduser',
+        description: '[M] Add new user to the bot',
+        accessLevel: AccessLevel.moderator,
+        withOtherUser: true,
+        onSuccess: _addUser));
+
+    platform.setupCommand(BotCommand(
+        command: 'removeuser',
+        description: '[M] Remove user from the bot',
+        accessLevel: AccessLevel.moderator,
+        withOtherUser: true,
+        onSuccess: _removeUser));
+  }
+
+  void _addUser(MessageEvent event) async {
     if (!otherUserCheck(platform, event)) return;
 
     var chatId = event.chatId;
@@ -42,7 +61,7 @@ class UserManager implements ModuleManager {
     sendOperationMessage(chatId, platform: platform, operationResult: result, successfulMessage: successfulMessage);
   }
 
-  void removeUser(MessageEvent event) async {
+  void _removeUser(MessageEvent event) async {
     if (!otherUserCheck(platform, event)) return;
 
     var chatId = event.chatId;

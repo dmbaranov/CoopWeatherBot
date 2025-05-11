@@ -1,3 +1,5 @@
+import 'package:weather/src/globals/access_level.dart';
+import 'package:weather/src/globals/bot_command.dart';
 import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/globals/module_manager.dart';
 import 'package:weather/src/globals/chat_platform.dart';
@@ -23,12 +25,21 @@ class ConversatorManager implements ModuleManager {
     _conversator.initialize();
   }
 
-  void getRegularConversatorReply(MessageEvent event) {
-    _getConversatorReply(event, regularModel);
-  }
+  @override
+  void setupCommands() {
+    platform.setupCommand(BotCommand(
+        command: 'ask',
+        description: '[U] Ask for advice or anything else from the Conversator',
+        accessLevel: AccessLevel.user,
+        conversatorCommand: true,
+        onSuccess: (event) => _getConversatorReply(event, regularModel)));
 
-  void getAdvancedConversatorReply(MessageEvent event) {
-    _getConversatorReply(event, advancedModel);
+    platform.setupCommand(BotCommand(
+        command: 'theask',
+        description: '[U][Limited] Ask for advice or anything else from the more advanced Conversator',
+        accessLevel: AccessLevel.user,
+        conversatorCommand: true,
+        onSuccess: (event) => _getConversatorReply(event, advancedModel)));
   }
 
   void _getConversatorReply(MessageEvent event, String model) async {

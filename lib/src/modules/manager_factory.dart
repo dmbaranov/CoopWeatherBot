@@ -14,6 +14,7 @@ class ManagerFactory {
     T instance = reflectClass(T).newInstance(Symbol(''), [platform, modulesMediator]).reflectee;
 
     instance.initialize();
+    instance.setupCommands();
     modulesMediator.registerModule(instance.module);
 
     return instance;

@@ -1,4 +1,6 @@
 import 'package:weather/src/core/swearwords.dart';
+import 'package:weather/src/globals/access_level.dart';
+import 'package:weather/src/globals/bot_command.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/globals/module_manager.dart';
@@ -31,7 +33,54 @@ class WeatherManager implements ModuleManager {
     _subscribeToWeatherNotifications();
   }
 
-  void addCity(MessageEvent event) async {
+  @override
+  void setupCommands() {
+    // TODO: change access level to moderator
+    platform.setupCommand(BotCommand(
+        command: 'createweather',
+        description: '[A] Activate weather module for the chat',
+        accessLevel: AccessLevel.admin,
+        onSuccess: _createWeather));
+
+    platform.setupCommand(BotCommand(
+        command: 'watchlistweather',
+        description: '[U] Get weather for each city in the watchlist',
+        accessLevel: AccessLevel.user,
+        onSuccess: _getWatchlistWeather));
+
+    platform.setupCommand(BotCommand(
+        command: 'addcity',
+        description: '[U] Add city to the watchlist',
+        accessLevel: AccessLevel.user,
+        withParameters: true,
+        onSuccess: _addCity));
+
+    platform.setupCommand(BotCommand(
+        command: 'removecity',
+        description: '[U] Remove city from the watchlist',
+        accessLevel: AccessLevel.user,
+        withParameters: true,
+        onSuccess: _removeCity));
+
+    platform.setupCommand(BotCommand(
+        command: 'watchlist', description: '[U] Get weather watchlist', accessLevel: AccessLevel.user, onSuccess: _getWeatherWatchlist));
+
+    platform.setupCommand(BotCommand(
+        command: 'getweather',
+        description: '[U] Get weather for city',
+        accessLevel: AccessLevel.user,
+        withParameters: true,
+        onSuccess: _getWeatherForCity));
+
+    platform.setupCommand(BotCommand(
+        command: 'setnotificationhour',
+        description: '[M] Set time for weather notifications',
+        accessLevel: AccessLevel.moderator,
+        withParameters: true,
+        onSuccess: _setWeatherNotificationHour));
+  }
+
+  void _addCity(MessageEvent event) async {
     if (!messageEventParametersCheck(platform, event)) return;
 
     var chatId = event.chatId;
@@ -42,7 +91,7 @@ class WeatherManager implements ModuleManager {
     sendOperationMessage(chatId, platform: platform, operationResult: result, successfulMessage: successfulMessage);
   }
 
-  void removeCity(MessageEvent event) async {
+  void _removeCity(MessageEvent event) async {
     if (!messageEventParametersCheck(platform, event)) return;
 
     var chatId = event.chatId;
@@ -53,7 +102,7 @@ class WeatherManager implements ModuleManager {
     sendOperationMessage(chatId, platform: platform, operationResult: result, successfulMessage: successfulMessage);
   }
 
-  void getWeatherWatchlist(MessageEvent event) async {
+  void _getWeatherWatchlist(MessageEvent event) async {
     var chatId = event.chatId;
     var cities = await _weather.getWatchList(chatId);
     var citiesString = cities.join('\n');
@@ -61,7 +110,7 @@ class WeatherManager implements ModuleManager {
     sendOperationMessage(chatId, platform: platform, operationResult: citiesString.isNotEmpty, successfulMessage: citiesString);
   }
 
-  void getWeatherForCity(MessageEvent event) async {
+  void _getWeatherForCity(MessageEvent event) async {
     if (!messageEventParametersCheck(platform, event)) return;
 
     var chatId = event.chatId;
@@ -76,7 +125,7 @@ class WeatherManager implements ModuleManager {
         .catchError((error) => handleException(error, chatId, platform));
   }
 
-  void setWeatherNotificationHour(MessageEvent event) async {
+  void _setWeatherNotificationHour(MessageEvent event) async {
     if (!messageEventParametersCheck(platform, event)) return;
 
     var chatId = event.chatId;
@@ -87,7 +136,7 @@ class WeatherManager implements ModuleManager {
     sendOperationMessage(chatId, platform: platform, operationResult: result, successfulMessage: successfulMessage);
   }
 
-  void createWeather(MessageEvent event) async {
+  void _createWeather(MessageEvent event) async {
     var chatId = event.chatId;
     var result = await _weather.createWeatherData(chatId);
     var successfulMessage = _sw.getText(chatId, 'general.success');
@@ -95,7 +144,7 @@ class WeatherManager implements ModuleManager {
     sendOperationMessage(chatId, platform: platform, operationResult: result, successfulMessage: successfulMessage);
   }
 
-  void getWatchlistWeather(MessageEvent event) async {
+  void _getWatchlistWeather(MessageEvent event) async {
     var chatId = event.chatId;
 
     _weather
@@ -122,7 +171,7 @@ class WeatherManager implements ModuleManager {
 
       var fakeEvent = MessageEvent(chatId: weatherData.chatId, userId: '', parameters: [], rawMessage: '');
 
-      getWatchlistWeather(fakeEvent);
+      _getWatchlistWeather(fakeEvent);
     });
   }
 }

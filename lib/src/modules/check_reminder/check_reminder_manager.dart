@@ -1,4 +1,6 @@
 import 'package:weather/src/core/swearwords.dart';
+import 'package:weather/src/globals/access_level.dart';
+import 'package:weather/src/globals/bot_command.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/globals/module_manager.dart';
@@ -31,7 +33,17 @@ class CheckReminderManager implements ModuleManager {
     _subscribeToCheckUpdates();
   }
 
-  void checkMessage(MessageEvent event) async {
+  @override
+  void setupCommands() {
+    platform.setupCommand(BotCommand(
+        command: 'check',
+        description: '[U] Remind about something after specified period',
+        accessLevel: AccessLevel.user,
+        withParameters: true,
+        onSuccess: _checkMessage));
+  }
+
+  void _checkMessage(MessageEvent event) async {
     if (!messageEventParametersCheck(platform, event)) return;
 
     var chatId = event.chatId;

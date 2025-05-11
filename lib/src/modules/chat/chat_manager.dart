@@ -1,5 +1,7 @@
 import 'package:weather/src/core/chat_config.dart';
 import 'package:weather/src/core/messaging.dart';
+import 'package:weather/src/globals/access_level.dart';
+import 'package:weather/src/globals/bot_command.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/core/swearwords.dart';
 import 'package:weather/src/modules/chat/chat_messaging.dart';
@@ -34,7 +36,22 @@ class ChatManager implements ModuleManager {
     _subscribeToChatConfigUpdatedQueue();
   }
 
-  void createChat(MessageEvent event) async {
+  @override
+  void setupCommands() {
+    // TODO: see if original message can be removed straight away
+    platform.setupCommand(BotCommand(
+        command: 'write',
+        description: '[M] Write message to the chat on behalf of the bot',
+        accessLevel: AccessLevel.moderator,
+        withParameters: true,
+        onSuccess: _writeToChat));
+
+    // TODO: remove this command
+    platform.setupCommand(
+        BotCommand(command: 'initialize', description: '[A] Initialize new chat', accessLevel: AccessLevel.admin, onSuccess: _createChat));
+  }
+
+  void _createChat(MessageEvent event) async {
     var chatId = event.chatId;
     var chatName = _getNewChatName(event);
     var result = await _chat.createChat(id: chatId, name: chatName, platform: platform.chatPlatform);
@@ -43,7 +60,7 @@ class ChatManager implements ModuleManager {
     sendOperationMessage(chatId, platform: platform, operationResult: result, successfulMessage: successfulMessage);
   }
 
-  void writeToChat(MessageEvent event) {
+  void _writeToChat(MessageEvent event) {
     if (!messageEventParametersCheck(platform, event)) return;
 
     var chatId = event.chatId;

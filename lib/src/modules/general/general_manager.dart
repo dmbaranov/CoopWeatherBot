@@ -1,3 +1,5 @@
+import 'package:weather/src/globals/access_level.dart';
+import 'package:weather/src/globals/bot_command.dart';
 import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/globals/module_manager.dart';
 import 'package:weather/src/globals/message_event.dart';
@@ -20,14 +22,23 @@ class GeneralManager implements ModuleManager {
   @override
   void initialize() {}
 
-  void postHealthCheck(MessageEvent event) {
+  @override
+  void setupCommands() {
+    platform.setupCommand(
+        BotCommand(command: 'na', description: '[U] Check if bot is alive', accessLevel: AccessLevel.user, onSuccess: _postHealthCheck));
+
+    platform.setupCommand(BotCommand(
+        command: 'updatemessage', description: '[A] Post update message', accessLevel: AccessLevel.admin, onSuccess: _postUpdateMessage));
+  }
+
+  void _postHealthCheck(MessageEvent event) {
     var chatId = event.chatId;
     var result = _general.healthCheck(chatId);
 
     sendOperationMessage(chatId, platform: platform, operationResult: result.isNotEmpty, successfulMessage: result);
   }
 
-  void postUpdateMessage(MessageEvent event) async {
+  void _postUpdateMessage(MessageEvent event) async {
     var chatId = event.chatId;
     var result = await _general.getLastCommitMessage();
 

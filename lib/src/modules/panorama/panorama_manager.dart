@@ -1,4 +1,6 @@
 import 'package:weather/src/core/chat_config.dart';
+import 'package:weather/src/globals/access_level.dart';
+import 'package:weather/src/globals/bot_command.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/globals/module_manager.dart';
@@ -31,7 +33,13 @@ class PanoramaManager implements ModuleManager {
     _subscribeToPanoramaNews();
   }
 
-  void sendNewsToChat(MessageEvent event) async {
+  @override
+  void setupCommands() {
+    platform.setupCommand(BotCommand(
+        command: 'sendnews', description: '[U] Send news to the chat', accessLevel: AccessLevel.user, onSuccess: _sendNewsToChat));
+  }
+
+  void _sendNewsToChat(MessageEvent event) async {
     var chatId = event.chatId;
     var news = await _panoramaNews.getNews(chatId);
     var successfulMessage = '${news?.title}\n\nFull: ${news?.url}';
@@ -53,7 +61,7 @@ class PanoramaManager implements ModuleManager {
           return;
         }
 
-        sendNewsToChat(fakeEvent);
+        _sendNewsToChat(fakeEvent);
       });
     });
   }

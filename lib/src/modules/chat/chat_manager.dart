@@ -3,11 +3,9 @@ import 'package:weather/src/core/messaging.dart';
 import 'package:weather/src/globals/access_level.dart';
 import 'package:weather/src/globals/bot_command.dart';
 import 'package:weather/src/injector/injection.dart';
-import 'package:weather/src/core/swearwords.dart';
 import 'package:weather/src/modules/chat/chat_messaging.dart';
 import 'package:weather/src/platform/platform.dart';
 import 'package:weather/src/globals/module_manager.dart';
-import 'package:weather/src/globals/chat_platform.dart';
 import 'package:weather/src/globals/message_event.dart';
 import 'chat.dart';
 import '../modules_mediator.dart';
@@ -19,12 +17,10 @@ class ChatManager implements ModuleManager {
   @override
   final ModulesMediator modulesMediator;
   final Chat _chat;
-  final Swearwords _sw;
   final ChatConfig _chatConfig;
 
   ChatManager(this.platform, this.modulesMediator)
       : _chat = Chat(chatPlatform: platform.chatPlatform),
-        _sw = getIt<Swearwords>(),
         _chatConfig = getIt<ChatConfig>();
 
   @override
@@ -45,19 +41,6 @@ class ChatManager implements ModuleManager {
         accessLevel: AccessLevel.moderator,
         withParameters: true,
         onSuccess: _writeToChat));
-
-    // TODO: remove this command
-    platform.setupCommand(
-        BotCommand(command: 'initialize', description: '[A] Initialize new chat', accessLevel: AccessLevel.admin, onSuccess: _createChat));
-  }
-
-  void _createChat(MessageEvent event) async {
-    var chatId = event.chatId;
-    var chatName = _getNewChatName(event);
-    var result = await _chat.createChat(id: chatId, name: chatName, platform: platform.chatPlatform);
-    var successfulMessage = _sw.getText(chatId, 'chat.initialization.success');
-
-    sendOperationMessage(chatId, platform: platform, operationResult: result, successfulMessage: successfulMessage);
   }
 
   void _writeToChat(MessageEvent event) {
@@ -67,16 +50,6 @@ class ChatManager implements ModuleManager {
     var message = event.parameters.join(' ');
 
     sendOperationMessage(chatId, platform: platform, operationResult: message.isNotEmpty, successfulMessage: message);
-  }
-
-  String _getNewChatName(MessageEvent event) {
-    if (platform.chatPlatform == ChatPlatform.telegram) {
-      return event.rawMessage.chat.title.toString();
-    } else if (platform.chatPlatform == ChatPlatform.discord) {
-      return event.rawMessage.guild.name.toString();
-    }
-
-    return 'unknown';
   }
 
   void _subscribeToMessageQueue() {

@@ -9,12 +9,6 @@ class Chat {
 
   Chat({required this.chatPlatform}) : _chatDb = getIt<ChatRepository>();
 
-  Future<bool> createChat({required String id, required String name, required ChatPlatform platform}) async {
-    var creationResult = await _chatDb.createChat(id, name, platform.value);
-
-    return creationResult == 1;
-  }
-
   Future<ChatData?> getSingleChat({required String chatId}) {
     return _chatDb.getSingleChat(chatId: chatId);
   }

@@ -7,10 +7,6 @@ import 'repository.dart';
 class ChatRepository extends Repository {
   ChatRepository({required super.db}) : super(repositoryName: 'chat');
 
-  Future<int> createChat(String id, String name, String platform) {
-    return db.executeTransaction(queriesMap['create_chat'], {'chatId': id, 'name': name, 'platform': platform});
-  }
-
   Future<List<String>> getAllChatIds(String platform) async {
     var ids = await db.executeQuery(queriesMap['get_all_chat_ids'], {'platform': platform});
 

@@ -38,8 +38,8 @@ class WeatherManager implements ModuleManager {
     // TODO: change access level to moderator
     platform.setupCommand(BotCommand(
         command: 'createweather',
-        description: '[A] Activate weather module for the chat',
-        accessLevel: AccessLevel.admin,
+        description: '[M] Activate weather module for the chat',
+        accessLevel: AccessLevel.moderator,
         onSuccess: _createWeather));
 
     platform.setupCommand(BotCommand(

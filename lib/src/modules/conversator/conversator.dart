@@ -11,8 +11,8 @@ import 'package:weather/src/globals/module_exception.dart';
 import 'package:weather/src/utils/logger.dart';
 
 const String _converstorApiURL = 'https://api.openai.com/v1/chat/completions';
-const String regularModel = 'gpt-4.1-mini';
-const String advancedModel = 'gpt-4.1';
+const String regularModel = 'gpt-5-mini';
+const String advancedModel = 'gpt-5';
 const int regularDailyLimit = 100;
 const int advancedDailyLimit = 10;
 

@@ -8,6 +8,9 @@ import 'conversator.dart';
 import '../modules_mediator.dart';
 import '../utils.dart';
 
+// TODO: move from here to platform
+Map<ChatPlatform, int> responseLimits = {ChatPlatform.telegram: 4000, ChatPlatform.discord: 2000};
+
 class ConversatorManager implements ModuleManager {
   @override
   final Platform platform;
@@ -50,7 +53,6 @@ class ConversatorManager implements ModuleManager {
     var parentMessageId = event.parameters[0];
     var currentMessageId = event.parameters[1];
     var message = event.parameters[2];
-    var responseLimit = platform.chatPlatform == ChatPlatform.discord ? 2000 : null;
 
     try {
       var response = await _conversator.getConversationReply(
@@ -61,7 +63,7 @@ class ConversatorManager implements ModuleManager {
           message: message,
           model: model);
 
-      var conversatorResponseMessage = await _sendConversatorResponseMessage(chatId, response, responseLimit);
+      var conversatorResponseMessage = await _sendConversatorResponseMessage(chatId, response);
       var conversatorResponseMessageId = platform.getMessageId(conversatorResponseMessage);
       var conversationId = await _conversator.getConversationId(chatId, parentMessageId);
 
@@ -76,11 +78,8 @@ class ConversatorManager implements ModuleManager {
     }
   }
 
-  Future _sendConversatorResponseMessage(String chatId, String response, int? responseLimit) async {
-    if (responseLimit == null) {
-      return platform.sendMessage(chatId, message: response);
-    }
-
+  Future _sendConversatorResponseMessage(String chatId, String response) async {
+    var responseLimit = responseLimits[platform.chatPlatform]!;
     var messages = _splitResponseToParts(response, responseLimit);
     var sentMessage;
 

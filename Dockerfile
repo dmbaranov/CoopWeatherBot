@@ -1,6 +1,7 @@
+# AOT won't work due to nyxx_commands using mirrors
 FROM dart:stable
 WORKDIR /app
-COPY . .
+COPY pubspec.yaml ./
 RUN dart pub get
-RUN dart compile exe bin/main.dart -o main
-CMD ["./main"]
+COPY . .
+CMD ["dart", "run", "bin/main.dart"]

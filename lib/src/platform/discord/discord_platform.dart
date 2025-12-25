@@ -138,17 +138,19 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
   }
 
   void _setupPlatformSpecificCommands() {
-    _commands.add(ChatCommand('moveall', '[M] Move all users from one voice channel to another',
-        (ChatContext context, GuildVoiceChannel fromChannel, GuildVoiceChannel toChannel) async {
-      await context.respond(MessageBuilder(content: '${fromChannel.name} -> ${toChannel.name}'));
+    _commands.add(ChatCommand(
+        'moveall',
+        '[M] Move all users from one voice channel to another',
+        id('moveall', (ChatContext context, GuildVoiceChannel fromChannel, GuildVoiceChannel toChannel) async {
+          await context.respond(MessageBuilder(content: '${fromChannel.name} -> ${toChannel.name}'));
 
-      _access.execute(
-          event: transformPlatformMessageToGeneralMessageEvent(context),
-          command: 'moveall',
-          accessLevel: AccessLevel.moderator,
-          onSuccess: (_) => _discordModule.moveAll(context, fromChannel, toChannel),
-          onFailure: sendNoAccessMessage);
-    }));
+          _access.execute(
+              event: transformPlatformMessageToGeneralMessageEvent(context),
+              command: 'moveall',
+              accessLevel: AccessLevel.moderator,
+              onSuccess: (_) => _discordModule.moveAll(context, fromChannel, toChannel),
+              onFailure: sendNoAccessMessage);
+        })));
   }
 
   CommandsPlugin _setupDiscordCommands() {
@@ -160,60 +162,72 @@ class DiscordPlatform<T extends ChatContext> implements Platform<T> {
   }
 
   void _setupSimpleCommand(BotCommand command) {
-    _commands.add(ChatCommand(command.command, command.description, (ChatContext context) async {
-      await context.respond(MessageBuilder(content: emptyCharacter));
+    _commands.add(ChatCommand(
+        command.command,
+        command.description,
+        id(command.command, (ChatContext context) async {
+          await context.respond(MessageBuilder(content: emptyCharacter));
 
-      _access.execute(
-          event: transformPlatformMessageToGeneralMessageEvent(context),
-          command: command.command,
-          accessLevel: command.accessLevel,
-          onSuccess: command.onSuccess,
-          onFailure: sendNoAccessMessage);
-    }));
+          _access.execute(
+              event: transformPlatformMessageToGeneralMessageEvent(context),
+              command: command.command,
+              accessLevel: command.accessLevel,
+              onSuccess: command.onSuccess,
+              onFailure: sendNoAccessMessage);
+        })));
   }
 
   void _setupCommandWithParameters(BotCommand command) {
-    _commands.add(ChatCommand(command.command, command.description, (ChatContext context, String what) async {
-      await context.respond(MessageBuilder(content: what));
+    _commands.add(ChatCommand(
+        command.command,
+        command.description,
+        id(command.command, (ChatContext context, String what) async {
+          await context.respond(MessageBuilder(content: what));
 
-      _access.execute(
-          event: transformPlatformMessageToMessageEventWithParameters(context, [what]),
-          command: command.command,
-          accessLevel: command.accessLevel,
-          onSuccess: command.onSuccess,
-          onFailure: sendNoAccessMessage);
-    }));
+          _access.execute(
+              event: transformPlatformMessageToMessageEventWithParameters(context, [what]),
+              command: command.command,
+              accessLevel: command.accessLevel,
+              onSuccess: command.onSuccess,
+              onFailure: sendNoAccessMessage);
+        })));
   }
 
   void _setupCommandWithOtherUser(BotCommand command) {
-    _commands.add(ChatCommand(command.command, command.description, (ChatContext context, Member who) async {
-      var user = await bot.users.get(who.id);
-      var isPremium = user.nitroType.value > 0;
-      await context.respond(MessageBuilder(content: user.username));
+    _commands.add(ChatCommand(
+        command.command,
+        command.description,
+        id(command.command, (ChatContext context, Member who) async {
+          var user = await bot.users.get(who.id);
+          var isPremium = user.nitroType.value > 0;
+          await context.respond(MessageBuilder(content: user.username));
 
-      _access.execute(
-          event: transformPlatformMessageToMessageEventWithOtherUser(
-              context, (id: who.id.toString(), name: user.username, isPremium: isPremium, isBot: user.isBot)),
-          command: command.command,
-          accessLevel: command.accessLevel,
-          onSuccess: command.onSuccess,
-          onFailure: sendNoAccessMessage);
-    }));
+          _access.execute(
+              event: transformPlatformMessageToMessageEventWithOtherUser(
+                  context, (id: who.id.toString(), name: user.username, isPremium: isPremium, isBot: user.isBot)),
+              command: command.command,
+              accessLevel: command.accessLevel,
+              onSuccess: command.onSuccess,
+              onFailure: sendNoAccessMessage);
+        })));
   }
 
   void _setupCommandForConversator(BotCommand command) {
-    _commands.add(ChatCommand(command.command, command.description, (ChatContext context, String what, [String? conversationId]) async {
-      await context.respond(MessageBuilder(content: what));
+    _commands.add(ChatCommand(
+        command.command,
+        command.description,
+        id(command.command, (ChatContext context, String what, [String? conversationId]) async {
+          await context.respond(MessageBuilder(content: what));
 
-      conversationId ??= uuid.v4();
-      var currentMessageId = uuid.v4();
+          conversationId ??= uuid.v4();
+          var currentMessageId = uuid.v4();
 
-      _access.execute(
-          event: transformPlatformMessageToConversatorMessageEvent(context, [conversationId, currentMessageId, what]),
-          command: command.command,
-          accessLevel: command.accessLevel,
-          onSuccess: command.onSuccess,
-          onFailure: sendNoAccessMessage);
-    }));
+          _access.execute(
+              event: transformPlatformMessageToConversatorMessageEvent(context, [conversationId, currentMessageId, what]),
+              command: command.command,
+              accessLevel: command.accessLevel,
+              onSuccess: command.onSuccess,
+              onFailure: sendNoAccessMessage);
+        })));
   }
 }

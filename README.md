@@ -5,6 +5,8 @@
 Once started as a simple bot to automatically send out weather to the Telegram channel with friends, this bot has
 evolved a lot ever since. Now available for Discord as well!
 
+**Disclaimer**: this is a hand made project, no AI has been involved. Probably last project of this kind.
+
 ## Features
 
 - Weather
@@ -24,7 +26,8 @@ evolved a lot ever since. Now available for Discord as well!
 - Accordion votes
     - Someone has sent a message that has already been there? Start a vote to mark it as chestnut;
 - Integrated admin panel
-    - For simple management of the bot. [Frontend](https://github.com/dmbaranov/weather-bot-admin-frontend) and [Backend](https://github.com/dmbaranov/weather-bot-admin-backend) services available separately;
+    - For simple management of the bot. [Frontend](https://github.com/dmbaranov/weather-bot-admin-frontend)
+      and [Backend](https://github.com/dmbaranov/weather-bot-admin-backend) services available separately;
 - And some much more
     - And many more to come, stay tuned;
 

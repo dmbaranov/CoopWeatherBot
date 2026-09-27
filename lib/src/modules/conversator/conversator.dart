@@ -10,9 +10,12 @@ import 'package:weather/src/globals/conversator_chat_message.dart';
 import 'package:weather/src/globals/module_exception.dart';
 import 'package:weather/src/utils/logger.dart';
 
-const String _converstorApiURL = 'https://api.openai.com/v1/chat/completions';
-const String regularModel = 'gpt-5-mini';
-const String advancedModel = 'gpt-5.2';
+const String _converstorApiURL = 'https://api.openai.com/v1/responses';
+const String regularModel = 'gpt-6-luna';
+const String advancedModel = 'gpt-6-sol';
+const List<Map<String, String>> tools = [
+  {'type': 'web_search'}
+];
 const int regularDailyLimit = 100;
 const int advancedDailyLimit = 10;
 
@@ -59,7 +62,7 @@ class Conversator {
 
     var rawResponse =
         await _getConversatorResponse(conversation: wholeConversation, model: model, instructions: conversatorConfig?.instructions);
-    var response = rawResponse['choices']?[0]?['message']?['content'] ?? 'No response';
+    var response = rawResponse['output']?.last?['content']?[0]?['text'] ?? 'No response';
 
     return '# $conversationId\n\n$response';
   }
@@ -89,7 +92,7 @@ class Conversator {
     }
 
     var headers = {'Content-Type': 'application/json', 'Authorization': 'Bearer ${_config.conversatorKey}'};
-    var body = {'model': model, 'messages': formattedMessages};
+    var body = {'model': model, 'tools': tools, 'input': formattedMessages};
 
     var response =
         await http.post(Uri.parse(_apiBaseUrl), headers: headers, body: json.encode(body), encoding: Encoding.getByName('utf-8'));

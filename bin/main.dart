@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:io';
-import 'package:teledart/teledart.dart';
 import 'package:weather/src/bot.dart';
 import 'package:weather/src/injector/injection.dart';
 import 'package:weather/src/core/config.dart';
@@ -23,9 +21,5 @@ void main(List<String> args) async {
     var logger = getIt<Logger>();
 
     logger.e('Uncaught error', error);
-
-    if (error is LongPollingException) {
-      exit(1);
-    }
   });
 }

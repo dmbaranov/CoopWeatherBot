@@ -32,6 +32,7 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   late final TeleDart _bot;
   late final Telegram _telegram;
   late final TelegramModule _telegramModule;
+  late final LongPolling _polling;
 
   TelegramPlatform({required this.chatPlatform, required this.modulesMediator})
       : _config = getIt<Config>(),
@@ -42,11 +43,13 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
   @override
   void initialize() {
     _telegram = Telegram(_config.token);
-    _bot = TeleDart(_config.token, Event(_config.botName), fetcher: LongPolling(_telegram, limit: 100, timeout: 50));
+    _polling = LongPolling(_telegram, limit: 100, timeout: 50);
+    _bot = TeleDart(_config.token, Event(_config.botName), fetcher: _polling);
     _telegramModule = TelegramModule(bot: _bot, telegram: _telegram, platform: this, modulesMediator: modulesMediator)..initialize();
 
     _setupPlatformSpecificCommands();
     _bot.start();
+    _setupPollingRestartPolicy();
 
     _logger.i('Telegram platform has been started!');
   }
@@ -154,6 +157,15 @@ class TelegramPlatform<T extends TeleDartMessage> implements Platform<T> {
     poll.endPoll();
 
     return poll.result;
+  }
+
+  void _setupPollingRestartPolicy() {
+    Timer.periodic(Duration(minutes: 1), (_) {
+      if (!_polling.isPolling) {
+        _logger.w('Restarting telegram polling');
+        _polling.start();
+      }
+    });
   }
 
   void _setupPlatformSpecificCommands() async {
